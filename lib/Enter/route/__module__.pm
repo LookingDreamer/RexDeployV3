@@ -13,12 +13,21 @@ my $maxchild = 5 ;
 my $s;
 my $i;
 my %hash_pids; 
+my $env;
+Rex::Config->register_config_handler("env", sub {
+ my ($param) = @_;
+ $env = $param->{key} ;
+ });
+Rex::Config->register_config_handler("$env", sub {
+ my ($param) = @_;
+ our $user = $param->{user} ;
+ });
 
-desc "下载远程服务器数据到本地:1.根据key下载应用:rex download --u='username' --k='atm jrdt cm3 carbiz3 cm6 carbiz6 rb3 rb6' \n\t\t\t\t\t\t\t 2.根据分组下载应用rex download --u='username' --k='atm jrdt cm3 carbiz3 cm6 carbiz6 rb3 rb6' \n\t\t\t\t\t\t\t 3.下载全部应用rex download --k='all'";
+desc "下载数据到本地:rex download  --k='cm1 cm2 ../groupname/all'";
 task "download",sub{
    my $self = shift;
    my $k=$self->{k};
-   my $username=$self->{u};
+   my $username=$user;
    my $keys=Deploy::Db::getallkey();
    my @keys=split(/,/, $keys);
    my %vars = map { $_ => 1 } @keys;
@@ -144,11 +153,11 @@ task "download",sub{
 };
 
 
-desc "应用发布模块: rex deploy --u='username'  --k='atm jrdt cm3 carbiz3 cm6 carbiz6 rb3 rb6' \n";
+desc "发布应用到远程: rex deploy --k='cm1 cm2 ..' \n";
 task "deploy", sub {
    my $self = shift;
    my $k=$self->{k};
-   my $username=$self->{u};
+   my $username=$user;
    my $keys=Deploy::Db::getallkey();
    my @keys=split(/,/, $keys);
    my %vars = map { $_ => 1 } @keys;
@@ -256,11 +265,11 @@ task "deploy", sub {
 	}
 };
 
-desc "应用回滚模块: rex rollback --u='username'  --rollstatus=0 --k='atm jrdt cm3 carbiz3 cm6 carbiz6 rb3 rb6' \n --rollstatus=0:回滚到上一次最近版本(默认值).--rollstatus=1:根据数据库字段rollStatus=1回滚.";
+desc "应用回滚模块: rex rollback  --rollstatus=0 --k='atm jrdt cm3 carbiz3 cm6 carbiz6 rb3 rb6' \n --rollstatus=0:回滚到上一次最近版本(默认值).--rollstatus=1:根据数据库字段rollStatus=1回滚.";
 task "rollback", sub {
    my $self = shift;
    my $k=$self->{k};
-   my $username=$self->{u};
+   my $username=$user;
   
    my $rollstatus=$self->{rollstatus};
    my $keys=Deploy::Db::getallkey();
