@@ -1,0 +1,177 @@
+package Enter::route;
+
+use Rex -base;
+use Rex::Commands::Rsync;
+use Deploy::Db;
+use Data::Dumper;
+use Deploy::Core;
+use Common::Use;
+use Deploy::rollBack;
+use Rex::Group::Lookup::INI;
+use POSIX;
+
+desc "下载远程服务器数据到本地:1.根据key下载应用:rex download --u='username' --k='atm jrdt cm3 carbiz3 cm6 carbiz6 rb3 rb6' \n\t\t\t\t\t\t\t 2.根据分组下载应用rex download --u='username' --k='atm jrdt cm3 carbiz3 cm6 carbiz6 rb3 rb6' \n\t\t\t\t\t\t\t 3.下载全部应用rex download --k='all'";
+task "download",sub{
+   my $self = shift;
+   my $k=$self->{k};
+   my $username=$self->{u};
+   my $keys=Deploy::Db::getallkey();
+   my @keys=split(/,/, $keys);
+   my %vars = map { $_ => 1 } @keys;
+   my $lastnum=$keys[-1] - 1;
+   my $locals=Deploy::Db::ilocalname();
+   my @locals=split(/,/, $locals);
+   my %localvars = map { $_ => 1 } @locals;
+   my $lastnum=$locals[-1] - 1;
+   my $start = time;
+   my @ks = split(/ /, $k);
+   my $maxchild = 5 ;
+   my $max = @ks;
+   my $s;
+   my $i;
+   my %hash_pids;  
+
+   if( $k eq ""  ){
+       Rex::Logger::info("关键字(--k='')不能为空");
+   exit;
+   }
+   if( $username eq ""  ){
+       Rex::Logger::info("用户名(--u='')不能为空");
+   exit;
+   }
+
+   Rex::Logger::info("Starting ...... 操作人: $username");
+   if ( $k eq "all" ){
+       Rex::Logger::info("");
+       Rex::Logger::info("开始下载远程服务器数据到本地---$keys[-1] 个.");
+       for my $num (0..$lastnum) {
+           Rex::Logger::info("");
+           Rex::Logger::info("##############($keys[$num])###############");
+           my $config=Deploy::Core::init("$keys[$num]");
+           my $FistSerInfo=Deploy::Core::prepare($keys[$num],$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
+           Deploy::Core::downloading($keys[$num],$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config);	
+       }
+       Rex::Logger::info("下载远程服务器数据到本地完成---$keys[-1] 个.");
+   }else{
+   Rex::Logger::info("");
+   Rex::Logger::info("开始下载远程服务器数据到本地.");
+  
+   #根据分组来下载应用
+   for my $kv (@ks) {
+       if ( $kv ne "" ){
+           if (exists($localvars{$kv})){
+               Rex::Logger::info("");
+               Rex::Logger::info("##############【全部分区($kv)】###############");
+               
+               my $apps=Deploy::Db::localname_appkey($kv);
+               my @apps=split(/,/, $apps);
+               my %appvars = map { $_ => 1 } @apps;
+               my $lastnums=$apps[-1] - 1;
+               for my $num1 (0..$lastnums) {
+                   Rex::Logger::info("");
+                   Rex::Logger::info("##############($apps[$num1])###############");
+                   my $config=Deploy::Core::init("$apps[$num1]");
+                   my $FistSerInfo=Deploy::Core::prepare($apps[$num1],$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
+                   Deploy::Core::downloading($apps[$num1],$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config); 
+               } 
+           }
+       }
+   }  
+   
+   #根据的传值key来下载应用
+	for(my $g=0; $g < $max ;){
+		$g = $g+$maxchild;
+		$s = $g-$maxchild ;
+		if( $g > $max ){
+		  Rex::Logger::info("并发控制:($s - $max)");
+		}else{
+		  Rex::Logger::info("并发控制:($s - $g)");
+		}
+
+		for($i=$g-$maxchild;$i<$g;$i++){
+		  if( $i == $max  ){
+		     #最后一次收割并等待子进程完成
+		     while (scalar keys %hash_pids) { #一直判断hash中是否含有pid值,直到退出.
+		       my $kid = waitpid(-1, WNOHANG); #无阻塞模式收割
+		       if ($kid and exists $hash_pids{$kid}) {
+		         delete $hash_pids{$kid};  #如果回收的子进程存在于hash中,那么删除它.
+		       }
+		     }
+		    Rex::Logger::info("执行下载模板完成.");
+		    my $take_time = time - $start;
+		    Rex::Logger::info("总共花费时间:$take_time秒.");
+		    exit; 
+		    #全部结束
+		  }
+		  select(undef, undef, undef, 0.25);
+			  my $kv = $ks[$i];
+		    my $child=fork(); #派生一个子进程
+		  if($child){   # child >; 0, so we're the parent 
+		      $hash_pids{$child} = $child;  
+		      Rex::Logger::info("父进程PID:$$ 子进程PID:$child");
+		  }else{ 
+		    #在子进程中执行相关动作开始
+		    Rex::Logger::info("执行子进程,进程序号:$i");
+		    if ( $kv ne "" ){
+		       if (exists($vars{$kv})){
+		       Rex::Logger::info("");
+		       Rex::Logger::info("##############($kv)###############");
+		       my $config=Deploy::Core::init("$kv");
+		       my $FistSerInfo=Deploy::Core::prepare($kv,$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
+		       Deploy::Core::downloading($kv,$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config);	
+		       }else{
+		       Rex::Logger::info("关键字($kv)不存在","error");
+		       }
+		   }
+		    exit 0;             # child is done
+		    #在子进程中执行相关动作结束
+		 } 
+		}
+		#收割并等待子进程完成
+		while (scalar keys %hash_pids) { #一直判断hash中是否含有pid值,直到退出.
+		  my $kid = waitpid(-1, WNOHANG); #无阻塞模式收割
+		  if ($kid and exists $hash_pids{$kid}) {
+		    delete $hash_pids{$kid};  #如果回收的子进程存在于hash中,那么删除它.
+		  }
+		}
+	}
+
+   Rex::Logger::info("");
+   Rex::Logger::info("下载远程服务器数据到本地完成.");
+   }
+};
+
+
+1;
+
+=pod
+
+=head1 NAME
+
+$::module_name - {{ SHORT DESCRIPTION }}
+
+=head1 DESCRIPTION
+
+{{ LONG DESCRIPTION }}
+
+=head1 USAGE
+
+{{ USAGE DESCRIPTION }}
+
+ include qw/Enter::route/;
+
+ task yourtask => sub {
+    Enter::route::example();
+ };
+
+=head1 TASKS
+
+=over 4
+
+=item example
+
+This is an example Task. This task just output's the uptime of the system.
+
+=back
+
+=cut

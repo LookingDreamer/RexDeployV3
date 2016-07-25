@@ -1,0 +1,183 @@
+package Enter::route;
+
+use Rex -base;
+use Rex::Commands::Rsync;
+use Deploy::Db;
+use Data::Dumper;
+use Deploy::Core;
+use Common::Use;
+use Deploy::rollBack;
+use Rex::Group::Lookup::INI;
+
+desc "下载远程服务器数据到本地:1.根据key下载应用:rex download --u='username' --k='atm jrdt cm3 carbiz3 cm6 carbiz6 rb3 rb6' \n\t\t\t\t\t\t\t 2.根据分组下载应用rex download --u='username' --k='atm jrdt cm3 carbiz3 cm6 carbiz6 rb3 rb6' \n\t\t\t\t\t\t\t 3.下载全部应用rex download --k='all'";
+task "download",sub{
+   my $self = shift;
+   my $k=$self->{k};
+   my $username=$self->{u};
+   my $keys=Deploy::Db::getallkey();
+   my @keys=split(/,/, $keys);
+   my %vars = map { $_ => 1 } @keys;
+   my $lastnum=$keys[-1] - 1;
+   my $locals=Deploy::Db::ilocalname();
+   my @locals=split(/,/, $locals);
+   my %localvars = map { $_ => 1 } @locals;
+   my $lastnum=$locals[-1] - 1;
+   
+
+   if( $k eq ""  ){
+       Rex::Logger::info("关键字(--k='')不能为空");
+   exit;
+   }
+   if( $username eq ""  ){
+       Rex::Logger::info("用户名(--u='')不能为空");
+   exit;
+   }
+
+   Rex::Logger::info("Starting ...... 操作人: $username");
+   my @ks = split(/ /, $k);
+   if ( $k eq "all" ){
+       Rex::Logger::info("");
+       Rex::Logger::info("开始下载远程服务器数据到本地---$keys[-1] 个.");
+       for my $num (0..$lastnum) {
+           Rex::Logger::info("");
+           Rex::Logger::info("##############($keys[$num])###############");
+           my $config=Deploy::Core::init("$keys[$num]");
+           my $FistSerInfo=Deploy::Core::prepare($keys[$num],$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
+           Deploy::Core::downloading($keys[$num],$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config);	
+       }
+       Rex::Logger::info("下载远程服务器数据到本地完成---$keys[-1] 个.");
+   }else{
+   Rex::Logger::info("");
+   Rex::Logger::info("开始下载远程服务器数据到本地.");
+  
+   #根据分组来下载应用
+   for my $kv (@ks) {
+       if ( $kv ne "" ){
+           if (exists($localvars{$kv})){
+               Rex::Logger::info("");
+               Rex::Logger::info("##############【全部分区($kv)】###############");
+               
+               my $apps=Deploy::Db::localname_appkey($kv);
+               my @apps=split(/,/, $apps);
+               my %appvars = map { $_ => 1 } @apps;
+               my $lastnums=$apps[-1] - 1;
+               for my $num1 (0..$lastnums) {
+                   Rex::Logger::info("");
+                   Rex::Logger::info("##############($apps[$num1])###############");
+                   my $config=Deploy::Core::init("$apps[$num1]");
+                   my $FistSerInfo=Deploy::Core::prepare($apps[$num1],$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
+                   Deploy::Core::downloading($apps[$num1],$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config); 
+               } 
+           }
+       }
+   }  
+   
+   #根据的传值key来下载应用
+   for my $kv (@ks) {
+       if ( $kv ne "" ){
+           if (exists($vars{$kv})){
+           Rex::Logger::info("");
+           Rex::Logger::info("##############($kv)###############");
+           my $config=Deploy::Core::init("$kv");
+           my $FistSerInfo=Deploy::Core::prepare($kv,$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
+           Deploy::Core::downloading($kv,$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config);	
+           }else{
+           Rex::Logger::info("关键字($kv)不存在","error");
+           }
+       }
+   }
+   Rex::Logger::info("");
+   Rex::Logger::info("下载远程服务器数据到本地完成.");
+   }
+};
+
+desc "检查数据库配置和远程服务器信息:rex check --u='username'  --k='atm jrdt cm3 carbiz3 cm6 carbiz6 rb3 rb6' \n\t\t\t\t\t\t\t\t rex check --u='username' --p='password' --k='all'";
+task "check",sub{
+   my $self = shift;
+   my $k=$self->{k};
+   my $username=$self->{u};
+   my $passwod=$self->{p};
+   my $keys=Deploy::Db::getallkey();
+   my @keys=split(/,/, $keys);
+   my %vars = map { $_ => 1 } @keys; 
+   my $lastnum=$keys[-1] - 1;
+   if( $k eq ""  ){
+   Rex::Logger::info("关键字(--k='')不能为空");
+   exit;	
+   }
+
+   if( $username eq ""  ){
+   Rex::Logger::info("用户名(--u='')不能为空");
+   exit;
+   }
+
+   Rex::Logger::info("Starting ...... 操作人: $username");
+
+   my @ks = split(/ /, $k);
+   if ( $k eq "all" ){
+   Rex::Logger::info("");
+   Rex::Logger::info("开始检查 发布系统 服务器以及数据库配置---$keys[-1] 个.");
+   for my $num (0..$lastnum) {
+   Rex::Logger::info("");
+   Rex::Logger::info("##############($keys[$num])###############");
+   #初始化数据库信息
+   my $config=Deploy::Core::init("$keys[$num]");
+   #say $keys[$num];     
+   #第一次连接获取远程服务器信息
+   my $FistSerInfo=Deploy::Core::prepare($keys[$num],$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
+   }
+   Rex::Logger::info("检查 发布系统 服务器以及数据库配置完成---$keys[-1] 个.");
+   }else{   
+   Rex::Logger::info("");
+   Rex::Logger::info("开始检查 发布系统 服务器以及数据库配置.");    
+   for my $kv (@ks) {
+   if ( $kv ne "" ){
+   if (exists($vars{$kv})){	   
+   Rex::Logger::info("");
+   Rex::Logger::info("##############($kv)###############");
+   #初始化数据库信息
+   my $config=Deploy::Core::init("$kv");
+   #第一次连接获取远程服务器信息
+   my $FistSerInfo=Deploy::Core::prepare($kv,$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});  
+   }else{
+   Rex::Logger::info("关键字($kv)不存在","error");
+   }
+   }}
+   Rex::Logger::info("检查 发布系统 服务器以及数据库配置完成.");
+   }
+};
+
+
+1;
+
+=pod
+
+=head1 NAME
+
+$::module_name - {{ SHORT DESCRIPTION }}
+
+=head1 DESCRIPTION
+
+{{ LONG DESCRIPTION }}
+
+=head1 USAGE
+
+{{ USAGE DESCRIPTION }}
+
+ include qw/Enter::route/;
+
+ task yourtask => sub {
+    Enter::route::example();
+ };
+
+=head1 TASKS
+
+=over 4
+
+=item example
+
+This is an example Task. This task just output's the uptime of the system.
+
+=back
+
+=cut
