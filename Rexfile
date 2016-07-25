@@ -84,11 +84,11 @@ if ( $groups_file[0] eq "true") {
 
 path "/usr/local/mysql/bin","/usr/local/mysql/sbin","/usr/local/jdk/bin","/usr/local/tomcat/bin","/usr/local/mysql/bin","/usr/kerberos/sbin","/usr/kerberos/bin","/usr/local/sbin","/usr/local/bin","/sbin","/bin","/usr/sbin","/usr/bin","/root/bin";
 
-desc "检查数据库配置和远程服务器信息:rex check --u='username'  --k='atm jrdt cm3 carbiz3 cm6 carbiz6 rb3 rb6' \n\t\t\t\t\t\t\t\t rex check --u='username' --p='password' --k='all'";
+desc "检查服务器信息:rex check   --k='cm1 cm2 ../all'";
 task "check",sub{
    my $self = shift;
    my $k=$self->{k};
-   my $username=$self->{u};
+   my $username=$user;
    my $passwod=$self->{p};
    my $keys=Deploy::Db::getallkey();
    my @keys=split(/,/, $keys);
@@ -140,13 +140,14 @@ task "check",sub{
    }
 };
 
-desc "所有发布系统命令模版:  rex run --u='username'  --k='atm jrdt cm3 carbiz3 cm6 carbiz6 rb3 rb6' --cmd='ls' \n\t\t\t\t\t\t\t rex run --u='username' --k='all' --cmd='ls'";
+
+desc "批量执行命令行:rex run  --k='cm1 cm2 ../all' --cmd='ls'";
 task "run",sub{
    my $start = time;
    my $self = shift;
    my $cmd = $self->{cmd};
    my $k=$self->{k};
-   my $username=$self->{u};
+   my $username=$user;
    if( $k eq ""  ){
      Rex::Logger::info("关键字(--k='')不能为空");
      exit;
@@ -295,9 +296,9 @@ task "run",sub{
    }
 };
 
-desc "获取APP_KEY list: rex list \n";
+desc "获取关键词列表:rex list \n";
 task "list",sub{
    my $keys=Deploy::Db::getlistkey();
    Rex::Logger::info("");
-   Rex::Logger::info("获取到APP_KEY list如下: \n $keys");
+   Rex::Logger::info("获取关键词如下: \n $keys");
 };
