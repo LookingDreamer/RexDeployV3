@@ -2,6 +2,7 @@ package Common::Use;
 
 use Rex -base;
 use Rex::Commands::Rsync;
+use Deploy::Db;
 
 desc "批量命令模块: rex [-H 'x.x.x.x x.x.x.x']/[-G  jry-com] run --cmd='uptime'";
 task run =>,sub {
@@ -12,8 +13,18 @@ my $cmd = $self->{cmd};
 run $cmd, sub {
      my ($stdout, $stderr) = @_;
      my $server = Rex::get_current_connection()->{server};
-     say "[$server] $stdout";
-     say "" ;
+     my $names = Deploy::Db::showname($server);
+     if($names eq "none"){
+        say "[$server] $stdout";
+        say "" ;
+     }elsif($names eq "null"){
+        say "[$server] $stdout";
+        say "" ;
+     }else{
+        say "[$server]-[$names] $stdout";
+        say "" ; 
+     }
+
     };
 };
 
