@@ -3,7 +3,7 @@ package Common::Use;
 use Rex -base;
 use Rex::Commands::Rsync;
 
-desc "通用命令模版";
+desc "批量命令模块: rex [-H 'x.x.x.x x.x.x.x']/[-G  jry-com] run --cmd='uptime'";
 task run =>,sub {
 
 my $self = shift;
@@ -17,7 +17,7 @@ run $cmd, sub {
     };
 };
 
-desc "通用文件传输 远程->本地";
+desc "文件下载模块 远程->本地:rex [-H 'x.x.x.x']/[-G  jry-com] Common:Use:download --dir1='/tmp/1.txt' --dir2='/tmp/'";
 task "download", sub {
    my $self = shift;
    my $dir1 = $self->{dir1};
@@ -29,7 +29,7 @@ task "download", sub {
    };
  };
 
-desc "通用文件传输 本地->远程";
+desc "文件上传模块 本地->远程:rex [-H 'x.x.x.x']/[-G  jry-com] Common:Use:upload --dir1='/tmp/1.txt' --dir2='/tmp/'";
 task "upload", sub {
     my $self = shift;
     my $dir1 = $self->{dir1};
@@ -40,19 +40,6 @@ task "upload", sub {
     parameters => '--backup --delete',
    };
  };
-
-desc "文件传输 本地->远程\n远程目录不存在,则自动创建";
-task "upload2", sub {
-    my $self = shift;
-    my $dir1 = $self->{dir1};
-    my $dir2 = $self->{dir2};
-
-    sync $dir1,$dir2, {
-    exclude => ["*.sw*", "*.tmp"],
-    parameters => '--backup --delete',
-   };
- };
-
 
 =pod
 
