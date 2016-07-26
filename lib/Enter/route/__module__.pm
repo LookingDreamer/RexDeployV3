@@ -23,7 +23,7 @@ Rex::Config->register_config_handler("$env", sub {
  our $user = $param->{user} ;
  });
 
-desc "下载数据到本地:rex download  --k='cm1 cm2 ../groupname/all'";
+desc "应用下载模块: rex download  --k='cm1 cm2 ../groupname/all'";
 task "download",sub{
    my $self = shift;
    my $k=$self->{k};
@@ -153,7 +153,7 @@ task "download",sub{
 };
 
 
-desc "发布应用到远程: rex deploy --k='cm1 cm2 ..' \n";
+desc "应用发布模块: rex deploy --k='cm1 cm2 ..' \n";
 task "deploy", sub {
    my $self = shift;
    my $k=$self->{k};
@@ -265,7 +265,7 @@ task "deploy", sub {
 	}
 };
 
-desc "应用回滚模块: rex rollback  --rollstatus=0 --k='atm jrdt cm3 carbiz3 cm6 carbiz6 rb3 rb6' \n --rollstatus=0:回滚到上一次最近版本(默认值).--rollstatus=1:根据数据库字段rollStatus=1回滚.";
+desc "应用回滚模块: rex rollback  --rollstatus=0 --k='cm1 cm2 ..' \n--rollstatus=0:回滚到上一次最近版本(默认值).\n--rollstatus=1:根据数据库字段rollStatus=1回滚.";
 task "rollback", sub {
    my $self = shift;
    my $k=$self->{k};

@@ -84,7 +84,7 @@ if ( $groups_file[0] eq "true") {
 
 path "/usr/local/mysql/bin","/usr/local/mysql/sbin","/usr/local/jdk/bin","/usr/local/tomcat/bin","/usr/local/mysql/bin","/usr/kerberos/sbin","/usr/kerberos/bin","/usr/local/sbin","/usr/local/bin","/sbin","/bin","/usr/sbin","/usr/bin","/root/bin";
 
-desc "检查服务器信息:rex check   --k='cm1 cm2 ../all'";
+desc "检查服务器信息: rex check   --k='cm1 cm2 ../all'";
 task "check",sub{
    my $self = shift;
    my $k=$self->{k};
@@ -141,7 +141,7 @@ task "check",sub{
 };
 
 
-desc "批量执行命令行:rex run  --k='cm1 cm2 ../all' --cmd='ls'";
+desc "批量执行命令行: rex run  --k='cm1 cm2 ../all' --cmd='ls'";
 task "run",sub{
    my $start = time;
    my $self = shift;
@@ -296,7 +296,7 @@ task "run",sub{
    }
 };
 
-desc "获取关键词列表:rex list \n";
+desc "获取关键词列表: rex list \n";
 task "list",sub{
    my $keys=Deploy::Db::getlistkey();
    Rex::Logger::info("");
