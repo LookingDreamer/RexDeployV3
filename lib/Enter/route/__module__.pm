@@ -349,6 +349,52 @@ task "rollback", sub {
 };
 
 
+desc "应用服务模块: rex service --k='cm1 cm2 ..' --a='start/stop/restart' [--f='' --key='' --j='']";
+task "service", sub {
+   my $self = shift;
+   my $k=$self->{k};
+   my $a=$self->{a};
+   my $j=$self->{j};
+   my $f=$self->{f};
+   my $key=$self->{key};
+   my $keys=Deploy::Db::getallkey();
+   my @keys=split(/,/, $keys);
+   my %vars = map { $_ => 1 } @keys;
+   my $lastnum=$keys[-1] - 1;
+   if( $k eq ""  ){
+   Rex::Logger::info("关键字(--k='')不能为空","error");
+   exit;
+   }
+   if( $a eq ""  ){
+   Rex::Logger::info("关键字(--a='')不能为空","error");
+   exit;
+   }
+   
+   my @ks = split(/ /, $k);
+
+   Rex::Logger::info("");
+   Rex::Logger::info("开始应用服务控制模块.");
+   for my $kv (@ks) {
+   if ( $kv ne "" ){
+   if (exists($vars{$kv})){
+   Rex::Logger::info("");
+   Rex::Logger::info("##############($kv)###############");
+
+   my $config=Deploy::Core::init("$kv");
+   $config->{'action'} = "$a" ;
+   $config->{'jsonfile'} = "$j" ;
+   $config->{'services_file'} = "$f" ;
+   $config->{'key'} = "$key" ;
+   my $FistSerInfo=run_task "Deploy:FirstConnect:services",on=>$config->{'network_ip'},params => { config => $config};
+   # Common::Use::jsondump($FistSerInfo);
+
+   }else{
+   Rex::Logger::info("关键字($kv)不存在","error");
+   }
+   }}
+   Rex::Logger::info("应用服务控制模块完成.");
+};
+
 
 1;
 

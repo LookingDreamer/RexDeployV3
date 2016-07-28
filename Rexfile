@@ -82,8 +82,6 @@ if ( $groups_file[0] eq "true") {
    groups_file "$groups_file[1]";
 }
 
-path "/usr/local/mysql/bin","/usr/local/mysql/sbin","/usr/local/jdk/bin","/usr/local/tomcat/bin","/usr/local/mysql/bin","/usr/kerberos/sbin","/usr/kerberos/bin","/usr/local/sbin","/usr/local/bin","/sbin","/bin","/usr/sbin","/usr/bin","/root/bin";
-
 desc "检查服务器信息: rex check   --k='cm1 cm2 ../all'";
 task "check",sub{
    my $self = shift;
