@@ -10,6 +10,7 @@ use Rex::Commands::Rsync;
 use Deploy::Db;
 use Data::Dumper;
 use Deploy::Core;
+use Deploy::Configure;
 use Common::Use;
 use Deploy::rollBack;
 use Rex::Group::Lookup::INI;
@@ -299,4 +300,15 @@ task "list",sub{
    my $keys=Deploy::Db::getlistkey();
    Rex::Logger::info("");
    Rex::Logger::info("获取关键词如下: \n $keys");
+};
+
+desc "服务模块: rex service \n";
+task "service",sub{
+  # run_task "Enter:route:service",params=>{ k=>"cm-test",a=>"start" };
+  my %service;
+  $service->{'action'} = "start" ;
+  $service->{'network_ip'} = "115.159.237.152" ;
+  $service->{'pro_key'} = "tomcat-cm" ;
+  $service->{'pro_init'} = "/usr/local/tomcat-cm/bin/startup.sh" ;
+  run_task "Deploy:FirstConnect:services",on=>$service->{'network_ip'},params => { config => $service}
 };
