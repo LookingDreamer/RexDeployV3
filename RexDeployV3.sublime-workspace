@@ -4,6 +4,14 @@
 		"selected_items":
 		[
 			[
+				"pr",
+				"print"
+			],
+			[
+				"e",
+				"env"
+			],
+			[
 				"f",
 				"false"
 			],
@@ -252,13 +260,24 @@
 	},
 	"file_history":
 	[
-		"/Users/huanggaoming/myProject/RexDeployV3/config/config.yml",
+		"/Users/huanggaoming/myProject/rex-jobcontrol/bin/rex_job_control",
+		"/Users/huanggaoming/myProject/rex-jobcontrol/lib/Rex/JobControl.pm",
+		"/Users/huanggaoming/myProject/rex-jobcontrol/jobcontrol.conf",
 		"/Users/huanggaoming/myProject/RexDeployV3/lib/Deploy/Db/__module__.pm",
+		"/Users/huanggaoming/myProject/RexDeployV3/lib/Deploy/Core/__module__.pm",
+		"/Users/huanggaoming/myProject/rex-jobcontrol/lib/Rex/JobControl/Helper/AuditLog.pm",
+		"/Users/huanggaoming/myProject/RexDeployV3/files/data/www/ins_share/cm/config/config.properties",
+		"/usr/local/Cellar/perl518/5.18.2/lib/site_perl/5.18.2/Rex/Commands/Rsync.pm",
+		"/Users/huanggaoming/myProject/RexDeployV3/files/data/www/ins_share/cm/config/akka.conf",
+		"/Users/huanggaoming/myProject/RexDeployV3/file/data/www/ins_share/cm/config/config.properties",
+		"/Users/huanggaoming/myProject/RexDeployV3/Rexfile",
+		"/Users/huanggaoming/myProject/RexDeployV3/lib/Deploy/Configure/__module__.pm",
+		"/Users/huanggaoming/myProject/RexDeployV3/lib/Deploy/Configure/file/data/www/ins_share/cm/config/config.properties",
+		"/usr/local/Cellar/perl518/5.18.2/lib/site_perl/5.18.2/Rex/Template.pm",
+		"/Users/huanggaoming/myProject/RexDeployV3/config/config.yml",
 		"/Users/huanggaoming/myProject/RexDeployV3/lib/Common/Use/__module__.pm",
 		"/Users/huanggaoming/myProject/RexCenter/config/config.yml",
 		"/usr/local/Cellar/perl518/5.18.2/lib/site_perl/5.18.2/Rex/CLI.pm",
-		"/Users/huanggaoming/myProject/RexDeployV3/lib/Deploy/Core/__module__.pm",
-		"/Users/huanggaoming/myProject/RexDeployV3/Rexfile",
 		"/Users/huanggaoming/Desktop/Share/svn/zhangzhongbao/branches/cm/v-20160820/src/main/java/com/zzb/mobile/service/impl/AppInsuredQuoteCopyServiceImpl.java",
 		"/Users/huanggaoming/Desktop/Share/svn/zhangzhongbao/log.log",
 		"/Users/huanggaoming/Desktop/SVN分支的创建与合并_note_20160705.txt",
@@ -368,18 +387,7 @@
 		"/Users/huanggaoming/Desktop/Webserver/maven3/conf/settings.xml.bak0517",
 		"/Users/huanggaoming/Documents/__module__.pm",
 		"/Users/huanggaoming/Documents/untitled",
-		"/Users/huanggaoming/Documents/__module__.pm.bak0513",
-		"/Users/huanggaoming/Desktop/Webserver/nexus-2.6.2-01-bundle/nexus-2.6.2-01/bin/nexus",
-		"/Users/huanggaoming/Documents/Rexfile",
-		"/Users/huanggaoming/myProject/RexDeploy/config/config.yml",
-		"/Users/huanggaoming/myProject/RexDeploy/Rexfile",
-		"/Users/huanggaoming/Downloads/SVNUpdateTool/SVNUpdateTool12338888/SVNUpdateTool1233/bin/startup.bat",
-		"/Users/huanggaoming/Downloads/SVNUpdateTool/SVNUpdateTool12338888/SVNUpdateTool1233/bin/start.sh",
-		"/Users/huanggaoming/Documents/runcmd.pl",
-		"/Users/huanggaoming/myProject/RexCenter/Rexfile",
-		"/Users/huanggaoming/myProject/RexCenter/lib/Deploy/Core/__module__.pm",
-		"/Users/huanggaoming/Desktop/Share/svn/运维部工作周报与计划/运维相关/系统网络部工作、学习相关/公用文件夹/新框架相关/openfire相关.txt",
-		"/Users/huanggaoming/Desktop/scripts/vpn_centos.sh"
+		"/Users/huanggaoming/Documents/__module__.pm.bak0513"
 	],
 	"find":
 	{
@@ -397,6 +405,21 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"=> ",
+			"Minion => {",
+			"deploydir_same_level",
+			"getconfig",
+			"Get配置-2",
+			"error",
+			"DBI->connect",
+			"->prepare",
+			"prepare",
+			"Deploy::Db",
+			"redis",
+			"parse",
+			"cmd:",
+			"cmd: rsync",
+			"cmd: rsync -a -e",
 			"Deploy::Db;",
 			"@",
 			"syncpro",
@@ -509,22 +532,7 @@
 			"file",
 			"Date Range",
 			"Date Range & Time Picker with 30 Minute Increments",
-			"php",
-			"2016_0518_0947",
-			"bug-1107-通过任务查询接口没有车船税",
-			"db",
-			"bug-1107-通过任务查询接口没有车船税",
-			"cm/src/main",
-			"msg",
-			"创建报价接口的验证,新车不验证车牌是是填写增加配送自取的出单网点字段",
-			"bug-00000-我的保单查询",
-			"{",
-			"}",
-			"bug-0000-保单号为空保费为零的问题",
-			"echo",
-			"fa",
-			"false",
-			"增加发票信息"
+			"php"
 		],
 		"highlight": false,
 		"in_selection": false,
