@@ -3,6 +3,7 @@ package Common::Use;
 use Rex -base;
 use Rex::Commands::Rsync;
 use Deploy::Db;
+use threads;
 
 desc "批量命令模块: rex [-H 'x.x.x.x x.x.x.x']/[-G  jry-com] run --cmd='uptime'";
 task run =>,sub {
@@ -33,7 +34,8 @@ task "download", sub {
    my $self = shift;
    my $dir1 = $self->{dir1};
    my $dir2 = $self->{dir2};
-
+   # say "aa";
+   # exit;
    sync $dir1,$dir2, {
    download => 1,
    parameters => '--backup',
