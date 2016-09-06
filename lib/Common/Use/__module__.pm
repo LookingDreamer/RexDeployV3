@@ -38,7 +38,7 @@ task "download", sub {
    # exit;
    sync $dir1,$dir2, {
    download => 1,
-   parameters => '--backup',
+   parameters => '--backup --progress',
    };
  };
 
@@ -50,7 +50,7 @@ task "upload", sub {
 
     sync $dir1,$dir2, {
     exclude => ["*.sw*", "*.tmp"],
-    parameters => '--backup --delete',
+    parameters => '--backup --delete --progress',
    };
  };
 
