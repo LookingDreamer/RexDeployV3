@@ -52,6 +52,30 @@ task "download", sub {
       mkdir($dir2);
     }
    };
+   #判断是否开启了sudo,如果开启了则查看修改/etc/sudoers
+  my $env;
+  my $key_auth;
+  my $username;
+  Rex::Config->register_config_handler("env", sub {
+    my ($param) = @_;
+    $env = $param->{key} ;
+  });
+  Rex::Config->register_config_handler("$env", sub {
+    my ($param) = @_;
+    $key_auth = $param->{key_auth} ;
+    $username = $param->{user} ;
+  });
+  if (Rex::is_sudo) {
+    if ( $key_auth eq "true" ) {
+        my $sudo_config_status = run "grep 'Defaults:$username !requiretty' /etc/sudoers |wc -l";
+       if (  $sudo_config_status eq '0') {
+         run "echo 'Defaults:$username !requiretty' >> /etc/sudoers ";
+         Rex::Logger::info("echo 'Defaults:$username !requiretty' >> /etc/sudoers ");
+       }else{
+         Rex::Logger::info("sudo tty终端已经关闭.");
+       }
+    }
+  };
 
    my $real_size = run " du -sh $dir1 | awk '{print \$1}'";
    my $size = run " du -s $dir1 | awk '{print \$1}'";
@@ -138,6 +162,32 @@ task "upload", sub {
         @sizearr = readpipe " du -s $dir1 | awk '{print \$1}'";
         Rex::Logger::info("[local]: $dir1-->大小: $real_size .");
    };
+
+  #判断是否开启了sudo,如果开启了则查看修改/etc/sudoers
+  my $env;
+  my $key_auth;
+  my $username;
+  Rex::Config->register_config_handler("env", sub {
+    my ($param) = @_;
+    $env = $param->{key} ;
+  });
+  Rex::Config->register_config_handler("$env", sub {
+    my ($param) = @_;
+    $key_auth = $param->{key_auth} ;
+    $username = $param->{user} ;
+  });
+  if (Rex::is_sudo) {
+    if ( $key_auth eq "true" ) {
+        my $sudo_config_status = run "grep 'Defaults:$username !requiretty' /etc/sudoers |wc -l";
+       if (  $sudo_config_status eq '0') {
+         run "echo 'Defaults:$username !requiretty' >> /etc/sudoers ";
+         Rex::Logger::info("echo 'Defaults:$username !requiretty' >> /etc/sudoers ");
+       }else{
+         Rex::Logger::info("sudo tty终端已经关闭.");
+       }
+    }
+  };
+
    my $size = $sizearr[0];
    my $time_start=time();
    my $child=fork();
