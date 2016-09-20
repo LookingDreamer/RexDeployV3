@@ -40,11 +40,17 @@ task "download", sub {
    my %hash_pids;
    my $server = Rex::get_current_connection()->{server};
    my %hash;
+   my $sufer_dir_status;
+   if(  $dir2  =~m/\/$/ ) { 
+     $sufer_dir_status = "true";
+   }else{
+     $sufer_dir_status = "false";
+   }
    # my $thread_1_01 = threads->create('download_thread','Download_Thread_1');
    # my $thread_2_01 = threads->create('download_thread',$dir1,$dir2);
    # $thread_2_01->join();
    if (  ! is_dir($dir1) &&  ! is_file($dir1) ) {
-     Rex::Logger::info("[$server] $dir1 远程目录或文件不存在.");
+     Rex::Logger::info("[文件传输] [$server] $dir1 远程目录或文件不存在.");
      exit;
    }
    LOCAL{
@@ -70,22 +76,22 @@ task "download", sub {
         my $sudo_config_status = run "grep 'Defaults:$username !requiretty' /etc/sudoers |wc -l";
        if (  $sudo_config_status eq '0') {
          run "echo 'Defaults:$username !requiretty' >> /etc/sudoers ";
-         Rex::Logger::info("echo 'Defaults:$username !requiretty' >> /etc/sudoers ");
+         Rex::Logger::info("[文件传输] echo 'Defaults:$username !requiretty' >> /etc/sudoers ");
        }else{
-         Rex::Logger::info("sudo tty终端已经关闭.");
+         Rex::Logger::info("[文件传输] sudo tty终端已经关闭.");
        }
     }
   };
 
    my $real_size = run " du -sh $dir1 | awk '{print \$1}'";
    my $size = run " du -s $dir1 | awk '{print \$1}'";
-   Rex::Logger::info("[$server]  $dir1-->大小: $real_size .");
+   Rex::Logger::info("[文件传输] [$server]  $dir1-->大小: $real_size .");
    my $time_start=time();
    my $child=fork();
-   die Rex::Logger::info("创建进程失败.",'error') if not defined $child;
+   die Rex::Logger::info("[文件传输] 创建进程失败.",'error') if not defined $child;
    if($child){   # child >; 0, so we're the parent 
     $hash_pids{$child} = $child; 
-    Rex::Logger::info("多进程文件传输: 父进程PID:$$ 子进程PID:$child");
+    Rex::Logger::info("[文件传输] 多进程文件传输: 父进程PID:$$ 子进程PID:$child");
     $hash{$child} = $child; #将子进程PID保存到hash,方便下面回收
    }else{
     download_thread($dir1,$dir2);        # child handles  
@@ -103,9 +109,22 @@ task "download", sub {
         }
         select(undef, undef, undef, 0.5);
         LOCAL {
-          my $basename = basename $dir1;
-          # print "du -s $dir2/$basename  | awk '{print \$1}'";
-          my @result = readpipe "du -s $dir2/$basename  | awk '{print \$1}'";
+          my @result;
+          if ( $sufer_dir_status  eq 'true' ) {
+                 @result = readpipe "du -s $dir2  | awk '{print \$1}'";
+          }else{
+                my $basename = basename $dir1;
+                # print "du -s $dir2/$basename  | awk '{print \$1}'";
+                my $file_name = "$dir2/$basename";
+                if (  ! is_dir($file_name) &&  ! is_file($file_name) ) {
+                  my $pre_hosts = run "ifconfig  |grep inet |awk '{print \$2}' |xargs";
+                  Rex::Logger::info("[文件传输] $file_name 目录或文件不存在,退出进度条显示,后台传输文件。");
+                  Rex::Logger::info("[文件传输] 当前执行命令主机: $pre_hosts ");
+                  exit;
+                }
+                @result = readpipe "du -s $dir2/$basename  | awk '{print \$1}'";
+          }
+      
           my $percent = $result[0] / $size ;
           my $percent = sprintf("%.2f",$percent);
           my $percent = $percent * 100;
@@ -115,16 +134,17 @@ task "download", sub {
             print "\r $progress_symbol[$n] $percent%";  
           }
 
-          print "\r $progress_symbol[$n] $percent%";
+          # print "\r $progress_symbol[$n] $percent%";
         };
         
         $i = $i + 1;
         $n = ($n>=3)? 0:$n+1;
     }
+    print "\n";
     local $| = 0;
     my $time_end=time();
     my $time =$time_end-$time_start; 
-    Rex::Logger::info("传输完成,耗时: $time秒");
+    Rex::Logger::info("[文件传输] 传输完成,耗时: $time秒");
 
    sub download_thread{
      my ($dir1,$dir2) = @_;
@@ -155,12 +175,12 @@ task "upload", sub {
    LOCAL{
 
         if ( !is_dir($dir1) ) {
-          Rex::Logger::info("[local]: $dir1 目录或文件不存在.");
+          Rex::Logger::info("[文件传输] [local]: $dir1 目录或文件不存在.");
           exit;
         }
         my $real_size = run " du -sh $dir1 | awk '{print \$1}'";
         @sizearr = readpipe " du -s $dir1 | awk '{print \$1}'";
-        Rex::Logger::info("[local]: $dir1-->大小: $real_size .");
+        Rex::Logger::info("[文件传输] [local]: $dir1-->大小: $real_size .");
    };
 
   #判断是否开启了sudo,如果开启了则查看修改/etc/sudoers
@@ -181,9 +201,9 @@ task "upload", sub {
         my $sudo_config_status = run "grep 'Defaults:$username !requiretty' /etc/sudoers |wc -l";
        if (  $sudo_config_status eq '0') {
          run "echo 'Defaults:$username !requiretty' >> /etc/sudoers ";
-         Rex::Logger::info("echo 'Defaults:$username !requiretty' >> /etc/sudoers ");
+         Rex::Logger::info("[文件传输] echo 'Defaults:$username !requiretty' >> /etc/sudoers ");
        }else{
-         Rex::Logger::info("sudo tty终端已经关闭.");
+         Rex::Logger::info("[文件传输] sudo tty终端已经关闭.");
        }
     }
   };
@@ -191,10 +211,10 @@ task "upload", sub {
    my $size = $sizearr[0];
    my $time_start=time();
    my $child=fork();
-   die Rex::Logger::info("创建进程失败.",'error') if not defined $child;
+   die Rex::Logger::info("[文件传输] 创建进程失败.",'error') if not defined $child;
    if($child){   # child >; 0, so we're the parent 
     $hash_pids{$child} = $child; 
-    Rex::Logger::info("多进程文件传输: 父进程PID:$$ 子进程PID:$child");
+    Rex::Logger::info("[文件传输] 多进程文件传输: 父进程PID:$$ 子进程PID:$child");
     $hash{$child} = $child; #将子进程PID保存到hash,方便下面回收
    }else{
     upload_thread($dir1,$dir2);        # child handles  
@@ -213,6 +233,13 @@ task "upload", sub {
         select(undef, undef, undef, 0.5);
         my $basename = basename $dir1;
         # print "\ndu -s $dir2/$basename  | awk '{print \$1}'\n";
+        my $file_name = "$dir2/$basename";
+          if (  ! is_dir($file_name) &&  ! is_file($file_name) ) {
+            my $pre_hosts = run "ifconfig  |grep inet |awk '{print \$2}' |xargs";
+            Rex::Logger::info("[文件传输] $file_name 目录或文件不存在,退出进度条显示,后台传输文件。");
+            Rex::Logger::info("[文件传输] 当前执行命令主机: $pre_hosts ");
+            exit;
+        }
         my $cmd_result = run "du -s $dir2/$basename  | awk '{print \$1}'";
         my $percent = $cmd_result / $size ;
         my $percent = sprintf("%.2f",$percent);
@@ -231,7 +258,7 @@ task "upload", sub {
     local $| = 0;
     my $time_end=time();
     my $time =$time_end-$time_start; 
-    Rex::Logger::info("传输完成,耗时: $time秒");
+    Rex::Logger::info("[文件传输] 传输完成,耗时: $time秒");
 
    sub upload_thread{
       my ($dir1,$dir2) = @_;
