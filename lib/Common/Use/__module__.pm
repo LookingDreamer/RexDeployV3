@@ -40,11 +40,20 @@ task "download", sub {
    my %hash_pids;
    my $server = Rex::get_current_connection()->{server};
    my %hash;
-   my $sufer_dir_status;
+   my $sufer_dir2_status;
+   my $sufer_dir1_status;
+   my $du_dir;
+   my $basename;
    if(  $dir2  =~m/\/$/ ) { 
-     $sufer_dir_status = "true";
+     $sufer_dir2_status = "true";
    }else{
-     $sufer_dir_status = "false";
+     $sufer_dir2_status = "false";
+   }
+
+   if(  $dir1  =~m/\/$/ ) { 
+     $sufer_dir1_status = "true";
+   }else{
+     $sufer_dir1_status = "false";
    }
    # my $thread_1_01 = threads->create('download_thread','Download_Thread_1');
    # my $thread_2_01 = threads->create('download_thread',$dir1,$dir2);
@@ -58,6 +67,20 @@ task "download", sub {
       mkdir($dir2);
     }
    };
+
+    #判断是带目录传输还是直接传输子目录或文件
+  if ( $sufer_dir1_status eq "true" &&  $sufer_dir2_status eq "true" ) {
+     $du_dir = $dir2;
+   } elsif ( $sufer_dir1_status eq "true" &&  $sufer_dir2_status eq "false" ) {
+     $du_dir = $dir2;
+   } elsif ( $sufer_dir1_status eq "false" &&  $sufer_dir2_status eq "true" ) {
+     $basename = basename $dir1;
+     $du_dir = "$dir2/$basename";
+   } else {
+     $basename = basename $dir1;
+     $du_dir = "$dir2/$basename";
+   }
+     
    #判断是否开启了sudo,如果开启了则查看修改/etc/sudoers
   my $env;
   my $key_auth;
@@ -85,7 +108,7 @@ task "download", sub {
 
    my $real_size = run " du -sh $dir1 | awk '{print \$1}'";
    my $size = run " du -s $dir1 | awk '{print \$1}'";
-   Rex::Logger::info("[文件传输] [$server]  $dir1-->大小: $real_size .");
+   Rex::Logger::info("[文件传输] [$server]  $dir1-->$dir2大小: $real_size .");
    my $time_start=time();
    my $child=fork();
    die Rex::Logger::info("[文件传输] 创建进程失败.",'error') if not defined $child;
@@ -110,21 +133,30 @@ task "download", sub {
         select(undef, undef, undef, 0.5);
         LOCAL {
           my @result;
-          if ( $sufer_dir_status  eq 'true' ) {
-                 @result = readpipe "du -s $dir2  | awk '{print \$1}'";
-          }else{
-                my $basename = basename $dir1;
-                # print "du -s $dir2/$basename  | awk '{print \$1}'";
-                my $file_name = "$dir2/$basename";
-                if (  ! is_dir($file_name) &&  ! is_file($file_name) ) {
-                  my $pre_hosts = run "ifconfig  |grep inet |awk '{print \$2}' |xargs";
-                  Rex::Logger::info("[文件传输] $file_name 目录或文件不存在,退出进度条显示,后台传输文件。");
-                  Rex::Logger::info("[文件传输] 当前执行命令主机: $pre_hosts ");
-                  exit;
-                }
-                @result = readpipe "du -s $dir2/$basename  | awk '{print \$1}'";
-          }
+          # if ( $sufer_dir_status  eq 'true' ) {
+          #        @result = readpipe "du -s $dir2  | awk '{print \$1}'";
+          # }else{
+          #       my $basename = basename $dir1;
+          #       # print "du -s $dir2/$basename  | awk '{print \$1}'";
+          #       my $file_name = "$dir2/$basename";
+          #       if (  ! is_dir($file_name) &&  ! is_file($file_name) ) {
+          #         my $pre_hosts = run "ifconfig  |grep inet |awk '{print \$2}' |xargs";
+          #         Rex::Logger::info("[文件传输] $file_name 目录或文件不存在,退出进度条显示,后台传输文件。");
+          #         Rex::Logger::info("[文件传输] 当前执行命令主机: $pre_hosts ");
+          #         exit;
+          #       }
+          #       @result = readpipe "du -s $dir2/$basename  | awk '{print \$1}'";
+          # }
       
+          my $file_name = "$du_dir";
+          if (  ! is_dir($file_name) &&  ! is_file($file_name) ) {
+            my $pre_hosts = run "ifconfig  |grep inet |awk '{print \$2}' |xargs";
+            Rex::Logger::info("[文件传输] $file_name 目录或文件不存在,退出进度条显示,后台传输文件。");
+            Rex::Logger::info("[文件传输] 当前执行命令主机: $pre_hosts ");
+            exit;
+          }
+          @result = readpipe "du -s $du_dir  | awk '{print \$1}'";
+
           my $percent = $result[0] / $size ;
           my $percent = sprintf("%.2f",$percent);
           my $percent = $percent * 100;
@@ -164,6 +196,21 @@ task "upload", sub {
    my $server = Rex::get_current_connection()->{server};
    my %hash;
    my @sizearr;
+   my $sufer_dir2_status;
+   my $sufer_dir1_status;
+   my $du_dir;
+   my $basename;
+   if(  $dir2  =~m/\/$/ ) { 
+     $sufer_dir2_status = "true";
+   }else{
+     $sufer_dir2_status = "false";
+   }
+
+   if(  $dir1  =~m/\/$/ ) { 
+     $sufer_dir1_status = "true";
+   }else{
+     $sufer_dir1_status = "false";
+   }
    # my $thread_1_01 = threads->create('download_thread','Download_Thread_1');
    # my $thread_2_01 = threads->create('download_thread',$dir1,$dir2);
    # $thread_2_01->join();
@@ -180,8 +227,21 @@ task "upload", sub {
         }
         my $real_size = run " du -sh $dir1 | awk '{print \$1}'";
         @sizearr = readpipe " du -s $dir1 | awk '{print \$1}'";
-        Rex::Logger::info("[文件传输] [local]: $dir1-->大小: $real_size .");
+        Rex::Logger::info("[文件传输] [local]: $dir1-->$dir2大小: $real_size .");
    };
+
+  #判断是带目录传输还是直接传输子目录或文件
+  if ( $sufer_dir1_status eq "true" &&  $sufer_dir2_status eq "true" ) {
+     $du_dir = $dir2;
+   } elsif ( $sufer_dir1_status eq "true" &&  $sufer_dir2_status eq "false" ) {
+     $du_dir = $dir2;
+   } elsif ( $sufer_dir1_status eq "false" &&  $sufer_dir2_status eq "true" ) {
+     $basename = basename $dir1;
+     $du_dir = "$dir2/$basename";
+   } else {
+     $basename = basename $dir1;
+     $du_dir = "$dir2/$basename";
+   }
 
   #判断是否开启了sudo,如果开启了则查看修改/etc/sudoers
   my $env;
@@ -231,16 +291,26 @@ task "upload", sub {
             delete $hash{$kid};  #如果回收的子进程存在于hash中,那么删除它.
         }
         select(undef, undef, undef, 0.5);
-        my $basename = basename $dir1;
-        # print "\ndu -s $dir2/$basename  | awk '{print \$1}'\n";
-        my $file_name = "$dir2/$basename";
-          if (  ! is_dir($file_name) &&  ! is_file($file_name) ) {
-            my $pre_hosts = run "ifconfig  |grep inet |awk '{print \$2}' |xargs";
-            Rex::Logger::info("[文件传输] $file_name 目录或文件不存在,退出进度条显示,后台传输文件。");
-            Rex::Logger::info("[文件传输] 当前执行命令主机: $pre_hosts ");
-            exit;
-        }
-        my $cmd_result = run "du -s $dir2/$basename  | awk '{print \$1}'";
+        # my @result;
+        my $cmd_result;
+        # if ( $sufer_dir_status  eq 'true' ) {
+        #        # @result = readpipe "du -s $dir2  | awk '{print \$1}'";
+        #        $cmd_result = run "du -s $du_dir   | awk '{print \$1}'";
+        # }else{
+        #       # my $basename = basename $dir1;
+        #       # print "du -s $dir2/$basename  | awk '{print \$1}'";
+        #       # my $file_name = "$dir2/$basename";
+              if (  ! is_dir($du_dir) &&  ! is_file($du_dir) ) {
+                my $pre_hosts = run "ifconfig  |grep inet |awk '{print \$2}' |xargs";
+                Rex::Logger::info("[文件传输] $du_dir 目录或文件不存在,退出进度条显示,后台传输文件。");
+                Rex::Logger::info("[文件传输] 当前执行命令主机: $pre_hosts ");
+                exit;
+              }
+              # @result = readpipe "du -s $dir2/$basename  | awk '{print \$1}'";
+              $cmd_result = run "du -s $du_dir   | awk '{print \$1}'";
+        # };
+
+        # my $cmd_result = run "du -s $dir2/$basename  | awk '{print \$1}'";
         my $percent = $cmd_result / $size ;
         my $percent = sprintf("%.2f",$percent);
         my $percent = $percent * 100;
