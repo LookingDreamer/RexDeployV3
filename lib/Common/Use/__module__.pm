@@ -5,7 +5,6 @@ use Rex::Commands::Rsync;
 use Deploy::Db;
 use threads;
 use POSIX;
-use Term::ProgressBar 2.00;
 use File::Basename;
 
 desc "批量命令模块: rex [-H 'x.x.x.x x.x.x.x']/[-G  jry-com] run --cmd='uptime'";
