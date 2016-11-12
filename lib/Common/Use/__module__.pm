@@ -109,6 +109,9 @@ task "download", sub {
    my $size = run " du -s $dir1 | awk '{print \$1}'";
    Rex::Logger::info("[文件传输] [$server]  $dir1-->$dir2大小: $real_size .");
    my $time_start=time();
+   if( 2 > 1){
+    download_thread($dir1,$dir2);
+   }else{
    my $child=fork();
    die Rex::Logger::info("[文件传输] 创建进程失败.",'error') if not defined $child;
    if($child){   # child >; 0, so we're the parent 
@@ -171,6 +174,8 @@ task "download", sub {
         $i = $i + 1;
         $n = ($n>=3)? 0:$n+1;
     }
+
+    }
     print "\n";
     local $| = 0;
     my $time_end=time();
@@ -199,6 +204,7 @@ task "upload", sub {
    my $sufer_dir1_status;
    my $du_dir;
    my $basename;
+   my $time_start;
    if(  $dir2  =~m/\/$/ ) { 
      $sufer_dir2_status = "true";
    }else{
@@ -217,6 +223,11 @@ task "upload", sub {
    #   Rex::Logger::info("[$server] $dir1 目录或文件不存在.");
    #   exit;
    # }
+   #
+   if( 2 > 1 ){
+    $time_start=time();
+    upload_thread($dir1,$dir2);
+   }else{
 
    LOCAL{
 
@@ -325,9 +336,11 @@ task "upload", sub {
         $n = ($n>=3)? 0:$n+1;
     }
     local $| = 0;
+    }
     my $time_end=time();
     my $time =$time_end-$time_start; 
-    Rex::Logger::info("[文件传输] 传输完成,耗时: $time秒");
+    my $result = run "du -sh $dir2 ";
+    Rex::Logger::info("[文件传输] 传输完成,耗时: $time秒,大小:$result");
 
    sub upload_thread{
       my ($dir1,$dir2) = @_;
