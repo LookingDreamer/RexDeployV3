@@ -50,7 +50,6 @@ EOF
 
 $ yum install rex
 ```
-
 CentOS 6
 
 ```
