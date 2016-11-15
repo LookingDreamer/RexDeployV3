@@ -1,3 +1,117 @@
+### RexDeploy-自动化系统
+
+一、简介
+RexDeploy是基于perl语言开发的一个自动化平台。
+此自动化的系统是基于原生rex进行二次开发而成,这是第三个大版本了，目前放出的这个版本是终端版，web版本已在开发当中，预计12月份将会放出。
+此前放出过第一个版本，详情请撮：http://git.oschina.net/lookingdreamer/RexDeploy_v1
+
+ **基于名字服务的发布系统，它的功能不仅仅在于此!** 
+
+目前主要功能：
+```
+     批量命令执行
+     批量文件上传
+     批量文件下载
+     应用自动发布
+     应用自动回滚
+     应用自动重启
+     应用自动下载
+     配置自动下载
+     应用自动同步
+     应用命令执行
+     应用发布检查
+     支持并发执行
+```
+
+二、安装
+[X] Rex模块
+[X] DBD::mysql
+[X] Mojo::JSON 
+
+- Centos一键安装和配置
+```
+# ./install/initStall.sh instalib   （一键安装依赖包）
+# ./install/initStall.sh setConfig  (一键初始化配置) 
+```
+![输入图片说明](http://git.oschina.net/uploads/images/2016/1115/174416_b9dfecd6_119746.png "在这里输入图片标题")
+
+- Centos系列手动安装 
+1.0 Rex模块安装
+CentOS 7
+```
+$ rpm --import https://rex.linux-files.org/RPM-GPG-KEY-REXIFY-REPO.CENTOS6
+
+$ cat >/etc/yum.repos.d/rex.repo <<EOF
+[rex]
+name=Fedora \$releasever - \$basearch - Rex Repository
+baseurl=https://rex.linux-files.org/CentOS/\$releasever/rex/\$basearch/
+enabled=1
+EOF
+
+$ yum install rex
+```
+
+CentOS 6
+
+```
+$ rpm --import https://rex.linux-files.org/RPM-GPG-KEY-REXIFY-REPO.CENTOS6
+
+$ cat >/etc/yum.repos.d/rex.repo <<EOF
+[rex]
+name=Fedora \$releasever - \$basearch - Rex Repository
+baseurl=https://rex.linux-files.org/CentOS/\$releasever/rex/\$basearch/
+enabled=1
+EOF
+
+$ yum install rex
+```
+
+
+CentOS 5
+
+
+```
+$ rpm --import https://rex.linux-files.org/RPM-GPG-KEY-REXIFY-REPO.CENTOS5
+
+$ cat >/etc/yum.repos.d/rex.repo <<EOF
+[rex]
+name=Fedora \$releasever - \$basearch - Rex Repository
+baseurl=https://rex.linux-files.org/CentOS/\$releasever/rex/\$basearch/
+enabled=1
+EOF
+
+$ yum install rex
+```
+rex完成之后，执行rex -v，显示版本号，则rex模块安装成功。
+其他的系统（如mac /windowws 等）安装请参见: http://rexify.org/get.html 
+```
+[root@localhost ~]# rex -v
+(R)?ex 1.4.1
+```
+2.0 其他依赖安装
+
+```wget  http://git.oschina.net/lookingdreamer/resources/raw/master/perl/cpanm -O /usr/bin/cpanm; chmod +x /usr/bin/cpanm```
+```
+# cpanm DBD::mysql
+# cpanm Mojo::JSON 
+```
+在安装Mojo::JSON的时候，如果安装失败时，请使用源码包的安装方式。
+```
+wget http://git.oschina.net/lookingdreamer/resources/raw/master/perl/Mojolicious-7.10.tar.gz 
+cd Mojolicious-7.10
+perl Makefile.PL 
+make
+make install
+```
+
+3.0 初始化配置
+```
+# cd RexDeployV3
+# chmod +x install/initStall.sh
+# ./install/initStall.sh setConfig
+```
+![输入图片说明](http://git.oschina.net/uploads/images/2016/1115/174633_277db093_119746.png "在这里输入图片标题")
+
 RexDeploy-自动化系统
 一、简介
 RexDeploy是基于perl语言开发的一个自动化平台。
@@ -26,86 +140,9 @@ RexDeploy是基于perl语言开发的一个自动化平台。
 [X] Mojo::JSON 
 Centos一键安装和配置
 
-# ./install/initStall.sh instalib   （一键安装依赖包）
-# ./install/initStall.sh setConfig  (一键初始化配置) 
-截图如下:
-
-Centos系列手动安装
-1.0 Rex模块安装
-CentOS 7
-
-$ rpm --import https://rex.linux-files.org/RPM-GPG-KEY-REXIFY-REPO.CENTOS6
-
-$ cat >/etc/yum.repos.d/rex.repo <<EOF
-[rex]
-name=Fedora \$releasever - \$basearch - Rex Repository
-baseurl=https://rex.linux-files.org/CentOS/\$releasever/rex/\$basearch/
-enabled=1
-EOF
-
-$ yum install rex
-
-
-CentOS 6
-
-
-$ rpm --import https://rex.linux-files.org/RPM-GPG-KEY-REXIFY-REPO.CENTOS6
-
-$ cat >/etc/yum.repos.d/rex.repo <<EOF
-[rex]
-name=Fedora \$releasever - \$basearch - Rex Repository
-baseurl=https://rex.linux-files.org/CentOS/\$releasever/rex/\$basearch/
-enabled=1
-EOF
-
-$ yum install rex
-
-
-
-CentOS 5
-
-
-
-$ rpm --import https://rex.linux-files.org/RPM-GPG-KEY-REXIFY-REPO.CENTOS5
-
-$ cat >/etc/yum.repos.d/rex.repo <<EOF
-[rex]
-name=Fedora \$releasever - \$basearch - Rex Repository
-baseurl=https://rex.linux-files.org/CentOS/\$releasever/rex/\$basearch/
-enabled=1
-EOF
-
-$ yum install rex
-
-rex完成之后，执行rex -v，显示版本号，则rex模块安装成功。
-其他的系统（如mac /windowws 等）安装请参见: http://rexify.org/get.html 
-[root@localhost ~]# rex -v
-(R)?ex 1.4.1
-2.0 其他依赖安装
-
-wget  http://git.oschina.net/lookingdreamer/resources/raw/master/perl/cpanm -O /usr/bin/cpanm; chmod +x /usr/bin/cpanm
-
-# cpanm DBD::mysql
-# cpanm Mojo::JSON 
-在安装Mojo::JSON的时候，如果安装失败时，请使用源码包的安装方式。
-wget http://git.oschina.net/lookingdreamer/resources/raw/master/perl/Mojolicious-7.10.tar.gz 
-cd Mojolicious-7.10
-perl Makefile.PL 
-make
-make install
-
-3.0 初始化配置
-
-# cd RexDeployV3
-# chmod +x install/initStall.sh
-# ./install/initStall.sh setConfig
-截图如下:
-
-
-
 三、目录层级解释
 
-# tree -L 2
+```# tree -L 2```
 ├── config   (配置文件目录)
 │   ├── config.yml   (主配置文件)
 │   └── ip_lists.ini    (IP分组列表配置)
@@ -149,6 +186,7 @@ make install
 
 四、主配置文件详解 config.yml
 
+```
 #主配置文件
 #环境变量设置,dev/uat/com等不同的环境变量设置
  db:
@@ -317,7 +355,7 @@ make install
    list_task: "check,list,run,Enter:route:deploy,Enter:route:download,Enter:route:rollback,Enter:route:service,Deploy:Db:initdb,Common:Use:download,Common:Use:run,Common:Use:upload,Deploy:Core:syncpro"
    service_start_retry: "5"
    rsync_log_stdout: "true"
-
+```
 
 
 
@@ -327,6 +365,7 @@ make install
 六、数据库表字段约束和解释
 
  主机信息配置表（pre_server_detail ）核心数据表，包含应用配置文件，应用程序位置，应用关键词等等
+ ```
 CREATE TABLE `pre_server_detail` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '序号',
   `yewu_name` varchar(255) DEFAULT NULL COMMENT '业务管理',
@@ -370,8 +409,9 @@ CREATE TABLE `pre_server_detail` (
   `configure_file_status` int(11) DEFAULT NULL COMMENT '配置文件状态0为拷贝整个目录，1为读取configure_file_list的列表文件',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=131 DEFAULT CHARSET=utf8;
- 
+ ```
 发布记录（pre_deploy_manage ）发布前中后的相关统计，比如发布前应用的目录，发布的时间，启动的时间，发布是否成功等
+```
 CREATE TABLE `pre_deploy_manage` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '序号',
   `deploy_sys` varchar(64) DEFAULT NULL COMMENT '发布系统',
@@ -400,10 +440,11 @@ CREATE TABLE `pre_deploy_manage` (
   `note` varchar(128) DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=92 DEFAULT CHARSET=utf8;
-
+```
 
 
 发布状态（pre_deploy_status ）发布的状态控制，当一个服务正在发布时，会在这个表当中添加一条记录。
+```
 CREATE TABLE `pre_deploy_status` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '序号',
   `deploy_sys` varchar(64) DEFAULT NULL COMMENT '发布系统',
@@ -423,8 +464,9 @@ CREATE TABLE `pre_deploy_status` (
   `note` varchar(128) DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
-
+```
 应用自动配置组
+```
 CREATE TABLE `pre_auto_configure` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '序号',
   `local_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT '唯一关键词',
@@ -433,8 +475,9 @@ CREATE TABLE `pre_auto_configure` (
   `configure_file` text COMMENT '发布机器配置文件组',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
-
+```
 应用自动配置的变量表
+```
 CREATE TABLE `pre_auto_template_vars` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '序号',
   `template_vars_name` varchar(200) DEFAULT NULL COMMENT '变量名',
@@ -443,7 +486,7 @@ CREATE TABLE `pre_auto_template_vars` (
   `env` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT '应用环境',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8;
-
+```
 其他的几个表都有注释，可以见数据库中的注释。
 
 
@@ -470,7 +513,7 @@ local_name: 应用发布初始目录的名字,比如 cm3系统设置的local_nam
 
 1、查看模块功能和帮助 rex -T
 (左边是任务模块的名称,右边是解释和示例)
-
+```
 [root@VM_0_189_centos RexDeployV3]# rex -T
 Tasks
  check                           检查服务器信息: rex check   --k='cm1 cm2 ../all'
@@ -493,10 +536,10 @@ Tasks
 Server Groups
  jry-zzb  172.16.0.4, 172.16.0.7, 172.16.0.32, 172.16.0.34, 172.16.0.52, 172.16.0.76, 172.16.0.109, 172.16.0.110, 172.16.0.138, 172.16.0.139, 172.16.0.143, 172.16.0.152, 172.16.0.183, 172.16.0.189, 172.16.0.190, 172.16.0.198,
           172.16.0.207, 172.16.0.244, 172.16.0.248
-
+```
 2、查看支持哪些系统的发布与操作 rex list
 (app_key是唯一的,一个key代表一个系统)
-
+```
 [root@VM_0_189_centos RexDeployV3]# rex list
 [2016-11-15 16:37:42] INFO - Running task list on <local>
 [2016-11-15 16:37:42] INFO - Running task Deploy:Db:getlistkey on current connection
@@ -504,10 +547,10 @@ Server Groups
 [2016-11-15 16:37:42] INFO - 获取关键词如下:
  app-test cm1 cm2 ccm mini-cm edi robot app1 wf1 app2 wf2 vxplat payment dispatch1 openfire chn rule cwf dispatch2 newprocess mini-app app-nginx1 app-nginx2 23
 [2016-11-15 16:37:42] INFO - All tasks successful on all hosts
-
+```
 3、发布一个或者多个系统： rex Enter:route:deploy --k='mini-cm'   或 rex Enter:route:deploy --k='app-test cm1 cm2 ccm mini-cm edi robot app1 wf1 app2 wf2 vxplat payment'
 (以空格为间隔)
-
+```
 [root@VM_0_189_centos RexDeployV3]# rex  Enter:route:deploy  --k='mini-cm'
 [2016-11-15 16:22:26] INFO - Running task Enter:route:deploy on <local>
 [2016-11-15 16:22:26] INFO - Running task Deploy:Db:getallkey on current connection
@@ -579,11 +622,11 @@ Server Groups
 [2016-11-15 16:22:51] INFO - 总共花费时间:25秒.
 [2016-11-15 16:22:51] INFO - Exiting Rex...
 [2016-11-15 16:22:51] INFO - Cleaning up...
-
+```
 
 4、下载远程服务器数据(程序和配置)到本地: rex Enter:route:download --k='app-test cm1 cm2 ccm mini-cm edi robot app1 wf1 app2 wf2 vxplat payment dispatch1'
 （如果你要下载所有关键词的系统到本地请使用: rex download --k='all'）
-
+```
 [root@VM_0_189_centos RexDeployV3]# rex Enter:route:download --k='cm1 cm2'         
 [2016-11-15 16:51:04] INFO - Running task Enter:route:download on <local>
 [2016-11-15 16:51:04] INFO - Running task Deploy:Db:getallkey on current connection
@@ -670,10 +713,10 @@ Server Groups
 [2016-11-15 16:51:09] INFO - 总共花费时间:5秒.
 [2016-11-15 16:51:09] INFO - Exiting Rex...
 [2016-11-15 16:51:09] INFO - Cleaning up...
-
+```
 5、 同步本地(远程download)的程序和配置=>待发布目录  rex Deploy:Core:syncpro --k='cm1 cm2'
 执行上面的时候,自动将所有待发布的目录清空,然后将下载目录的程序同步待发布的目录中,同时也会根据数据中的涉及的配置修改作配置归一。
-
+```
 [root@VM_0_189_centos RexDeployV3]# rex Deploy:Core:syncpro --k='cm1 cm2'
 [2016-11-15 16:52:59] INFO - Running task Deploy:Core:syncpro on <local>
 [2016-11-15 16:52:59] INFO - 开启同步(cm1)目录到待发布目录.
@@ -687,11 +730,11 @@ Server Groups
 [2016-11-15 16:52:59] INFO - mv配置目录完成: mv(remotecomdir/configuredir//cm2,configuredir//cm/cm2).
 [2016-11-15 16:52:59] INFO - 同步(cm2)目录到待发布目录完成.
 [2016-11-15 16:53:00] INFO - All tasks successful on all hosts
-
+```
 6、检查数据库以及远程服务器的配置 rex check --k='cm1 cm2'
 (就是核对数据库中关于各个配置是否正确,比如远程服务器的工程目录/配置目录/启动脚本/进程等是否存在)
 (检查所有远程服务器的信息: rex check --k='all' )
-
+```
 [root@VM_0_189_centos RexDeployV3]# rex check --k='cm1 cm2'
 [2016-11-15 16:54:54] INFO - Running task check on <local>
 [2016-11-15 16:54:54] INFO - Running task Deploy:Db:getallkey on current connection
@@ -734,11 +777,11 @@ Server Groups
 [2016-11-15 16:54:58] INFO - (cm2)--第一次连接,初始化服务器信息完成.
 [2016-11-15 16:54:58] INFO - 检查 发布系统 服务器以及数据库配置完成.
 [2016-11-15 16:54:58] INFO - All tasks successful on all hosts
-
+```
 
 7、批量执行命令 rex run --k='cm1 cm2 ' --cmd='uptime'
 (如查看系统的时间: rex run --k='all' --cmd='date')
-
+```
 [root@VM_0_189_centos RexDeployV3]# rex run --k='cm1 cm2 ' --cmd='uptime'
 [2016-11-15 17:13:10] INFO - Running task run on <local>
 [2016-11-15 17:13:10] INFO - Starting ...... 操作人: baowang
@@ -784,10 +827,10 @@ Server Groups
 [2016-11-15 17:13:11] INFO - 总共花费时间:1秒.
 [2016-11-15 17:13:11] INFO - Exiting Rex...
 [2016-11-15 17:13:11] INFO - Cleaning up...
-
+```
 8、重启应用 rex  Enter:route:service --k='mini-cm' --a='start/stop/restart'
 重启多个--k='cm1 cm2' （空格为间隔）
-
+```
 [root@VM_0_189_centos RexDeployV3]# rex  Enter:route:service --k='mini-cm' --a='restart'
 [2016-11-15 17:22:42] INFO - Running task Enter:route:service on <local>
 [2016-11-15 17:22:42] INFO - Running task Deploy:Db:getallkey on current connection
@@ -809,16 +852,17 @@ Server Groups
 [2016-11-15 17:22:46] INFO - 应用启动成功.
 [2016-11-15 17:22:46] INFO - 应用服务控制模块完成.
 [2016-11-15 17:22:46] INFO - All tasks successful on all hosts
-
+```
 9、 rex   Deploy:Db:initdb 初始化发布状态
    当你正在发布,不小心按了取消，那个这个应用一直在处于发布状态(状态存储在数据库中)，这时候需要在重新重置一下发布状态。
+```
 [root@VM_0_189_centos RexDeployV3]# rex Deploy:Db:initdb
 [2016-11-15 17:26:14] INFO - Running task Deploy:Db:initdb on <local>
 [2016-11-15 17:26:14] INFO - 初始化发布状态完成.
 [2016-11-15 17:26:14] INFO - All tasks successful on all hosts
-
+```
 10、针对个别IP或者IP组或者分组名--下载文件 rex [-H 'x.x.x.x x.x.x.x.x'] Common:Use:download --dir1='/tmp/1.txt' --dir2='/tmp/'
-
+```
 [root@VM_0_189_centos RexDeployV3]# rex -H '172.16.0.101'   Common:Use:download  --dir1='/data/www/ins_share/cm/config'  --dir2='/tmp'
 [2016-11-15 17:34:09] INFO - Running task Common:Use:download on 172.16.0.101
 [2016-11-15 17:34:10] INFO - [文件传输] sudo tty终端已经关闭.
@@ -828,18 +872,18 @@ Server Groups
 
 [2016-11-15 17:34:11] INFO - [文件传输] 传输完成,耗时: 1秒
 [2016-11-15 17:34:11] INFO - All tasks successful on all hosts
-
+```
 11、针对个别IP或者IP组或者分组名--上传文件 rex [-H 'x.x.x.x x.x.x.x.x']/[-G  jry-com] Common:Use:download --dir1='/tmp/1.txt' --dir2='/tmp/'
-
+```
 [root@VM_0_189_centos RexDeployV3]# rex -H '172.16.0.101'   Common:Use:upload  --dir1='/tmp/config'  --dir2='/tmp'                                                                                                                          [2016-11-15 17:38:32] INFO - Running task Common:Use:upload on 172.16.0.101
 [2016-11-15 17:38:33] INFO - [文件传输] cmd: rsync -a -e 'ssh  -i keys/baowang -o StrictHostKeyChecking=no ' --verbose --stats  --exclude=*.sw* --exclude=*.tmp --backup --delete --progress /tmp/config  baowang@172.16.0.101:/tmp --rsync-path='sudo rsync'; echo return_result$?
 [2016-11-15 17:38:33] INFO - [文件传输] rsync返回码为真,文件传输成功
 [2016-11-15 17:38:33] INFO - [文件传输] 传输完成,耗时: 0秒,大小:296K    /tmp
 [2016-11-15 17:38:34] INFO - All tasks successful on all hosts
-
+```
 
 12、针对个别IP或者IP组或者分组名--执行命令 rex [-H 'x.x.x.x x.x.x.x.x']/[-G  jry-com] Common:Use:download --dir1='/tmp/1.txt' --dir2='/tmp/'
-
+```
 [root@VM_0_189_centos RexDeployV3]# rex -H '172.16.0.42'   Common:Use:run --cmd='free -h'
 [2016-11-15 17:39:48] INFO - Running task Common:Use:run on 172.16.0.42
 [2016-11-15 17:39:49] INFO - Running task Deploy:Db:showname on current connection
@@ -848,7 +892,7 @@ Mem:           7.6G        506M        2.0G         12M        5.2G        6.9G
 Swap:          2.0G          0B        2.0G
 
 [2016-11-15 17:39:49] INFO - All tasks successful on all hosts
-
+```
 
 问题
 1.version libmysqlclient_18 not defined报错
@@ -856,3 +900,14 @@ Swap:          2.0G          0B        2.0G
 /usr/bin/perl: relocation error: /usr/local/lib64/perl5/auto/DBD/mysql/mysql.so: symbol mysql_options4, version libmysqlclient_18 not defined in file libmysqlclient.so.18 with link time reference
 解决方法:
 rpm -e --nodeps `rpm -qa | egrep -i "percona|mysql|maria"`
+
+
+
+
+
+
+
+
+
+
+
