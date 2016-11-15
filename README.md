@@ -27,15 +27,15 @@ RexDeploy是基于perl语言开发的一个自动化平台。
 [X] Rex模块
 [X] DBD::mysql
 [X] Mojo::JSON 
-
-- Centos一键安装和配置
+ **
+ _- Centos一键安装和配置_ ** 
 ```
 # ./install/initStall.sh instalib   （一键安装依赖包）
 # ./install/initStall.sh setConfig  (一键初始化配置) 
 ```
 ![输入图片说明](http://git.oschina.net/uploads/images/2016/1115/174416_b9dfecd6_119746.png "在这里输入图片标题")
-
-- Centos系列手动安装 
+ _**
+- Centos系列手动安装 **_ 
 1.0 Rex模块安装
 CentOS 7
 ```
@@ -110,33 +110,6 @@ make install
 ```
 ![输入图片说明](http://git.oschina.net/uploads/images/2016/1115/174633_277db093_119746.png "在这里输入图片标题")
 
-RexDeploy-自动化系统
-一、简介
-RexDeploy是基于perl语言开发的一个自动化平台。
-此自动化的系统是基于原生rex进行二次开发而成,这是第三个大版本了，目前放出的这个版本是终端版，web版本已在开发当中，预计12月份将会放出。
-此前放出过第一个版本，详情请撮：http://git.oschina.net/lookingdreamer/RexDeploy_v1
-
-基于名字服务的发布系统，它的功能不仅仅在于此!
-
-目前主要功能：
-     批量命令执行
-     批量文件上传
-     批量文件下载
-     应用自动发布
-     应用自动回滚
-     应用自动重启
-     应用自动下载
-     配置自动下载
-     应用自动同步
-     应用命令执行
-     应用发布检查
-     支持并发执行
-    
-二、安装
-[X] Rex模块
-[X] DBD::mysql
-[X] Mojo::JSON 
-Centos一键安装和配置
 
 三、目录层级解释
 
