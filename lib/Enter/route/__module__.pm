@@ -23,7 +23,7 @@ Rex::Config->register_config_handler("$env", sub {
  our $user = $param->{user} ;
  });
 
-desc "应用下载模块: rex download  --k='cm1 cm2 ../groupname/all'";
+desc "应用下载模块: rex  Enter:route:download   --k='cm1 cm2 ../groupname/all'";
 task "download",sub{
    my $self = shift;
    my $k=$self->{k};
@@ -153,7 +153,7 @@ task "download",sub{
 };
 
 
-desc "应用发布模块: rex deploy --k='cm1 cm2 ..' \n";
+desc "应用发布模块: rex  Enter:route:deploy --k='cm1 cm2 ..' \n";
 task "deploy", sub {
    my $self = shift;
    my $k=$self->{k};
@@ -265,7 +265,7 @@ task "deploy", sub {
 	}
 };
 
-desc "应用回滚模块: rex rollback  --rollstatus=0 --k='cm1 cm2 ..' \n--rollstatus=0:回滚到上一次最近版本(默认值).\n--rollstatus=1:根据数据库字段rollStatus=1回滚.";
+desc "应用回滚模块: rex  Enter:route:rollback  --rollstatus=0 --k='cm1 cm2 ..' \n--rollstatus=0:回滚到上一次最近版本(默认值).\n--rollstatus=1:根据数据库字段rollStatus=1回滚.";
 task "rollback", sub {
    my $self = shift;
    my $k=$self->{k};
@@ -349,7 +349,7 @@ task "rollback", sub {
 };
 
 
-desc "应用服务模块: rex service --k='cm1 cm2 ..' --a='start/stop/restart' [--f='' --key='' --j='']";
+desc "应用服务模块: rex  Enter:route:service --k='cm1 cm2 ..' --a='start/stop/restart' [--f='' --key='' --j='']";
 task "service", sub {
    my $self = shift;
    my $k=$self->{k};
