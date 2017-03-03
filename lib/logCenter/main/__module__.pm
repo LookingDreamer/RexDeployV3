@@ -11,32 +11,85 @@ task "liveLog", sub {
 	my $log = $self->{log};
 	my $search = $self->{search};
 
-
-	my $server = Rex->get_current_connection()->{'server'};
-	my $names = Deploy::Db::showname($server);
-	if ( ! is_file($log) ) {
-		Rex::Logger::info("\033[0;32m[$server]-[$names] \033[0m $log 远程日志文件不存在.","error");
-		exit;
+	if( $log eq "" and $search eq "" ){
+		Rex::Logger::info("日志参数或者搜索关键词不能同时为空","error");
+		exit;			
 	}
-	tail "$log", sub {
-		my ($data) = @_;
-
-		if($names eq "none"){
-			print "[$server] >> $data\n";
-
-		}elsif($names eq "null"){
-			print "[$server] >> $data\n";
-
-		}else{
-			print "\033[0;32m[$server]-[$names] \033[0m >> $data\n";
-
+	if( $log ne "" and $search eq ""  ){
+		my $server = Rex->get_current_connection()->{'server'};
+		my $names = Deploy::Db::showname($server);
+		if ( ! is_file($log) ) {
+			Rex::Logger::info("\033[0;32m[$server]-[$names] \033[0m $log 远程日志文件不存在.","error");
+			exit;
 		}
+		tail "$log", sub {
+			my ($data) = @_;
 
-	};
+			if($names eq "none"){
+				print "[$server] >> $data\n";
 
+			}elsif($names eq "null"){
+				print "[$server] >> $data\n";
+
+			}else{
+				print "\033[0;32m[$server]-[$names] \033[0m >> $data\n";
+
+			}
+
+		};
+	}elsif($log eq "" and $search ne ""){
+                my $search = search($search);
+		my $server = Rex->get_current_connection()->{'server'};
+		my $names = Deploy::Db::showname($server);
+		if ( ! is_file($log) ) {
+			Rex::Logger::info("\033[0;32m[$server]-[$names] \033[0m $log 远程日志文件不存在.","error");
+			exit;
+		}
+		tail "$log", sub {
+			my ($data) = @_;
+
+			if($names eq "none"){
+				print "[$server] >> $data\n";
+
+			}elsif($names eq "null"){
+				print "[$server] >> $data\n";
+
+			}else{
+				print "\033[0;32m[$server]-[$names] \033[0m >> $data\n";
+
+			}
+
+		};
+
+
+	}else{
+
+		my $server = Rex->get_current_connection()->{'server'};
+		my $names = Deploy::Db::showname($server);
+		if ( ! is_file($log) ) {
+			Rex::Logger::info("\033[0;32m[$server]-[$names] \033[0m $log 远程日志文件不存在.","error");
+			exit;
+		}
+		tail "$log", sub {
+			my ($data) = @_;
+
+			if($names eq "none"){ 
+				print "[$server] >> $data\n";
+
+			}elsif($names eq "null"){
+				print "[$server] >> $data\n";
+
+			}else{
+				print "\033[0;32m[$server]-[$names] \033[0m >> $data\n";
+
+			}
+
+		};
+
+
+	}
 
 };
-
 
 
 sub search{
