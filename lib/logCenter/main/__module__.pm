@@ -200,7 +200,7 @@ task "listFile",sub{
 	exit;
 };
 
-desc "下载日志\n1.rex  logCenter:main:getLog  --search='cm58'\n2.rex -H '115.159.235.58' logCenter:main:getLog  --log='/data/log/cm/catalina.out.2017-03-06'";
+desc "下载日志模块\n1.rex  logCenter:main:getLog  --search='cm58'\n2.rex -H '115.159.235.58' logCenter:main:getLog  --log='/data/log/cm/catalina.out.2017-03-06'";
 task "getLog", sub {
 	my $self = shift;
 	my $log = $self->{log};
@@ -322,6 +322,19 @@ task "getLog", sub {
 
 };
 
+desc "查询当前环境的服务器列表\nrex logCenter:main:queryList";
+task "queryList", sub {
+	my @res ;
+	my @res = Deploy::Db::server_info();
+	my $count = $res[0][0];
+	for my $num (1..$count) {
+		my $name = $res[0][$num]{"server_name"};
+		my $external_ip = $res[0][$num]{"external_ip"};
+		my $network_ip = $res[0][$num]{"network_ip"};
+		printf("%-30s%-30s%-30s\n",$name,$external_ip,$network_ip);
+	}
+};
+
 sub search{
 
 	my $search = @_[0];
@@ -340,6 +353,10 @@ sub search{
 	my $external_ip = $config[0][1]{'external_ip'};
 	my $names = $config[0][1]{'server_name'};
 	Rex::Logger::info("返回$count条数据");
+	if( $count == 0 ){
+		Rex::Logger::info("查询数据为空,请检查搜索关键词.","error");
+		exit;	
+	}
 	if(  $count > 1  ){
 		my @server_name ;
 		for my $num (1..$count) {
