@@ -357,7 +357,7 @@ task apirun =>,sub {
 
 my $self = shift;
 my $cmd = $self->{cmd};
-my $result = run "w";
+my $result = run "$cmd";
 return $result;
  
 };
