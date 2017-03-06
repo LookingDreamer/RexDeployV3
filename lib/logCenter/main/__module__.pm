@@ -6,6 +6,7 @@ use Deploy::Core;
 use Data::Dumper;
 use POSIX qw(strftime); 
 
+desc "实时日志查看\n1.rex  logCenter:main:liveLog  --search='cm58'\n2.rex -H '115.159.235.58' logCenter:main:liveLog  --log='/data/log/cm/catalina.out.2017-03-06'";
 task "liveLog", sub {
 	my $self = shift;
 	my $log = $self->{log};
@@ -103,6 +104,82 @@ task "loglive", sub {
 
 };
 
+desc "查看日志列表\n1.rex  logCenter:main:lookLog  --search='cm58'\n2.rex -H '115.159.235.58' logCenter:main:lookLog  --logdir='/data/log/cm/'";
+task "lookLog", sub {
+	my $self = shift;
+	my $logdir = $self->{logdir};
+	my $search = $self->{search};
+	my $more = $self->{more} ;
+	my $myFiles;
+
+	if( $logdir eq "" and $search eq "" ){
+		Rex::Logger::info("日志目录参数或者搜索关键词不能同时为空","error");
+		exit;			
+	}
+	if ( $more eq "") {
+		$more = '0';
+	}
+	if( $logdir ne "" and $search eq ""  ){
+		my $server = Rex->get_current_connection()->{'server'};
+		my $names = Deploy::Db::showname($server);
+		if ( ! is_dir($logdir) ) {
+			Rex::Logger::info("服务器: [$server]-[$names] $logdir远程日志目录不存在.","error");
+			exit;
+		}
+		Rex::Logger::info("[$server]-[$names] 远程日志目录:$logdir");
+		if ( $more eq '1') {
+			Rex::Logger::info("当前日志目录所有日志如下:");
+			$myFiles = run "ls -lht --time-style='+%Y-%m-%d %H:%M:%S' $logdir |awk '{print \$5,\$6,\$7,\$8}' |column -t  ";
+		}else{
+			Rex::Logger::info("最近30条日志记录,如若需要更前的日志,可以加上参数--more='1'");
+			$myFiles = run "ls -lht --time-style='+%Y-%m-%d %H:%M:%S' $logdir |head -n 30  |awk '{print \$5,\$6,\$7,\$8}' |column -t  ";			
+		}
+		Rex::Logger::info("\n$myFiles");
+		exit;
+	}elsif($logdir eq "" and $search ne ""){
+		my @search;
+        my @search = search($search);
+        my $network_ip = $search[0][0];
+        my $log = $search[0][1];
+        my $names = $search[0][2];
+        my $external_ip = $search[0][3];
+        my $logdir = $search[0][4];
+        Rex::Logger::info("服务器内网地址:$network_ip,服务器外网地址:$external_ip");
+        Rex::Logger::info("服务器名称:$names");
+        run_task "logCenter:main:listFile",on=>$network_ip,params => { logdir => $logdir,more=>$more}
+
+	}else{
+		my $server = Rex->get_current_connection()->{'server'};
+		my $names = Deploy::Db::showname($server);
+		if ( ! is_dir($logdir) ) {
+			Rex::Logger::info("服务器: [$server]-[$names] $logdir远程日志目录不存在.","error");
+			exit;
+		}
+		Rex::Logger::info("[$server]-[$names] 远程日志目录:$logdir");
+		Rex::Logger::info("最近30条日志记录,如若需要更前的日志,可以自行根据日志规律组合日志路径");
+		my $myFiles = run "ls -lht --time-style='+%Y-%m-%d %H:%M:%S'  /data/log/cm |head -n 30  |awk '{print \$5,\$6,\$7,\$8}' |column -t  ";
+		Rex::Logger::info("\n$myFiles");
+		exit;
+
+	}
+
+};
+
+task "listFile",sub{
+	my $self = shift;
+	my $logdir = $self->{logdir};
+	my $more = $self->{more};
+	my $myFiles;
+	if ( $more eq '1') {
+		Rex::Logger::info("当前日志目录所有日志如下:");
+		$myFiles = run "ls -lht --time-style='+%Y-%m-%d %H:%M:%S' $logdir |awk '{print \$5,\$6,\$7,\$8}' |column -t  ";
+	}else{
+		Rex::Logger::info("最近30条日志记录,如若需要更前的日志,可以加上参数--more='1'");
+		$myFiles = run "ls -lht --time-style='+%Y-%m-%d %H:%M:%S' $logdir |head -n 30  |awk '{print \$5,\$6,\$7,\$8}' |column -t  ";			
+	}
+	Rex::Logger::info("\n$myFiles");
+	exit;
+};
 
 sub search{
 
@@ -149,6 +226,7 @@ sub search{
 		$log="$queryLogDir/$queryLogFile";
 	}
 	Rex::Logger::info("日志文件:$log");
+	unshift(@data,$queryLogDir);
 	unshift(@data,$external_ip);
 	unshift(@data,$names);
 	unshift(@data,$log);
