@@ -4,7 +4,26 @@ use Rex -base;
 use Deploy::Db;
 use Deploy::Core;
 use Data::Dumper;
+use Common::Use;
 use POSIX qw(strftime); 
+my $env;
+my $download_dir;
+my $log_rsync_server;
+my $log_rsync_user;
+my $log_rsync_pass;
+my $log_rsync_module;
+Rex::Config->register_config_handler("env", sub {
+ my ($param) = @_;
+ $env = $param->{key} ;
+ });
+Rex::Config->register_config_handler("$env", sub {
+ my ($param) = @_;
+ $download_dir = $param->{download_dir} ;
+ $log_rsync_server = $param->{log_rsync_server} ;
+ $log_rsync_user = $param->{log_rsync_user} ;
+ $log_rsync_pass = $param->{log_rsync_pass} ;
+ $log_rsync_module = $param->{log_rsync_module} ;
+ });
 
 desc "实时日志查看\n1.rex  logCenter:main:liveLog  --search='cm58'\n2.rex -H '115.159.235.58' logCenter:main:liveLog  --log='/data/log/cm/catalina.out.2017-03-06'";
 task "liveLog", sub {
@@ -181,6 +200,128 @@ task "listFile",sub{
 	exit;
 };
 
+desc "下载日志\n1.rex  logCenter:main:getLog  --search='cm58'\n2.rex -H '115.159.235.58' logCenter:main:getLog  --log='/data/log/cm/catalina.out.2017-03-06'";
+task "getLog", sub {
+	my $self = shift;
+	my $log = $self->{log};
+	my $search = $self->{search};
+	my $download_local = $self->{download_local};
+
+	if( $log eq "" and $search eq "" ){
+		Rex::Logger::info("日志参数或者搜索关键词不能同时为空","error");
+		exit;			
+	}
+	if ( $download_local eq "") {
+		$download_local = '0';
+	}
+	if( $log ne "" and $search eq ""  ){
+		my $server = Rex->get_current_connection()->{'server'};
+		my $names = Deploy::Db::showname($server);
+		if ( ! is_file($log) ) {
+			Rex::Logger::info("\033[0;32m[$server]-[$names] \033[0m $log 远程日志文件不存在.","error");
+			exit;
+		}
+		Rex::Logger::info("服务器:[$server]-[$names] 远程日志:$log");
+		my $download = "$download_dir$server/";
+		my $size = run "du -sh $log";
+		Rex::Logger::info("当前日志文件大小:$size");
+		if ( $download_local eq '1' ) {
+			LOCAL{
+				if ( ! is_dir($download) ) {
+					mkdir($download);
+					Rex::Logger::info("创建本地目录:$download");
+				}else{
+					Rex::Logger::info("本地目录:$download已经存在");
+				}
+			};
+			Rex::Logger::info("开始下载远程日志文件");
+			run_task "Common:Use:download",on=>"$server",params => {dir1=>"$log",dir2=>"$download"};
+		}else{
+			Rex::Logger::info("开始上传到存储中心...");
+			my $res = run "echo '$log_rsync_pass' > /tmp/rsync_passwd && chmod 600 /tmp/rsync_passwd &&  rsync -vzrtopg --progress --password-file=/tmp/rsync_passwd $log $log_rsync_user\@$log_rsync_server::$log_rsync_module\/$server/ && result=\$? ;echo status=\$result";
+			Rex::Logger::info("$res");
+			if ( $res =~ /status=0/ ) {
+				Rex::Logger::info("上传成功,请到存储中心下载,下载路径:http://172.16.0.244:81/logupload/$server/");
+			}else{
+				Rex::Logger::info("上传失败,请联系运维人员处理.");
+			}
+
+		}
+
+	}elsif($log eq "" and $search ne ""){
+		my @search;
+        my @search = search($search);
+        my $network_ip = $search[0][0];
+        my $log = $search[0][1];
+        my $names = $search[0][2];
+        my $external_ip = $search[0][3];
+        Rex::Logger::info("服务器内网地址:$network_ip,服务器外网地址:$external_ip");
+        Rex::Logger::info("服务器名称:$names,服务器日志:$log");
+		my $download = "$download_dir$network_ip/";
+		# my $size = run "du -sh $log";
+		# Rex::Logger::info("当前日志文件大小:$size");
+		if ( $download_local eq '1' ) {
+			LOCAL{
+				if ( ! is_dir($download) ) {
+					mkdir($download);
+					Rex::Logger::info("创建本地目录:$download");
+				}else{
+					Rex::Logger::info("本地目录:$download已经存在");
+				}
+			};
+			Rex::Logger::info("开始下载远程日志文件");
+			run_task "Common:Use:download",on=>"$network_ip",params => {dir1=>"$log",dir2=>"$download"};
+		}else{
+			Rex::Logger::info("开始上传到存储中心...");
+			my $cmd="echo '$log_rsync_pass' > /tmp/rsync_passwd && chmod 600 /tmp/rsync_passwd &&  rsync -vzrtopg --progress --password-file=/tmp/rsync_passwd $log $log_rsync_user\@$log_rsync_server::$log_rsync_module\/$network_ip/ && result=\$? ;echo status=\$result";
+			my $res=run_task "Common:Use:apirun",on=>"$network_ip",params => {cmd=>"$cmd"};			
+			Rex::Logger::info("$res");
+			if ( $res =~ /status=0/ ) {
+				Rex::Logger::info("上传成功,请到存储中心下载,下载路径:http://172.16.0.244:81/logupload/$network_ip/");
+			}else{
+				Rex::Logger::info("上传失败,请联系运维人员处理.");
+			}
+
+		}
+
+	}else{
+		my $server = Rex->get_current_connection()->{'server'};
+		my $names = Deploy::Db::showname($server);
+		if ( ! is_file($log) ) {
+			Rex::Logger::info("\033[0;32m[$server]-[$names] \033[0m $log 远程日志文件不存在.","error");
+			exit;
+		}
+		Rex::Logger::info("服务器:[$server]-[$names] 远程日志:$log");
+		my $download = "$download_dir$server/";
+		my $size = run "du -sh $log";
+		Rex::Logger::info("当前日志文件大小:$size");
+		if ( $download_local eq '1' ) {
+			LOCAL{
+				if ( ! is_dir($download) ) {
+					mkdir($download);
+					Rex::Logger::info("创建本地目录:$download");
+				}else{
+					Rex::Logger::info("本地目录:$download已经存在");
+				}
+			};
+			Rex::Logger::info("开始下载远程日志文件");
+			run_task "Common:Use:download",on=>"$server",params => {dir1=>"$log",dir2=>"$download"};
+		}else{
+			Rex::Logger::info("开始上传到存储中心...");
+			my $res = run "echo '$log_rsync_pass' > /tmp/rsync_passwd && chmod 600 /tmp/rsync_passwd &&  rsync -vzrtopg --progress --password-file=/tmp/rsync_passwd $log $log_rsync_user\@$log_rsync_server::$log_rsync_module\/$server/ && result=\$? ;echo status=\$result";
+			Rex::Logger::info("$res");
+			if ( $res =~ /status=0/ ) {
+				Rex::Logger::info("上传成功,请到存储中心下载,下载路径:http://172.16.0.244:81/logupload/$server/");
+			}else{
+				Rex::Logger::info("上传失败,请联系运维人员处理.");
+			}
+
+		}
+
+	}
+
+};
+
 sub search{
 
 	my $search = @_[0];
@@ -208,7 +349,7 @@ sub search{
 		my $server_name_string = join( ",", @server_name );
 
 		Rex::Logger::info("返回数据:$server_name_string");
-		Rex::Logger::info("提示: 单用户模式不能同时查看2个以上日志!","error");
+		Rex::Logger::info("提示: 单用户模式不能同时操作2个以上服务器!","error");
 		exit;
 	}
 	if( $queryLogDir ne "" and $queryLogFile ne "" ){
