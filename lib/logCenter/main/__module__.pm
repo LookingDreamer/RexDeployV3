@@ -12,6 +12,7 @@ my $log_rsync_server;
 my $log_rsync_user;
 my $log_rsync_pass;
 my $log_rsync_module;
+my $max_grep_row;
 Rex::Config->register_config_handler("env", sub {
  my ($param) = @_;
  $env = $param->{key} ;
@@ -23,9 +24,10 @@ Rex::Config->register_config_handler("$env", sub {
  $log_rsync_user = $param->{log_rsync_user} ;
  $log_rsync_pass = $param->{log_rsync_pass} ;
  $log_rsync_module = $param->{log_rsync_module} ;
+ $max_grep_row = $param->{max_grep_row} ;
  });
 
-desc "实时日志查看\n1.rex  logCenter:main:liveLog  --search='cm58'\n2.rex -H '115.159.235.58' logCenter:main:liveLog  --log='/data/log/cm/catalina.out.2017-03-06'";
+desc "查看实时日志\n1.rex  logCenter:main:liveLog  --search='cm58'\n2.rex -H '115.159.235.58' logCenter:main:liveLog  --log='/data/log/cm/catalina.out.2017-03-06'";
 task "liveLog", sub {
 	my $self = shift;
 	my $log = $self->{log};
@@ -322,7 +324,7 @@ task "getLog", sub {
 
 };
 
-desc "查询当前环境的服务器列表\nrex logCenter:main:queryList";
+desc "查询当前列表\nrex logCenter:main:queryList";
 task "queryList", sub {
 	my @res ;
 	my @res = Deploy::Db::server_info();
@@ -334,6 +336,134 @@ task "queryList", sub {
 		printf("%-30s%-30s%-30s\n",$name,$external_ip,$network_ip);
 	}
 };
+
+desc "日志文件过滤\n1.rex  logCenter:main:grepLog  --search='cm58' --grep='进入CM 后台' \n2.rex -H '115.159.235.58' logCenter:main:grepLog  --log='/data/log/cm/catalina.out.2017-03-06' --grep='进入CM 后台'";
+task "grepLog", sub {
+	my $self = shift;
+	my $log = $self->{log};
+	my $search = $self->{search};
+	my $grep = $self->{grep};
+	my $debug = $self->{debug};
+
+	if( $log eq "" and $search eq "" ){
+		Rex::Logger::info("日志参数或者搜索关键词不能同时为空","error");
+		exit;			
+	}
+	if( $grep eq ""){
+		Rex::Logger::info("过滤关键词不能为空","error");
+		exit;	
+	}
+	if ( $debug eq "") {
+		$debug = 0 ;
+	}
+
+	if($log eq "" and $search ne ""){
+		my @search;
+        my @search = search($search);
+        my $network_ip = $search[0][0];
+        my $log = $search[0][1];
+        my $names = $search[0][2];
+        my $external_ip = $search[0][3];
+        Rex::Logger::info("服务器内网地址:$network_ip,服务器外网地址:$external_ip");
+        Rex::Logger::info("服务器名称:$names 服务器日志:$log");
+
+		my $cmd = "du -sh $log ; grep  '$grep' $log |wc -l ";
+		my $output=run_task "Common:Use:apirun",on=>"$network_ip",params => {cmd=>"$cmd"};
+		my @output_list = split(/$log/, $output);
+		$output_list[1] =~ s/\n//;
+		Rex::Logger::info("过滤关键词:$grep ");
+		Rex::Logger::info("日志文件:$log 日志大小:$output_list[0] 过滤后行数:$output_list[1]");
+		my $output_grep;
+		my $now = strftime("%Y%m%d_%H%M%S", localtime(time));
+		my $grep_log = "$log"."_grep_$now";
+		if ( $output_list[1] > $max_grep_row) {
+			if ( $debug eq '1' or $debug eq 1 ) {
+				my $cmd = "grep  '$grep' $log > $grep_log && result=\$? ;echo status=\$result";
+				my $resgrep = run_task "Common:Use:apirun",on=>"$network_ip",params => {cmd=>"$cmd"};
+				if ( $resgrep =~ /status=0/ ) {
+					Rex::Logger::info("生成过滤文件成功:$grep_log");
+				}else{
+					Rex::Logger::info("生成过滤文件失败:$grep_log");
+					exit;
+				}				
+				Rex::Logger::info("保存过滤后日志到文本:$grep_log");
+				Rex::Logger::info("开始上传过滤后文件到存储中心...");
+				my $cmd = "echo '$log_rsync_pass' > /tmp/rsync_passwd && chmod 600 /tmp/rsync_passwd &&  rsync -vzrtopg --progress --password-file=/tmp/rsync_passwd $grep_log $log_rsync_user\@$log_rsync_server::$log_rsync_module\/$network_ip/ && result=\$? ;echo status=\$result";
+				my $res=run_task "Common:Use:apirun",on=>"$network_ip",params => {cmd=>"$cmd"};
+				Rex::Logger::info("$res");
+				if ( $res =~ /status=0/ ) {
+					Rex::Logger::info("上传成功,请到存储中心下载,下载路径:http://172.16.0.244:81/logupload/$network_ip/");
+				}else{
+					Rex::Logger::info("上传失败,请联系运维人员处理.");
+				}
+			}else{
+				Rex::Logger::info("过滤后的内容行数大于$max_grep_row,默认只显示后$max_grep_row行,如果想显示更多结果,请添加参数--debug=1 ","warn");
+				my $cmd = "grep  '$grep' $log |tail -n $max_grep_row";
+				$output_grep=run_task "Common:Use:apirun",on=>"$network_ip",params => {cmd=>"$cmd"};
+			}
+		}else{
+			my $cmd = "grep  '$grep' $log";
+			$output_grep=run_task "Common:Use:apirun",on=>"$network_ip",params => {cmd=>"$cmd"};
+		}
+		if ( $output_grep ne "" ) {
+			Rex::Logger::info("过滤内容如下:");
+			print("\n$output_grep\n");
+		}
+		exit;
+
+
+	}else{
+
+		my $server = Rex->get_current_connection()->{'server'};
+		my $names = Deploy::Db::showname($server);
+		if ( ! is_file($log) ) {
+			Rex::Logger::info("\033[0;32m[$server]-[$names] \033[0m $log 远程日志文件不存在.","error");
+			exit;
+		}
+		my $output = run "du -sh $log ; grep  --color '$grep' $log |wc -l ";
+		my @output_list = split(/$log/, $output);
+		$output_list[1] =~ s/\n//;
+		Rex::Logger::info("服务器:[$server]-[$names]");
+		Rex::Logger::info("过滤关键词:$grep ");
+		Rex::Logger::info("日志文件:$log 日志大小:$output_list[0] 过滤后行数:$output_list[1]");
+		my $output_grep;
+		my $now = strftime("%Y%m%d_%H%M%S", localtime(time));
+		my $grep_log = "$log"."_grep_$now";
+		if ( $output_list[1] > $max_grep_row) {
+			if ( $debug eq '1' or $debug eq 1 ) {
+				run "grep  '$grep' $log > $grep_log";
+				if ( is_file($grep_log) ) {
+					Rex::Logger::info("生成过滤文件成功:$grep_log");
+				}else{
+					Rex::Logger::info("生成过滤文件失败:$grep_log");
+					exit;
+				}
+				Rex::Logger::info("保存过滤后日志到文本:$grep_log");
+				Rex::Logger::info("开始上传过滤后文件到存储中心...");
+				my $res = run "echo '$log_rsync_pass' > /tmp/rsync_passwd && chmod 600 /tmp/rsync_passwd &&  rsync -vzrtopg --progress --password-file=/tmp/rsync_passwd $grep_log $log_rsync_user\@$log_rsync_server::$log_rsync_module\/$server/ && result=\$? ;echo status=\$result";
+				Rex::Logger::info("$res");
+				if ( $res =~ /status=0/ ) {
+					Rex::Logger::info("上传成功,请到存储中心下载,下载路径:http://172.16.0.244:81/logupload/$server/");
+				}else{
+					Rex::Logger::info("上传失败,请联系运维人员处理.");
+				}
+			}else{
+				Rex::Logger::info("过滤后的内容行数大于$max_grep_row,默认只显示后$max_grep_row行,如果想显示更多结果,请添加参数--debug=1 ","warn");
+				$output_grep = run "grep  '$grep' $log |tail -n $max_grep_row";
+			}
+		}else{
+			$output_grep = run "grep  '$grep' $log";
+		}
+		if ( $output_grep ne "" ) {
+			Rex::Logger::info("过滤内容如下:");
+			print("\n$output_grep\n");
+		}
+		exit;
+
+	}
+
+};
+
 
 sub search{
 
