@@ -240,7 +240,7 @@ task "getLog", sub {
 			run_task "Common:Use:download",on=>"$server",params => {dir1=>"$log",dir2=>"$download"};
 		}else{
 			Rex::Logger::info("开始上传到存储中心...");
-			my $res = run "echo '$log_rsync_pass' > /tmp/rsync_passwd && chmod 600 /tmp/rsync_passwd &&  rsync -vzrtopg --progress --password-file=/tmp/rsync_passwd $log $log_rsync_user\@$log_rsync_server::$log_rsync_module\/$server/ && result=\$? ;echo status=\$result";
+			my $res = run "echo '$log_rsync_pass' > /tmp/rsync_passwd && chmod 600 /tmp/rsync_passwd &&  rsync -vzrtopg --progress --password-file=/tmp/rsync_passwd $log $log_rsync_user\@$log_rsync_server\:\:$log_rsync_module\/$server/ && result=\$? ;echo status=\$result";
 			Rex::Logger::info("$res");
 			if ( $res =~ /status=0/ ) {
 				Rex::Logger::info("上传成功,请到存储中心下载,下载路径:http://172.16.0.244:81/logupload/$server/");
@@ -275,7 +275,7 @@ task "getLog", sub {
 			run_task "Common:Use:download",on=>"$network_ip",params => {dir1=>"$log",dir2=>"$download"};
 		}else{
 			Rex::Logger::info("开始上传到存储中心...");
-			my $cmd="echo '$log_rsync_pass' > /tmp/rsync_passwd && chmod 600 /tmp/rsync_passwd &&  rsync -vzrtopg --progress --password-file=/tmp/rsync_passwd $log $log_rsync_user\@$log_rsync_server::$log_rsync_module\/$network_ip/ && result=\$? ;echo status=\$result";
+			my $cmd="echo '$log_rsync_pass' > /tmp/rsync_passwd && chmod 600 /tmp/rsync_passwd &&  rsync -vzrtopg --progress --password-file=/tmp/rsync_passwd $log $log_rsync_user\@$log_rsync_server\:\:$log_rsync_module\/$network_ip/ && result=\$? ;echo status=\$result";
 			my $res=run_task "Common:Use:apirun",on=>"$network_ip",params => {cmd=>"$cmd"};			
 			Rex::Logger::info("$res");
 			if ( $res =~ /status=0/ ) {
@@ -310,7 +310,7 @@ task "getLog", sub {
 			run_task "Common:Use:download",on=>"$server",params => {dir1=>"$log",dir2=>"$download"};
 		}else{
 			Rex::Logger::info("开始上传到存储中心...");
-			my $res = run "echo '$log_rsync_pass' > /tmp/rsync_passwd && chmod 600 /tmp/rsync_passwd &&  rsync -vzrtopg --progress --password-file=/tmp/rsync_passwd $log $log_rsync_user\@$log_rsync_server::$log_rsync_module\/$server/ && result=\$? ;echo status=\$result";
+			my $res = run "echo '$log_rsync_pass' > /tmp/rsync_passwd && chmod 600 /tmp/rsync_passwd &&  rsync -vzrtopg --progress --password-file=/tmp/rsync_passwd $log $log_rsync_user\@$log_rsync_server\:\:$log_rsync_module\/$server/ && result=\$? ;echo status=\$result";
 			Rex::Logger::info("$res");
 			if ( $res =~ /status=0/ ) {
 				Rex::Logger::info("上传成功,请到存储中心下载,下载路径:http://172.16.0.244:81/logupload/$server/");
@@ -388,7 +388,7 @@ task "grepLog", sub {
 				}				
 				Rex::Logger::info("保存过滤后日志到文本:$grep_log");
 				Rex::Logger::info("开始上传过滤后文件到存储中心...");
-				my $cmd = "echo '$log_rsync_pass' > /tmp/rsync_passwd && chmod 600 /tmp/rsync_passwd &&  rsync -vzrtopg --progress --password-file=/tmp/rsync_passwd $grep_log $log_rsync_user\@$log_rsync_server::$log_rsync_module\/$network_ip/ && result=\$? ;echo status=\$result";
+				my $cmd = "echo '$log_rsync_pass' > /tmp/rsync_passwd && chmod 600 /tmp/rsync_passwd &&  rsync -vzrtopg --progress --password-file=/tmp/rsync_passwd $grep_log $log_rsync_user\@$log_rsync_server\:\:$log_rsync_module\/$network_ip/ && result=\$? ;echo status=\$result";
 				my $res=run_task "Common:Use:apirun",on=>"$network_ip",params => {cmd=>"$cmd"};
 				Rex::Logger::info("$res");
 				if ( $res =~ /status=0/ ) {
@@ -440,7 +440,7 @@ task "grepLog", sub {
 				}
 				Rex::Logger::info("保存过滤后日志到文本:$grep_log");
 				Rex::Logger::info("开始上传过滤后文件到存储中心...");
-				my $res = run "echo '$log_rsync_pass' > /tmp/rsync_passwd && chmod 600 /tmp/rsync_passwd &&  rsync -vzrtopg --progress --password-file=/tmp/rsync_passwd $grep_log $log_rsync_user\@$log_rsync_server::$log_rsync_module\/$server/ && result=\$? ;echo status=\$result";
+				my $res = run "echo '$log_rsync_pass' > /tmp/rsync_passwd && chmod 600 /tmp/rsync_passwd &&  rsync -vzrtopg --progress --password-file=/tmp/rsync_passwd $grep_log $log_rsync_user\@$log_rsync_server\:\:$log_rsync_module\/$server/ && result=\$? ;echo status=\$result";
 				Rex::Logger::info("$res");
 				if ( $res =~ /status=0/ ) {
 					Rex::Logger::info("上传成功,请到存储中心下载,下载路径:http://172.16.0.244:81/logupload/$server/");
