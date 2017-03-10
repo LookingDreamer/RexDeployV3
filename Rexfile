@@ -16,6 +16,7 @@ use Deploy::rollBack;
 use Rex::Group::Lookup::INI;
 use Enter::route;
 use logCenter::main;
+use User::main;
 
 #自定义config配置
 my $env;
