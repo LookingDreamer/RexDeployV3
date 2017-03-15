@@ -44,9 +44,14 @@ task "route", sub {
 	}	
 	Rex::Logger::info("level参数: $level sudo参数: $sudo pass参数:$pass");
 	my @action_list = ('query' ,'create' ,'delete','lock');
-	my $action_status = $action ~~ @action_list;
+	my $action_status = 0 ;
+	for my $kv (@action_list) {
+		if ( $kv eq "$action") {
+			$action_status = 1 ;
+		}
+	}
 	my $action_string = join( ",", @action_list); 
-	if ($action_status eq ""){
+	if ($action_status eq "0"){
 		Rex::Logger::info("action参数仅支持$action_string","error");
 		exit;
 	}
