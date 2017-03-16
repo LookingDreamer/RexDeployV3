@@ -215,16 +215,20 @@ sub create_authorized_keys{
 	my $level = @_[1];
 	my $pass = @_[2];
 	my $cmd;
+	my $common_public_key;
+	my $common_private_key;
 	Rex::Logger::info("__SUB__:开始创建秘钥并写入用户ssh主目录"); 
 	if ( $level eq "1") {
 		$cmd = "mkdir /home/$user/.ssh ;echo $common_public_key > /home/$user/.ssh/authorized_keys ;chown $user:$user  /home/$user -R &&  result=\$? ;echo status=\$result" ;
 	}elsif($level eq "2"){
 		my $key = general_key($user);
-		my $common_public_key = run "cat /tmp/$user/$random/$user\.pub" ;
+		$common_public_key = run "cat /tmp/$user/$random/$user\.pub" ;
+		$common_private_key = run "cat /tmp/$user/$random/$user" ;
 		$cmd = "mkdir /home/$user/.ssh ;echo $common_public_key > /home/$user/.ssh/authorized_keys ;chown $user:$user  /home/$user -R &&  result=\$? ;echo status=\$result" ;
 	}elsif($level eq "3"){
 		my $key = general_key($user,$pass);
-		my $common_public_key = run "cat /tmp/$user/$random/$user\.pub" ;	
+		$common_public_key = run "cat /tmp/$user/$random/$user\.pub" ;
+		$common_private_key = run "cat /tmp/$user/$random/$user" ;	
 		if ( $pass ne 0) {
 			if ( length($pass) < 8 ) {
 				Rex::Logger::info("密码为真时必须大于8个长度","error");
@@ -240,6 +244,22 @@ sub create_authorized_keys{
 	my $res = run "$cmd";
 	if ( $res =~ /status=0/ ) {
 		Rex::Logger::info("创建秘钥成功");
+		if( $common_public_key ne "" and $common_private_key ne "" ){
+			if ( is_dir("/tmp/$user/$random") ) {
+				run "rm -rf /tmp/$user/$random ";
+			}
+			LOCAL{
+				my $cmd1 = "mkdir -p /tmp/$user/$random && echo '$common_public_key' > /tmp/$user/$random/$user\.pub  && echo '$common_private_key' > /tmp/$user/$random/$user &&  result=\$? ;echo status=\$result ";
+				my $res1 = run "$cmd1";
+				Rex::Logger::info("保存秘钥到本地 res: $res1 ");
+				if ( $res =~ /status=0/ ) {
+					Rex::Logger::info("保存秘钥到本地成功: /tmp/$user/$random");
+				}else{
+					Rex::Logger::info("保存秘钥到本地失败: /tmp/$user/$random","error");
+					return 0;
+				}
+			}
+		}
 		return 1;
 	}else{
 		Rex::Logger::info("创建秘钥失败","error");
