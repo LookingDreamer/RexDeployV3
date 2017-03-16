@@ -21,8 +21,8 @@ desc "用户管理路由
 2.0 查询用户 rex User:main:route --action='query' --user='test'
 3.1 创建普通用户 rex User:main:route --action='create' --user='test' 
 3.2 创建秘钥用户(固定秘钥,无密码) rex User:main:route --action='create' --user='test' --level='1'
-3.3 创建普通用户(随机秘钥,无密码) rex User:main:route --action='create' --user='test' --level='2'
-3.4 创建普通用户(随机秘钥,有密码) rex User:main:route --action='create' --user='test' --level='3' --pass='testabc123456'
+3.3 创建秘钥用户(随机秘钥,无密码) rex User:main:route --action='create' --user='test' --level='2'
+3.4 创建秘钥用户(随机秘钥,有密码) rex User:main:route --action='create' --user='test' --level='3' --pass='testabc123456'
 3.5 通用参数 --sudo=1 开启sudo 加入wheel组
 3.6 通用参数 --allow=1 加入ssh allow,允许登陆
 4.0 删除用户 rex User:main:route --action='delete' --user='test'
