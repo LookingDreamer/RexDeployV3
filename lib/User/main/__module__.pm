@@ -25,6 +25,7 @@ desc "用户管理路由
 3.4 创建秘钥用户(随机秘钥,有密码) rex User:main:route --action='create' --user='test' --level='3' --pass='testabc123456'
 3.5 通用参数 --sudo=1 开启sudo 加入wheel组
 3.6 通用参数 --allow=1 加入ssh allow,允许登陆
+3.7 仅支持'level=1,action=create'时 --dir='目录' dir为指定当前服务器秘钥目录
 4.0 删除用户 rex User:main:route --action='delete' --user='test'
 5.0 锁定用户 rex User:main:route --action='lock' --user='test'
 ";
@@ -36,6 +37,7 @@ task "route", sub {
 	my $sudo=$self->{sudo};
 	my $pass=$self->{pass};
 	my $allow=$self->{allow};
+	my $dir=$self->{dir};
 	Rex::Logger::info("user参数: $user action参数: $action");
 	if ( $action ne 'list' ) {
 		if ($user eq "" or $action eq "" ) {
@@ -55,6 +57,9 @@ task "route", sub {
 	}
 	if ($allow eq "") {
 		$allow = 0;
+	}
+	if ($dir eq "") {
+		$dir = 0;
 	}	
 	Rex::Logger::info("level参数: $level sudo参数: $sudo pass参数:$pass");
 	my @action_list = ('query' ,'create' ,'delete','lock','list');
@@ -69,11 +74,24 @@ task "route", sub {
 		Rex::Logger::info("action参数仅支持$action_string","error");
 		exit;
 	}
+
+	if ( $level eq "1" and $action eq "create" and $dir ne "0") {
+		LOCAL{
+				if( ! is_dir("$dir") ){
+					Rex::Logger::info("秘钥目录不存在:$dir","error");
+					exit;
+				}
+				if ( ! is_file("$dir/$user\.pub") ) {
+					Rex::Logger::info("公钥文件不存在:$dir/$user\.pub","error");
+					exit;
+				}
+			}
+	}
 	if ( $action eq "query") {
 		queryUser($user);
 	}elsif($action eq "create"){
 		my $query = queryUser($user); 
-		createUser($user,$level,$query,$sudo,$pass,$allow);
+		createUser($user,$level,$query,$sudo,$pass,$allow,$dir);
 	}elsif($action eq "delete"){
 		deleteUser($user);
 	}elsif($action eq "lock"){
@@ -99,6 +117,7 @@ sub createUser{
 	my $sudo = @_[3];
 	my $pass = @_[4];
 	my $allow = @_[5];
+	my $dir = @_[6];
 	if ( $query eq "0" ) {
 		if ( $level eq "0") {
 			create($user);
@@ -110,7 +129,7 @@ sub createUser{
 			if ( $res eq "0") {
 				exit;
 			}
-			create_authorized_keys($user,$level,$pass);
+			create_authorized_keys($user,$level,$pass,$dir);
 			if ($sudo eq "1") {
 				create_sudo($user);
 			}
@@ -214,12 +233,21 @@ sub create_authorized_keys{
 	my $user = @_[0];
 	my $level = @_[1];
 	my $pass = @_[2];
+	my $dir = @_[3];
 	my $cmd;
 	my $common_public_key;
 	my $common_private_key;
 	Rex::Logger::info("__SUB__:开始创建秘钥并写入用户ssh主目录"); 
 	if ( $level eq "1") {
-		$cmd = "mkdir /home/$user/.ssh ;echo $common_public_key > /home/$user/.ssh/authorized_keys ;chown $user:$user  /home/$user -R &&  result=\$? ;echo status=\$result" ;
+		if ( $dir  ne  "0") {
+			LOCAL{
+				my $publick_key = run "cat $dir/$user\.pub ";
+				$cmd = "mkdir /home/$user/.ssh ;echo $publick_key > /home/$user/.ssh/authorized_keys ;chown $user:$user  /home/$user -R &&  result=\$? ;echo status=\$result" ;
+			}
+		}else{
+			$cmd = "mkdir /home/$user/.ssh ;echo $common_public_key > /home/$user/.ssh/authorized_keys ;chown $user:$user  /home/$user -R &&  result=\$? ;echo status=\$result" ;
+		}
+		
 	}elsif($level eq "2"){
 		my $key = general_key($user);
 		$common_public_key = run "cat /tmp/$user/$random/$user\.pub" ;
