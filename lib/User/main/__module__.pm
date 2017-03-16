@@ -187,7 +187,7 @@ sub append_allow{
 	my $cmd2 ;
 	$cmd1 = "cat /etc/ssh/sshd_config |grep AllowUsers |grep ' $user' &&  result=\$? ;echo status=\$result" ;
 	$cmd2 = "cat /etc/ssh/sshd_config |grep AllowUsers |grep ' $user\$' &&  result=\$? ;echo status=\$result" ;
-	$cmd = "sed -i 's/AllowUsers/AllowUsers $user /g' /etc/ssh/sshd_config" ;
+	$cmd = "sed -i 's/AllowUsers/AllowUsers $user /g' /etc/ssh/sshd_config &&  result=\$? ;echo status=\$result" ;
 	Rex::Logger::info("__SUB__:开始添加allow至sshd配置文件"); 
 	Rex::Logger::info("开始把用户 $user 添加至allow");
 	Rex::Logger::info("cmd:$cmd");
@@ -197,7 +197,7 @@ sub append_allow{
 		Rex::Logger::info("该用户已经添加,无需重复添加.");
 		return 0;
 	}else{
-		my $res = run "$cmd";
+		my $res = run "$cmd";	
 		if ( $res =~ /status=0/ ) {
 			Rex::Logger::info("添加成功");
 			return 1;
