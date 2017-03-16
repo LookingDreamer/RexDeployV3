@@ -28,6 +28,7 @@ desc "用户管理路由
 3.7 仅支持'level=1,action=create'时 --dir='目录' dir为指定当前服务器秘钥目录
 4.0 删除用户 rex User:main:route --action='delete' --user='test'
 5.0 锁定用户 rex User:main:route --action='lock' --user='test'
+6.0 生成秘钥 rex User:main:route --action='createkey' --user='test' --pass='testabc123456'
 ";
 task "route", sub {
 	my $self = shift;
@@ -62,7 +63,9 @@ task "route", sub {
 		$dir = 0;
 	}	
 	Rex::Logger::info("level参数: $level sudo参数: $sudo pass参数:$pass");
-	my @action_list = ('query' ,'create' ,'delete','lock','list');
+	my $server = Rex->get_current_connection()->{'server'};
+	Rex::Logger::info("服务器: $server");
+	my @action_list = ('query' ,'create' ,'delete','lock','list','createkey');
 	my $action_status = 0 ;
 	for my $kv (@action_list) {
 		if ( $kv eq "$action") {
@@ -98,6 +101,8 @@ task "route", sub {
 		forbitUser($user);
 	}elsif($action eq "list"){
 		listUser();
+	}elsif($action eq "createkey"){
+		my $key = general_key($user,$pass);
 	}else{
 		Rex::Logger::info("不支持的action","error");
 		exit;		
