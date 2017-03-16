@@ -16,7 +16,18 @@ Rex::Config->register_config_handler("$env", sub {
  });
 my $random = get_random(10, 'a' .. 'z') ;
 
-desc "用户管理路由";
+desc "用户管理路由
+1.0 查询列表 rex User:main:route --action='list'
+2.0 查询用户 rex User:main:route --action='query' --user='test'
+3.1 创建普通用户 rex User:main:route --action='create' --user='test' 
+3.2 创建秘钥用户(固定秘钥,无密码) rex User:main:route --action='create' --user='test' --level='1'
+3.3 创建普通用户(随机秘钥,无密码) rex User:main:route --action='create' --user='test' --level='2'
+3.4 创建普通用户(随机秘钥,有密码) rex User:main:route --action='create' --user='test' --level='3' --pass='testabc123456'
+3.5 通用参数 --sudo=1 开启sudo 加入wheel组
+3.6 通用参数 --allow=1 加入ssh allow,允许登陆
+4.0 删除用户 rex User:main:route --action='delete' --user='test'
+5.0 锁定用户 rex User:main:route --action='lock' --user='test'
+";
 task "route", sub {
 	my $self = shift;
 	my $user=$self->{user};
@@ -26,10 +37,13 @@ task "route", sub {
 	my $pass=$self->{pass};
 	my $allow=$self->{allow};
 	Rex::Logger::info("user参数: $user action参数: $action");
-	if ($user eq "" or $action eq "" ) {
-		Rex::Logger::info("用户名或动作不能为空","error");
-		exit;
+	if ( $action ne 'list' ) {
+		if ($user eq "" or $action eq "" ) {
+			Rex::Logger::info("用户名或动作不能为空","error");
+			exit;
+		}
 	}
+
 	if ($level eq "") {
 		$level = 0;
 	}
@@ -43,7 +57,7 @@ task "route", sub {
 		$allow = 0;
 	}	
 	Rex::Logger::info("level参数: $level sudo参数: $sudo pass参数:$pass");
-	my @action_list = ('query' ,'create' ,'delete','lock');
+	my @action_list = ('query' ,'create' ,'delete','lock','list');
 	my $action_status = 0 ;
 	for my $kv (@action_list) {
 		if ( $kv eq "$action") {
@@ -60,6 +74,15 @@ task "route", sub {
 	}elsif($action eq "create"){
 		my $query = queryUser($user); 
 		createUser($user,$level,$query,$sudo,$pass,$allow);
+	}elsif($action eq "delete"){
+		deleteUser($user);
+	}elsif($action eq "lock"){
+		forbitUser($user);
+	}elsif($action eq "list"){
+		listUser();
+	}else{
+		Rex::Logger::info("不支持的action","error");
+		exit;		
 	}
 	
 };
@@ -260,14 +283,57 @@ sub queryUser{
 
 # "删除用户";
 sub deleteUser{
-
+	my $user = @_[0];
+	my $server = Rex->get_current_connection()->{'server'};
+	my $res =  run "userdel -rf $user && result=\$? ;echo status=\$result";
+	Rex::Logger::info("__SUB__:开始删除用户"); 
+	Rex::Logger::info("当前服务器: $server");
+	Rex::Logger::info("返回命令结果: $res");
+	if ( $res =~ /status=0/ ) {
+		Rex::Logger::info("删除用户$user成功");
+		return 1;
+	}else{
+		Rex::Logger::info("删除用户$user失败","warn");
+		return 0;
+	}
 };
 
 # "禁用用户";
 sub forbitUser {
-
+	my $user = @_[0];
+	my $server = Rex->get_current_connection()->{'server'};
+	my $cmd = "usermod -s /sbin/nologin $user && result=\$? ;echo status=\$result";
+	my $res =  run "$cmd";
+	Rex::Logger::info("__SUB__:开始锁定用户"); 
+	Rex::Logger::info("当前服务器: $server");
+	Rex::Logger::info("当前命令: $cmd ");
+	Rex::Logger::info("返回命令结果: $res");
+	if ( $res =~ /status=0/ ) {
+		Rex::Logger::info("锁定用户$user成功");
+		return 1;
+	}else{
+		Rex::Logger::info("锁定用户$user失败","warn");
+		return 0;
+	}
 };
 
+# "查询用户列表";
+sub listUser {
+	my $server = Rex->get_current_connection()->{'server'};
+	my $cmd = "cat /etc/passwd |awk -F':' '\$3>=500' |awk -F: '{print \$1,\$NF}'  |column -t  && result=\$? ;echo status=\$result";
+	my $res =  run "$cmd";
+	Rex::Logger::info("__SUB__:开始查询用户列表"); 
+	Rex::Logger::info("当前服务器: $server");
+	Rex::Logger::info("当前命令: $cmd ");
+	Rex::Logger::info("返回命令结果: \n$res");
+	if ( $res =~ /status=0/ ) {
+		Rex::Logger::info("查询用户列表成功");
+		return 1;
+	}else{
+		Rex::Logger::info("查询用户列表失败","warn");
+		return 0;
+	}
+};
 1;
 
 =pod
