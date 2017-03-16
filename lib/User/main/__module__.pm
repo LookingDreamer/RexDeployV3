@@ -29,6 +29,7 @@ desc "用户管理路由
 4.0 删除用户 rex User:main:route --action='delete' --user='test'
 5.0 锁定用户 rex User:main:route --action='lock' --user='test'
 6.0 生成秘钥 rex User:main:route --action='createkey' --user='test' --pass='testabc123456'
+7.0 批量查询/删除/锁定/创建用户 rex User:main:route --action='query/delete/lock/createkey/create' --user='testa,testb' --batch='1' --level='1'
 ";
 task "route", sub {
 	my $self = shift;
@@ -39,11 +40,14 @@ task "route", sub {
 	my $pass=$self->{pass};
 	my $allow=$self->{allow};
 	my $dir=$self->{dir};
+	my $batch=$self->{batch};
 	Rex::Logger::info("user参数: $user action参数: $action");
 	if ( $action ne 'list' ) {
-		if ($user eq "" or $action eq "" ) {
-			Rex::Logger::info("用户名或动作不能为空","error");
-			exit;
+		if ( $batch ne "" ) {
+			if ($user eq "" or $action eq "" ) {
+				Rex::Logger::info("用户名或动作不能为空","error");
+				exit;
+			}
 		}
 	}
 
@@ -62,7 +66,10 @@ task "route", sub {
 	if ($dir eq "") {
 		$dir = 0;
 	}	
-	Rex::Logger::info("level参数: $level sudo参数: $sudo pass参数:$pass");
+	if ($batch eq "") {
+		$batch = 0;
+	}	
+	Rex::Logger::info("level参数: $level sudo参数: $sudo pass参数:$pass allow参数: $allow dir参数:$dir batch参数:$batch");
 	my $server = Rex->get_current_connection()->{'server'};
 	Rex::Logger::info("服务器: $server");
 	my @action_list = ('query' ,'create' ,'delete','lock','list','createkey');
@@ -78,7 +85,7 @@ task "route", sub {
 		exit;
 	}
 
-	if ( $level eq "1" and $action eq "create" and $dir ne "0") {
+	if ( $level eq "1" and $action eq "create" and $dir ne "0" and $batch eq "0") {
 		LOCAL{
 				if( ! is_dir("$dir") ){
 					Rex::Logger::info("秘钥目录不存在:$dir","error");
@@ -89,24 +96,63 @@ task "route", sub {
 					exit;
 				}
 			}
+	}elsif($level eq "1" and $action eq "create" and $dir ne "0" and $batch ne "0"){
+		my @userlist=split(/,/,$user);
+		for my $user (@userlist) {
+			LOCAL{
+					if( ! is_dir("$dir") ){
+						Rex::Logger::info("秘钥目录不存在:$dir","error");
+						exit;
+					}
+					if ( ! is_file("$dir/$user\.pub") ) {
+						Rex::Logger::info("公钥文件不存在:$dir/$user\.pub","error");
+						exit;
+					}
+				}				
+		}
 	}
-	if ( $action eq "query") {
-		queryUser($user);
-	}elsif($action eq "create"){
-		my $query = queryUser($user); 
-		createUser($user,$level,$query,$sudo,$pass,$allow,$dir);
-	}elsif($action eq "delete"){
-		deleteUser($user);
-	}elsif($action eq "lock"){
-		forbitUser($user);
-	}elsif($action eq "list"){
-		listUser();
-	}elsif($action eq "createkey"){
-		my $key = general_key($user,$pass);
+
+	
+	if ($batch eq 0) {
+		if ( $action eq "query") {
+			queryUser($user);
+		}elsif($action eq "create"){
+			my $query = queryUser($user); 
+			createUser($user,$level,$query,$sudo,$pass,$allow,$dir);
+		}elsif($action eq "delete"){
+			deleteUser($user);
+		}elsif($action eq "lock"){
+			forbitUser($user);
+		}elsif($action eq "list"){
+			listUser();
+		}elsif($action eq "createkey"){
+			my $key = general_key($user,$pass);
+		}else{
+			Rex::Logger::info("不支持的action","error");
+			exit;		
+		}
+
 	}else{
-		Rex::Logger::info("不支持的action","error");
-		exit;		
+		my @userlist=split(/,/,$user);
+		for my $user (@userlist) {
+			if ( $action eq "query") {
+				queryUser($user);
+			}elsif($action eq "create"){
+				my $query = queryUser($user); 
+				createUser($user,$level,$query,$sudo,$pass,$allow,$dir);
+			}elsif($action eq "delete"){
+				deleteUser($user);
+			}elsif($action eq "lock"){
+				forbitUser($user);
+			}elsif($action eq "createkey"){
+				my $key = general_key($user,$pass,$batch);
+			}else{
+				Rex::Logger::info("不支持的action","error");
+				exit;		
+			}					  
+		}		
 	}
+
 	
 };
 
@@ -181,19 +227,26 @@ sub create{
 sub general_key{
 	my $user = @_[0];
 	my $pass = @_[1];
+	my $batch = @_[2];
 	my $cmd;
+	my $base_dir ;
+	if ($batch eq 0 ) {
+		$base_dir = "/tmp/$user/$random";
+	}else{
+		$base_dir = "/tmp/$random";
+	}
 	Rex::Logger::info("__SUB__:开始生成秘钥文件"); 
 	if ( $pass eq "0") {
-		$cmd = "mkdir -p /tmp/$user/$random ; ssh-keygen -t rsa -f /tmp/$user/$random/$user  -P '' &&  result=\$? ;echo status=\$result" ;
+		$cmd = "mkdir -p $base_dir ; ssh-keygen -t rsa -f $base_dir/$user  -P '' &&  result=\$? ;echo status=\$result" ;
 	}else{
 		Rex::Logger::info("秘钥密码:$pass");
-		$cmd = "mkdir -p /tmp/$user/$random ; ssh-keygen -t rsa -f /tmp/$user/$random/$user  -P '$pass' &&  result=\$? ;echo status=\$result" ;
+		$cmd = "mkdir -p $base_dir ; ssh-keygen -t rsa -f $base_dir/$user  -P '$pass' &&  result=\$? ;echo status=\$result" ;
 	}
 	Rex::Logger::info("开始生成秘钥");
 	Rex::Logger::info("cmd:$cmd");
 	my $res = run "$cmd";
 	if ( $res =~ /status=0/ ) {
-		Rex::Logger::info("秘钥路径: /tmp/$user/$random/");
+		Rex::Logger::info("秘钥路径: $base_dir");
 		Rex::Logger::info("生成秘钥成功");
 		return 1;
 	}else{
@@ -209,7 +262,7 @@ sub append_allow{
 	my $cmd ;
 	my $cmd1 ;
 	my $cmd2 ;
-	$cmd1 = "cat /etc/ssh/sshd_config |grep AllowUsers |grep ' $user' &&  result=\$? ;echo status=\$result" ;
+	$cmd1 = "cat /etc/ssh/sshd_config |grep AllowUsers |grep ' $user ' &&  result=\$? ;echo status=\$result" ;
 	$cmd2 = "cat /etc/ssh/sshd_config |grep AllowUsers |grep ' $user\$' &&  result=\$? ;echo status=\$result" ;
 	$cmd = "sed -i 's/AllowUsers/AllowUsers $user /g' /etc/ssh/sshd_config &&  result=\$? ;echo status=\$result" ;
 	Rex::Logger::info("__SUB__:开始添加allow至sshd配置文件"); 
@@ -218,12 +271,15 @@ sub append_allow{
 	my $res1 = run "$cmd1";
 	my $res2 = run "$cmd2";
 	if ( $res1 =~ /status=0/ or $res2 =~ /status=0/ ) {
+		Rex::Logger::info("cmd1:$cmd1");
+		Rex::Logger::info("cmd2:$cmd2");
 		Rex::Logger::info("该用户已经添加,无需重复添加.");
 		return 0;
 	}else{
 		my $res = run "$cmd";	
 		if ( $res =~ /status=0/ ) {
 			Rex::Logger::info("添加成功");
+			run "service sshd restart";
 			return 1;
 		}else{
 			Rex::Logger::info("添加失败","error");
