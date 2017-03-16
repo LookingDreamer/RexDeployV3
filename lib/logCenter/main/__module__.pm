@@ -27,7 +27,7 @@ Rex::Config->register_config_handler("$env", sub {
  $max_grep_row = $param->{max_grep_row} ;
  });
 
-desc "查看实时日志\n1.rex  logCenter:main:liveLog  --search='cm58'\n2.rex -H '115.159.235.58' logCenter:main:liveLog  --log='/data/log/cm/catalina.out.2017-03-06'";
+desc "查看实时日志\n1.0 rex  logCenter:main:liveLog  --search='cm58'\n2.0 rex -H '115.159.235.58' logCenter:main:liveLog  --log='/data/log/cm/catalina.out.2017-03-06'\n";
 task "liveLog", sub {
 	my $self = shift;
 	my $log = $self->{log};
@@ -125,7 +125,7 @@ task "loglive", sub {
 
 };
 
-desc "查看日志列表\n1.rex  logCenter:main:lookLog  --search='cm58'\n2.rex -H '115.159.235.58' logCenter:main:lookLog  --logdir='/data/log/cm/'";
+desc "查看日志列表\n1.0 rex  logCenter:main:lookLog  --search='cm58'\n2.0 rex -H '115.159.235.58' logCenter:main:lookLog  --logdir='/data/log/cm/'\n";
 task "lookLog", sub {
 	my $self = shift;
 	my $logdir = $self->{logdir};
@@ -202,7 +202,7 @@ task "listFile",sub{
 	exit;
 };
 
-desc "下载日志模块\n1.rex  logCenter:main:getLog  --search='cm58'\n2.rex -H '115.159.235.58' logCenter:main:getLog  --log='/data/log/cm/catalina.out.2017-03-06'";
+desc "下载日志模块\n1.0 rex  logCenter:main:getLog  --search='cm58'\n2.0 rex -H '115.159.235.58' logCenter:main:getLog  --log='/data/log/cm/catalina.out.2017-03-06'\n";
 task "getLog", sub {
 	my $self = shift;
 	my $log = $self->{log};
@@ -324,7 +324,7 @@ task "getLog", sub {
 
 };
 
-desc "查询当前列表\nrex logCenter:main:queryList";
+desc "查询当前列表\nrex logCenter:main:queryList\n";
 task "queryList", sub {
 	my @res ;
 	my @res = Deploy::Db::server_info();
@@ -337,7 +337,7 @@ task "queryList", sub {
 	}
 };
 
-desc "日志文件过滤\n1.rex  logCenter:main:grepLog  --search='cm58' --grep='进入CM 后台' \n2.rex -H '115.159.235.58' logCenter:main:grepLog  --log='/data/log/cm/catalina.out.2017-03-06' --grep='进入CM 后台'";
+desc "日志文件过滤\n1.0 rex  logCenter:main:grepLog  --search='cm58' --grep='进入CM 后台' \n2.0 rex -H '115.159.235.58' logCenter:main:grepLog  --log='/data/log/cm/catalina.out.2017-03-06' --grep='进入CM 后台'\n";
 task "grepLog", sub {
 	my $self = shift;
 	my $log = $self->{log};
