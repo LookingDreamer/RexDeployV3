@@ -27,7 +27,7 @@ Rex::Config->register_config_handler("$env", sub {
  $max_grep_row = $param->{max_grep_row} ;
  });
 
-desc "查看实时日志\n1.0 rex  logCenter:main:liveLog  --search='cm58'\n2.0 rex -H '115.159.235.58' logCenter:main:liveLog  --log='/data/log/cm/catalina.out.2017-03-06'\n";
+desc "查看实时日志\n1.rex  logCenter:main:liveLog  --search='cm58'\n2.rex -H '172.16.0.76' logCenter:main:liveLog  --log='/data/log/cm/catalina.out.2017-03-06'";
 task "liveLog", sub {
 	my $self = shift;
 	my $log = $self->{log};
@@ -125,7 +125,7 @@ task "loglive", sub {
 
 };
 
-desc "查看日志列表\n1.0 rex  logCenter:main:lookLog  --search='cm58'\n2.0 rex -H '115.159.235.58' logCenter:main:lookLog  --logdir='/data/log/cm/'\n";
+desc "查看日志列表\n1.rex  logCenter:main:lookLog  --search='cm58'\n2.rex -H '172.16.0.76' logCenter:main:lookLog  --logdir='/data/log/cm/'";
 task "lookLog", sub {
 	my $self = shift;
 	my $logdir = $self->{logdir};
@@ -202,7 +202,7 @@ task "listFile",sub{
 	exit;
 };
 
-desc "下载日志模块\n1.0 rex  logCenter:main:getLog  --search='cm58'\n2.0 rex -H '115.159.235.58' logCenter:main:getLog  --log='/data/log/cm/catalina.out.2017-03-06'\n";
+desc "下载日志模块\n1.rex  logCenter:main:getLog  --search='cm58'\n2.rex -H '172.16.0.76' logCenter:main:getLog  --log='/data/log/cm/catalina.out.2017-03-06'";
 task "getLog", sub {
 	my $self = shift;
 	my $log = $self->{log};
@@ -324,7 +324,7 @@ task "getLog", sub {
 
 };
 
-desc "查询当前列表\nrex logCenter:main:queryList\n";
+desc "查询当前列表\nrex logCenter:main:queryList";
 task "queryList", sub {
 	my @res ;
 	my @res = Deploy::Db::server_info();
@@ -337,7 +337,7 @@ task "queryList", sub {
 	}
 };
 
-desc "日志文件过滤\n1.0 rex  logCenter:main:grepLog  --search='cm58' --grep='进入CM 后台' \n2.0 rex -H '115.159.235.58' logCenter:main:grepLog  --log='/data/log/cm/catalina.out.2017-03-06' --grep='进入CM 后台'\n";
+desc "日志文件过滤\n1.rex  logCenter:main:grepLog  --search='cm58' --grep='进入CM 后台' \n2.rex -H '172.16.0.76' logCenter:main:grepLog  --log='/data/log/cm/catalina.out.2017-03-06' --grep='进入CM 后台'";
 task "grepLog", sub {
 	my $self = shift;
 	my $log = $self->{log};
@@ -378,7 +378,7 @@ task "grepLog", sub {
 		my $grep_log = "$log"."_grep_$now";
 		if ( $output_list[1] > $max_grep_row) {
 			if ( $debug eq '1' or $debug eq 1 ) {
-				my $cmd = "grep  '$grep' $log > $grep_log && result=\$? ;echo status=\$result";
+				my $cmd = "grep  --color '$grep' $log > $grep_log && result=\$? ;echo status=\$result";
 				my $resgrep = run_task "Common:Use:apirun",on=>"$network_ip",params => {cmd=>"$cmd"};
 				if ( $resgrep =~ /status=0/ ) {
 					Rex::Logger::info("生成过滤文件成功:$grep_log");
@@ -398,11 +398,11 @@ task "grepLog", sub {
 				}
 			}else{
 				Rex::Logger::info("过滤后的内容行数大于$max_grep_row,默认只显示后$max_grep_row行,如果想显示更多结果,请添加参数--debug=1 ","warn");
-				my $cmd = "grep  '$grep' $log |tail -n $max_grep_row";
+				my $cmd = "grep   '$grep' $log |tail -n $max_grep_row |grep  --color '$grep' ";
 				$output_grep=run_task "Common:Use:apirun",on=>"$network_ip",params => {cmd=>"$cmd"};
 			}
 		}else{
-			my $cmd = "grep  '$grep' $log";
+			my $cmd = "grep  --color '$grep' $log";
 			$output_grep=run_task "Common:Use:apirun",on=>"$network_ip",params => {cmd=>"$cmd"};
 		}
 		if ( $output_grep ne "" ) {
@@ -431,7 +431,7 @@ task "grepLog", sub {
 		my $grep_log = "$log"."_grep_$now";
 		if ( $output_list[1] > $max_grep_row) {
 			if ( $debug eq '1' or $debug eq 1 ) {
-				run "grep  '$grep' $log > $grep_log";
+				run "grep  --color '$grep' $log > $grep_log";
 				if ( is_file($grep_log) ) {
 					Rex::Logger::info("生成过滤文件成功:$grep_log");
 				}else{
@@ -449,10 +449,10 @@ task "grepLog", sub {
 				}
 			}else{
 				Rex::Logger::info("过滤后的内容行数大于$max_grep_row,默认只显示后$max_grep_row行,如果想显示更多结果,请添加参数--debug=1 ","warn");
-				$output_grep = run "grep  '$grep' $log |tail -n $max_grep_row";
+				$output_grep = run "grep  '$grep' $log |tail -n $max_grep_row | grep  --color '$grep' ";
 			}
 		}else{
-			$output_grep = run "grep  '$grep' $log";
+			$output_grep = run "grep  --color '$grep' $log";
 		}
 		if ( $output_grep ne "" ) {
 			Rex::Logger::info("过滤内容如下:");
