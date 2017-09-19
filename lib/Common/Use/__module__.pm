@@ -216,14 +216,7 @@ task "upload", sub {
    }else{
      $sufer_dir1_status = "false";
    }
-   # my $thread_1_01 = threads->create('download_thread','Download_Thread_1');
-   # my $thread_2_01 = threads->create('download_thread',$dir1,$dir2);
-   # $thread_2_01->join();
-   # if (  ! is_dir($dir1) &&  ! is_file($dir1) ) {
-   #   Rex::Logger::info("[$server] $dir1 目录或文件不存在.");
-   #   exit;
-   # }
-   #
+
    if( 2 > 1 ){
     $time_start=time();
     upload_thread($dir1,$dir2);
@@ -266,7 +259,9 @@ task "upload", sub {
     $key_auth = $param->{key_auth} ;
     $username = $param->{user} ;
   });
+  Rex::Logger::info("---------aaa---");
   if (Rex::is_sudo) {
+    Rex::Logger::info("------------");	
     if ( $key_auth eq "true" ) {
         my $sudo_config_status = run "grep 'Defaults:$username !requiretty' /etc/sudoers |wc -l";
        if (  $sudo_config_status eq '0') {
@@ -339,11 +334,49 @@ task "upload", sub {
     }
     my $time_end=time();
     my $time =$time_end-$time_start; 
-    my $result = run "du -sh $dir2 ";
-    Rex::Logger::info("[文件传输] 传输完成,耗时: $time秒,大小:$result");
+    #my $result = run "du -sh $dir2 ";
+    Rex::Logger::info("[文件传输] 传输完成,耗时: $time秒");
 
    sub upload_thread{
-      my ($dir1,$dir2) = @_;
+    my ($dir1,$dir2) = @_;
+
+    LOCAL{
+        if ( !is_dir($dir1) && ! is_file($dir1) ) {
+          Rex::Logger::info("[文件传输] [local]: $dir1 目录或文件不存在.");
+          exit;
+        }
+        my $real_size = run " du -sh $dir1 | awk '{print \$1}'";
+        @sizearr = readpipe " du -s $dir1 | awk '{print \$1}'";
+        Rex::Logger::info("[文件传输] [local]: $dir1-->$dir2大小: $real_size .");
+      };
+
+
+      #判断是否开启了sudo,如果开启了则查看修改/etc/sudoers
+      my $env;
+      my $key_auth;
+      my $username;
+      Rex::Config->register_config_handler("env", sub {
+        my ($param) = @_;
+        $env = $param->{key} ;
+      });
+      Rex::Config->register_config_handler("$env", sub {
+        my ($param) = @_;
+        $key_auth = $param->{key_auth} ;
+        $username = $param->{user} ;
+      });
+      if (Rex::is_sudo) {
+        if ( $key_auth eq "true" ) {
+            my $sudo_config_status = run "grep 'Defaults:$username !requiretty' /etc/sudoers |wc -l";
+           if (  $sudo_config_status eq '0') {
+             run "echo 'Defaults:$username !requiretty' >> /etc/sudoers ";
+             Rex::Logger::info("[文件传输] echo 'Defaults:$username !requiretty' >> /etc/sudoers ");
+           }else{
+             Rex::Logger::info("[文件传输] sudo tty终端已经关闭.");
+           }
+        }
+      };
+
+      
       sync $dir1,$dir2, {
       exclude => ["*.sw*", "*.tmp"],
       parameters => '--backup --delete --progress',
