@@ -16,7 +16,11 @@ my $cmd = $self->{cmd};
 run $cmd, sub {
      my ($stdout, $stderr) = @_;
      my $server = Rex::get_current_connection()->{server};
-     my $names = Deploy::Db::showname($server);
+     my $names ;
+     eval{ $names = Deploy::Db::showname($server);};
+     if($@){
+        Rex::Logger::warn("根据IP在数据库中查询主机信息超时或异常(不影响后续执行)");
+     }
      if($names eq "none"){
         say "[$server] $stdout";
         say "" ;
@@ -25,7 +29,7 @@ run $cmd, sub {
         say "" ;
      }else{
         say "[$server]-[$names] $stdout";
-        say "" ; 
+        say "" ;
      }
 
     };
