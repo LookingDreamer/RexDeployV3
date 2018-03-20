@@ -7,7 +7,6 @@ RUN yum install wget -y && mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d
 && wget http://dev.mysql.com/get/mysql-community-release-el7-5.noarch.rpm \
 && rpm -ivh mysql-community-release-el7-5.noarch.rpm \
 && yum install mysql-community-server  --nogpgcheck -y \
-&& mysql_install_db --user=mysql
 ADD ./ /data/RexDeployV3
 WORKDIR /data/RexDeployV3
 RUN  /bin/bash install/initStall.sh instalib 
