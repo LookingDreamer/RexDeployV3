@@ -1,1 +1,1 @@
-{"virtualbox":{"/vagrant":{"guestpath":"/vagrant","hostpath":"C:/Users/Administrator/Desktop/myProject/RexDeployV3/vagrant","disabled":false,"__vagrantfile":true}}}
+{"virtualbox":{"/data/www/apps/RexdeployV3":{"guestpath":"/data/www/apps/RexdeployV3","hostpath":"C:/Users/Administrator/Desktop/myProject/RexDeployV3","disabled":false,"__vagrantfile":true},"/vagrant":{"guestpath":"/vagrant","hostpath":"C:/Users/Administrator/Desktop/myProject/RexDeployV3/vagrant","disabled":false,"__vagrantfile":true}}}
