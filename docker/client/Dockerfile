@@ -11,7 +11,9 @@ RUN yum clean all && yum makecache \
 && rm -f jdk-8u161-linux-x64.tar.gz \
 && rm -f apache-tomcat-9.0.0.M4.zip \
 && mkdir -p /data/www/ && mv /usr/local/tomcat/webapps/ROOT /data/www/html \
-&& ln -s /data/www/html /usr/local/tomcat/webapps/ROOT 
+&& ln -s /data/www/html /usr/local/tomcat/webapps/ROOT \
+&& chmod a+x /usr/local/tomcat/bin/*.sh
 
+EXPOSE 8080
 WORKDIR /tmp/install
-ENTRYPOINT [ "top", "-b" ]
+ENTRYPOINT [ "catalina.sh", "run" ]
