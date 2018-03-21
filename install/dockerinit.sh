@@ -127,11 +127,11 @@ setConfig(){
   mysql_user='root'
   mysql_pass='root'
   mysql_dbname='autotask'
-  echo '数据库地址: $mysql_host' 
-  echo '数据库端口: $mysql_port' 
-  echo '数据库用户: $mysql_user' 
-  echo '数据库密码: $mysql_pass' 
-  echo '数据库名: $mysql_dbname'  
+  echo "数据库地址: $mysql_host"
+  echo "数据库端口: $mysql_port"
+  echo "数据库用户: $mysql_user" 
+  echo "数据库密码: $mysql_pass"
+  echo "数据库名: $mysql_dbname"  
   mysql -h$mysql_host -u$mysql_user -p$mysql_pass -P$mysql_port  -e "use $mysql_dbname;"
   if [[ $? -ne 0  ]];then
     print_log "连接数据库失败或数据库autotask不存在,请检查数据库配置."
