@@ -1,7 +1,7 @@
 Name: Deploy::FirstConnect
-Description: {{ DESCRIPTION }}
-Author: {{ your name <your.name@email.com> }}
-License: {{ THE LICENSE }}
+Description: {{ 基于名字服务的自动化平台 }}
+Author: {{ 黄高明 <530035210e@qq.com> }}
+License: {{ MT OPEN }}
 
 # Only if you have dependencies to other Rex Modules.
 Require:
