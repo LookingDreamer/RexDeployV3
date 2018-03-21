@@ -1,4 +1,4 @@
-#!/usr/local/Cellar/perl518/5.18.2/bin/perl
+#!/usr/bin/perl
 ##author: QingFeng
 ##qq: 530035210
 ##blog: http://my.oschina.net/pwd/blog
