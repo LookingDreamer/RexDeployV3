@@ -27,7 +27,7 @@ Rex::Config->register_config_handler("$env", sub {
  $max_grep_row = $param->{max_grep_row} ;
  });
 
-desc "查看实时日志\n1.rex  logCenter:main:liveLog  --search='cm58'\n2.rex -H '172.16.0.76' logCenter:main:liveLog  --log='/data/log/cm/catalina.out.2017-03-06'";
+desc "查看实时日志\n1.rex  logCenter:main:liveLog  --search='server1'\n2.rex -H '127.0.0.1' logCenter:main:liveLog  --log='/data/log/server1/catalina.out.2017-03-06'";
 task "liveLog", sub {
 	my $self = shift;
 	my $log = $self->{log};
@@ -125,7 +125,7 @@ task "loglive", sub {
 
 };
 
-desc "查看日志列表\n1.rex  logCenter:main:lookLog  --search='cm58'\n2.rex -H '172.16.0.76' logCenter:main:lookLog  --logdir='/data/log/cm/'";
+desc "查看日志列表\n1.rex  logCenter:main:lookLog  --search='server1'\n2.rex -H '127.0.0.1' logCenter:main:lookLog  --logdir='/data/log/server1/'";
 task "lookLog", sub {
 	my $self = shift;
 	my $logdir = $self->{logdir};
@@ -202,7 +202,7 @@ task "listFile",sub{
 	exit;
 };
 
-desc "下载日志模块\n1.rex  logCenter:main:getLog  --search='cm58'\n2.rex -H '172.16.0.76' logCenter:main:getLog  --log='/data/log/cm/catalina.out.2017-03-06'";
+desc "下载日志模块\n1.rex  logCenter:main:getLog  --search='server1'\n2.rex -H '127.0.0.1' logCenter:main:getLog  --log='/data/log/server1/catalina.out.2017-03-06'";
 task "getLog", sub {
 	my $self = shift;
 	my $log = $self->{log};
@@ -243,7 +243,7 @@ task "getLog", sub {
 			my $res = run "echo '$log_rsync_pass' > /tmp/rsync_passwd && chmod 600 /tmp/rsync_passwd &&  rsync -vzrtopg --progress --password-file=/tmp/rsync_passwd $log $log_rsync_user\@$log_rsync_server\:\:$log_rsync_module\/$server/ && result=\$? ;echo status=\$result";
 			Rex::Logger::info("$res");
 			if ( $res =~ /status=0/ ) {
-				Rex::Logger::info("上传成功,请到存储中心下载,下载路径:http://172.16.0.244:81/logupload/$server/");
+				Rex::Logger::info("上传成功,请到存储中心下载,下载路径:http://下载地址/$server/");
 			}else{
 				Rex::Logger::info("上传失败,请联系运维人员处理.");
 			}
@@ -279,7 +279,7 @@ task "getLog", sub {
 			my $res=run_task "Common:Use:apirun",on=>"$network_ip",params => {cmd=>"$cmd"};			
 			Rex::Logger::info("$res");
 			if ( $res =~ /status=0/ ) {
-				Rex::Logger::info("上传成功,请到存储中心下载,下载路径:http://172.16.0.244:81/logupload/$network_ip/");
+				Rex::Logger::info("上传成功,请到存储中心下载,下载路径:http://下载地址/$network_ip/");
 			}else{
 				Rex::Logger::info("上传失败,请联系运维人员处理.");
 			}
@@ -313,7 +313,7 @@ task "getLog", sub {
 			my $res = run "echo '$log_rsync_pass' > /tmp/rsync_passwd && chmod 600 /tmp/rsync_passwd &&  rsync -vzrtopg --progress --password-file=/tmp/rsync_passwd $log $log_rsync_user\@$log_rsync_server\:\:$log_rsync_module\/$server/ && result=\$? ;echo status=\$result";
 			Rex::Logger::info("$res");
 			if ( $res =~ /status=0/ ) {
-				Rex::Logger::info("上传成功,请到存储中心下载,下载路径:http://172.16.0.244:81/logupload/$server/");
+				Rex::Logger::info("上传成功,请到存储中心下载,下载路径:http://下载地址/$server/");
 			}else{
 				Rex::Logger::info("上传失败,请联系运维人员处理.");
 			}
@@ -337,7 +337,7 @@ task "queryList", sub {
 	}
 };
 
-desc "日志文件过滤\n1.rex  logCenter:main:grepLog  --search='cm58' --grep='进入CM 后台' \n2.rex -H '172.16.0.76' logCenter:main:grepLog  --log='/data/log/cm/catalina.out.2017-03-06' --grep='进入CM 后台'";
+desc "日志文件过滤\n1.rex  logCenter:main:grepLog  --search='server1' --grep='转换JSON数据' \n2.rex -H '127.0.0.1' logCenter:main:grepLog  --log='/data/log/server1/catalina.out.2017-03-06' --grep='转换JSON数据'";
 task "grepLog", sub {
 	my $self = shift;
 	my $log = $self->{log};
@@ -392,7 +392,7 @@ task "grepLog", sub {
 				my $res=run_task "Common:Use:apirun",on=>"$network_ip",params => {cmd=>"$cmd"};
 				Rex::Logger::info("$res");
 				if ( $res =~ /status=0/ ) {
-					Rex::Logger::info("上传成功,请到存储中心下载,下载路径:http://172.16.0.244:81/logupload/$network_ip/");
+					Rex::Logger::info("上传成功,请到存储中心下载,下载路径:http://下载地址/$network_ip/");
 				}else{
 					Rex::Logger::info("上传失败,请联系运维人员处理.");
 				}
@@ -443,7 +443,7 @@ task "grepLog", sub {
 				my $res = run "echo '$log_rsync_pass' > /tmp/rsync_passwd && chmod 600 /tmp/rsync_passwd &&  rsync -vzrtopg --progress --password-file=/tmp/rsync_passwd $grep_log $log_rsync_user\@$log_rsync_server\:\:$log_rsync_module\/$server/ && result=\$? ;echo status=\$result";
 				Rex::Logger::info("$res");
 				if ( $res =~ /status=0/ ) {
-					Rex::Logger::info("上传成功,请到存储中心下载,下载路径:http://172.16.0.244:81/logupload/$server/");
+					Rex::Logger::info("上传成功,请到存储中心下载,下载路径:http://下载地址/$server/");
 				}else{
 					Rex::Logger::info("上传失败,请联系运维人员处理.");
 				}

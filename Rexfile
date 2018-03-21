@@ -85,7 +85,7 @@ if ( $groups_file[0] eq "true") {
    groups_file "$groups_file[1]";
 }
 
-desc "检查服务器信息: rex check   --k='cm1 cm2 ../all'";
+desc "检查服务器信息: rex check   --k='server1 server2 ../all'";
 task "check",sub{
    my $self = shift;
    my $k=$self->{k};
@@ -142,7 +142,7 @@ task "check",sub{
 };
 
 
-desc "批量执行命令行: rex run  --k='cm1 cm2 ../all' --cmd='ls'";
+desc "批量执行命令行: rex run  --k='server1 server2 ../all' --cmd='ls'";
 task "run",sub{
    my $start = time;
    my $self = shift;
@@ -302,15 +302,4 @@ task "list",sub{
    my $keys=Deploy::Db::getlistkey();
    Rex::Logger::info("");
    Rex::Logger::info("获取关键词如下: \n $keys");
-};
-
-desc "服务模块: rex service \n";
-task "service",sub{
-  # run_task "Enter:route:service",params=>{ k=>"cm-test",a=>"start" };
-  my %service;
-  $service->{'action'} = "start" ;
-  $service->{'network_ip'} = "115.159.237.152" ;
-  $service->{'pro_key'} = "tomcat-cm" ;
-  $service->{'pro_init'} = "/usr/local/tomcat-cm/bin/startup.sh" ;
-  run_task "Deploy:FirstConnect:services",on=>$service->{'network_ip'},params => { config => $service}
 };

@@ -7,7 +7,7 @@ use threads;
 use POSIX;
 use File::Basename;
 
-desc "批量命令模块: rex [-H 'x.x.x.x x.x.x.x']/[-G  jry-com] run --cmd='uptime'";
+desc "批量命令模块: rex [-H 'x.x.x.x x.x.x.x']/[-G  group] run --cmd='uptime'";
 task run =>,sub {
 
 my $self = shift;
@@ -35,7 +35,7 @@ run $cmd, sub {
     };
 };
 
-desc "文件下载模块 远程->本地:rex [-H 'x.x.x.x']/[-G  jry-com] Common:Use:download --dir1='/tmp/1.txt' --dir2='/tmp/'";
+desc "文件下载模块 远程->本地:rex [-H 'x.x.x.x']/[-G  group] Common:Use:download --dir1='/tmp/1.txt' --dir2='/tmp/'";
 task "download", sub {
    my $self = shift;
    my $dir1 = $self->{dir1};
@@ -195,7 +195,7 @@ task "download", sub {
    }
  };
 
-desc "文件上传模块 本地->远程:rex [-H 'x.x.x.x']/[-G  jry-com] Common:Use:upload --dir1='/tmp/1.txt' --dir2='/tmp/'";
+desc "文件上传模块 本地->远程:rex [-H 'x.x.x.x']/[-G  group] Common:Use:upload --dir1='/tmp/1.txt' --dir2='/tmp/'";
 task "upload", sub {
     my $self = shift;
     my $dir1 = $self->{dir1};
@@ -389,7 +389,7 @@ task "upload", sub {
  };
 
 
-desc "内部命令调用模块: rex [-H 'x.x.x.x x.x.x.x']/[-G  jry-com] run --cmd='uptime'";
+desc "内部命令调用模块: rex [-H 'x.x.x.x x.x.x.x']/[-G  group] run --cmd='uptime'";
 task apirun =>,sub {
 
 my $self = shift;
