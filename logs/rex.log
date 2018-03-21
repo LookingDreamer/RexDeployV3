@@ -1,0 +1,206 @@
+[2018-03-21 05:16:38] INFO - Running task list on <local>
+[2018-03-21 05:16:38] INFO - Running task Deploy:Db:getlistkey on current connection
+[2018-03-21 05:16:38] INFO - 
+[2018-03-21 05:16:38] INFO - 获取关键词如下: 
+ server1 server2 flow1 flow2 4
+[2018-03-21 05:16:39] INFO - All tasks successful on all hosts
+[2018-03-21 05:16:53] INFO - Running task check on <local>
+[2018-03-21 05:16:53] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 05:16:53] INFO - Starting ...... 操作人: autotask
+[2018-03-21 05:16:53] INFO - 
+[2018-03-21 05:16:53] INFO - 开始检查 发布系统 服务器以及数据库配置.
+[2018-03-21 05:16:53] INFO - 
+[2018-03-21 05:16:53] INFO - ##############(server1)###############
+[2018-03-21 05:16:53] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 05:16:53] INFO - 开始从数据库初始化数据...
+[2018-03-21 05:16:53] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 05:16:53] INFO - (server1)--获取到该服务器: id:1,app_key:server1,其他信息请见数据库.
+[2018-03-21 05:16:53] INFO - (server1)--数据库初始化数据完成...
+[2018-03-21 05:16:53] INFO - (server1)--Get配置-1:id:1,app_key:server1,pro_init:/etc/init.d/tomcat-server1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 05:16:53] INFO - (server1)--Get配置-2:pro_key:tomcat-server1,pro_dir:/data/www/html1,config_dir:/data/www/config1,server_name:后台服务集群1
+[2018-03-21 05:16:53] INFO - ##############[后台服务集群1]###############
+[2018-03-21 05:16:53] INFO - Running task Deploy:Core:prepare on current connection
+[2018-03-21 05:16:53] INFO - (server1)--第一次连接,获取远程服务器基本信息.
+[2018-03-21 05:16:55] ERROR - (server1)--系统启动文件不存在:/etc/init.d/tomcat-server1
+[2018-03-21 05:16:55] ERROR - (server1)--系统工程目录不存在:/data/www/html1
+[2018-03-21 05:16:55] ERROR - (server1)--系统配置目录不存在:/data/www/config1
+[2018-03-21 05:16:55] WARN - (server1)--系统应用进程不存在
+[2018-03-21 05:16:55] INFO - (server1)--第一次连接,初始化服务器信息完成.
+[2018-03-21 05:16:55] INFO - 检查 发布系统 服务器以及数据库配置完成.
+[2018-03-21 05:16:55] INFO - All tasks successful on all hosts
+[2018-03-21 06:25:02] INFO - Running task list on <local>
+[2018-03-21 06:25:02] INFO - Running task Deploy:Db:getlistkey on current connection
+[2018-03-21 06:25:03] INFO - 
+[2018-03-21 06:25:03] INFO - 获取关键词如下: 
+ server1 server2 flow1 flow2 4
+[2018-03-21 06:25:03] INFO - All tasks successful on all hosts
+[2018-03-21 06:25:16] INFO - Running task list on <local>
+[2018-03-21 06:25:17] INFO - Running task Deploy:Db:getlistkey on current connection
+[2018-03-21 06:25:17] INFO - 
+[2018-03-21 06:25:17] INFO - 获取关键词如下: 
+ server1 server2 flow1 flow2 4
+[2018-03-21 06:25:17] INFO - All tasks successful on all hosts
+[2018-03-21 06:25:37] INFO - Running task check on <local>
+[2018-03-21 06:25:37] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 06:25:37] INFO - Starting ...... 操作人: autotask
+[2018-03-21 06:25:37] INFO - 
+[2018-03-21 06:25:37] INFO - 开始检查 发布系统 服务器以及数据库配置.
+[2018-03-21 06:25:37] INFO - 
+[2018-03-21 06:25:37] INFO - ##############(server1)###############
+[2018-03-21 06:25:37] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 06:25:37] INFO - 开始从数据库初始化数据...
+[2018-03-21 06:25:37] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 06:25:37] INFO - (server1)--获取到该服务器: id:1,app_key:server1,其他信息请见数据库.
+[2018-03-21 06:25:37] INFO - (server1)--数据库初始化数据完成...
+[2018-03-21 06:25:37] INFO - (server1)--Get配置-1:id:1,app_key:server1,pro_init:/etc/init.d/tomcat-server1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 06:25:37] INFO - (server1)--Get配置-2:pro_key:tomcat-server1,pro_dir:/data/www/html1,config_dir:/data/www/config1,server_name:后台服务集群1
+[2018-03-21 06:25:37] INFO - ##############[后台服务集群1]###############
+[2018-03-21 06:25:37] INFO - Running task Deploy:Core:prepare on current connection
+[2018-03-21 06:25:37] INFO - (server1)--第一次连接,获取远程服务器基本信息.
+[2018-03-21 06:25:42] ERROR - (server1)--系统启动文件不存在:/etc/init.d/tomcat-server1
+[2018-03-21 06:25:42] INFO - (server1)--工程目录: /data/www/html1:存在OK
+[2018-03-21 06:25:42] INFO - (server1)--配置目录: /data/www/config1:存在OK
+[2018-03-21 06:25:42] INFO - (server1)--系统进程存在:1.
+[2018-03-21 06:25:42] INFO - (server1)--第一次连接,初始化服务器信息完成.
+[2018-03-21 06:25:42] INFO - 检查 发布系统 服务器以及数据库配置完成.
+[2018-03-21 06:25:45] INFO - All tasks successful on all hosts
+[2018-03-21 06:29:17] INFO - Running task list on <local>
+[2018-03-21 06:29:18] INFO - Running task Deploy:Db:getlistkey on current connection
+[2018-03-21 06:29:18] INFO - 
+[2018-03-21 06:29:18] INFO - 获取关键词如下: 
+ server1 server2 flow1 flow2 4
+[2018-03-21 06:29:19] INFO - All tasks successful on all hosts
+[2018-03-21 06:29:43] INFO - Running task check on <local>
+[2018-03-21 06:29:43] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 06:29:43] INFO - Starting ...... 操作人: autotask
+[2018-03-21 06:29:43] INFO - 
+[2018-03-21 06:29:43] INFO - 开始检查 发布系统 服务器以及数据库配置.
+[2018-03-21 06:29:43] INFO - 
+[2018-03-21 06:29:43] INFO - ##############(server1)###############
+[2018-03-21 06:29:43] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 06:29:43] INFO - 开始从数据库初始化数据...
+[2018-03-21 06:29:43] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 06:29:43] INFO - (server1)--获取到该服务器: id:1,app_key:server1,其他信息请见数据库.
+[2018-03-21 06:29:43] INFO - (server1)--数据库初始化数据完成...
+[2018-03-21 06:29:43] INFO - (server1)--Get配置-1:id:1,app_key:server1,pro_init:/etc/init.d/tomcat-server1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 06:29:43] INFO - (server1)--Get配置-2:pro_key:tomcat-server1,pro_dir:/data/www/html1,config_dir:/data/www/config1,server_name:后台服务集群1
+[2018-03-21 06:29:43] INFO - ##############[后台服务集群1]###############
+[2018-03-21 06:29:43] INFO - Running task Deploy:Core:prepare on current connection
+[2018-03-21 06:29:43] INFO - (server1)--第一次连接,获取远程服务器基本信息.
+[2018-03-21 06:29:46] ERROR - (server1)--系统启动文件不存在:/etc/init.d/tomcat-server1
+[2018-03-21 06:29:46] INFO - (server1)--工程目录: /data/www/html1:存在OK
+[2018-03-21 06:29:46] INFO - (server1)--配置目录: /data/www/config1:存在OK
+[2018-03-21 06:29:46] INFO - (server1)--系统进程存在:1.
+[2018-03-21 06:29:46] INFO - (server1)--第一次连接,初始化服务器信息完成.
+[2018-03-21 06:29:46] INFO - 检查 发布系统 服务器以及数据库配置完成.
+[2018-03-21 06:29:49] INFO - All tasks successful on all hosts
+[2018-03-21 06:32:15] INFO - Running task run on <local>
+[2018-03-21 06:32:15] INFO - Starting ...... 操作人: autotask
+[2018-03-21 06:32:15] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 06:32:16] INFO - 
+[2018-03-21 06:32:16] INFO - 开始执行命令模板.
+[2018-03-21 06:32:16] INFO - 并发控制:(0 - 1)
+[2018-03-21 06:32:16] INFO - 父进程PID:13171 子进程PID:13182
+[2018-03-21 06:32:16] INFO - 执行子进程,进程序号:0
+[2018-03-21 06:32:16] INFO - 
+[2018-03-21 06:32:16] INFO - ##############(server1)###############
+[2018-03-21 06:32:16] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 06:32:16] INFO - 开始从数据库初始化数据...
+[2018-03-21 06:32:16] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 06:32:16] INFO - (server1)--获取到该服务器: id:1,app_key:server1,其他信息请见数据库.
+[2018-03-21 06:32:16] INFO - (server1)--数据库初始化数据完成...
+[2018-03-21 06:32:16] INFO - (server1)--Get配置-1:id:1,app_key:server1,pro_init:/etc/init.d/tomcat-server1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 06:32:16] INFO - (server1)--Get配置-2:pro_key:tomcat-server1,pro_dir:/data/www/html1,config_dir:/data/www/config1,server_name:后台服务集群1
+[2018-03-21 06:32:16] INFO - ##############[后台服务集群1]###############
+[2018-03-21 06:32:23] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 06:32:24] INFO - Exiting Rex...
+[2018-03-21 06:32:24] INFO - Cleaning up...
+[2018-03-21 06:32:25] INFO - 执行命令模板完成.
+[2018-03-21 06:32:25] INFO - 总共花费时间:10秒.
+[2018-03-21 06:32:25] INFO - Exiting Rex...
+[2018-03-21 06:32:25] INFO - Cleaning up...
+[2018-03-21 06:32:38] INFO - Running task run on <local>
+[2018-03-21 06:32:38] INFO - Starting ...... 操作人: autotask
+[2018-03-21 06:32:38] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 06:32:38] INFO - 
+[2018-03-21 06:32:38] INFO - 开始执行命令模板.
+[2018-03-21 06:32:38] INFO - 并发控制:(0 - 1)
+[2018-03-21 06:32:38] INFO - 父进程PID:13368 子进程PID:13379
+[2018-03-21 06:32:38] INFO - 执行子进程,进程序号:0
+[2018-03-21 06:32:38] INFO - 
+[2018-03-21 06:32:38] INFO - ##############(server1)###############
+[2018-03-21 06:32:38] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 06:32:38] INFO - 开始从数据库初始化数据...
+[2018-03-21 06:32:38] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 06:32:38] INFO - (server1)--获取到该服务器: id:1,app_key:server1,其他信息请见数据库.
+[2018-03-21 06:32:38] INFO - (server1)--数据库初始化数据完成...
+[2018-03-21 06:32:38] INFO - (server1)--Get配置-1:id:1,app_key:server1,pro_init:/etc/init.d/tomcat-server1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 06:32:38] INFO - (server1)--Get配置-2:pro_key:tomcat-server1,pro_dir:/data/www/html1,config_dir:/data/www/config1,server_name:后台服务集群1
+[2018-03-21 06:32:38] INFO - ##############[后台服务集群1]###############
+[2018-03-21 06:32:41] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 06:32:41] INFO - Exiting Rex...
+[2018-03-21 06:32:41] INFO - Cleaning up...
+[2018-03-21 06:32:41] INFO - 执行命令模板完成.
+[2018-03-21 06:32:41] INFO - 总共花费时间:3秒.
+[2018-03-21 06:32:41] INFO - Exiting Rex...
+[2018-03-21 06:32:41] INFO - Cleaning up...
+[2018-03-21 06:34:16] INFO - Running task list on <local>
+[2018-03-21 06:34:16] INFO - Running task Deploy:Db:getlistkey on current connection
+[2018-03-21 06:34:16] INFO - 
+[2018-03-21 06:34:16] INFO - 获取关键词如下: 
+ server1 server2 flow1 flow2 4
+[2018-03-21 06:34:17] INFO - All tasks successful on all hosts
+[2018-03-21 06:35:04] INFO - Running task check on <local>
+[2018-03-21 06:35:04] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 06:35:04] INFO - Starting ...... 操作人: autotask
+[2018-03-21 06:35:04] INFO - 
+[2018-03-21 06:35:04] INFO - 开始检查 发布系统 服务器以及数据库配置.
+[2018-03-21 06:35:04] INFO - 
+[2018-03-21 06:35:04] INFO - ##############(server1)###############
+[2018-03-21 06:35:04] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 06:35:04] INFO - 开始从数据库初始化数据...
+[2018-03-21 06:35:04] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 06:35:04] INFO - (server1)--获取到该服务器: id:1,app_key:server1,其他信息请见数据库.
+[2018-03-21 06:35:04] INFO - (server1)--数据库初始化数据完成...
+[2018-03-21 06:35:04] INFO - (server1)--Get配置-1:id:1,app_key:server1,pro_init:/etc/init.d/tomcat-server1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 06:35:04] INFO - (server1)--Get配置-2:pro_key:tomcat-server1,pro_dir:/data/www/html1,config_dir:/data/www/config1,server_name:后台服务集群1
+[2018-03-21 06:35:04] INFO - ##############[后台服务集群1]###############
+[2018-03-21 06:35:04] INFO - Running task Deploy:Core:prepare on current connection
+[2018-03-21 06:35:04] INFO - (server1)--第一次连接,获取远程服务器基本信息.
+[2018-03-21 06:35:07] INFO - (server1)--启动文件: /etc/init.d/tomcat-server1:存在OK
+[2018-03-21 06:35:07] INFO - (server1)--工程目录: /data/www/html1:存在OK
+[2018-03-21 06:35:07] INFO - (server1)--配置目录: /data/www/config1:存在OK
+[2018-03-21 06:35:07] INFO - (server1)--系统进程存在:1.
+[2018-03-21 06:35:07] INFO - (server1)--第一次连接,初始化服务器信息完成.
+[2018-03-21 06:35:07] INFO - 检查 发布系统 服务器以及数据库配置完成.
+[2018-03-21 06:35:08] INFO - All tasks successful on all hosts
+[2018-03-21 06:36:28] INFO - Running task list on <local>
+[2018-03-21 06:36:29] INFO - Running task Deploy:Db:getlistkey on current connection
+[2018-03-21 06:36:29] INFO - 
+[2018-03-21 06:36:29] INFO - 获取关键词如下: 
+ server1 server2 flow1 flow2 4
+[2018-03-21 06:36:29] INFO - All tasks successful on all hosts
+[2018-03-21 06:36:39] INFO - Running task check on <local>
+[2018-03-21 06:36:39] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 06:36:39] INFO - Starting ...... 操作人: autotask
+[2018-03-21 06:36:39] INFO - 
+[2018-03-21 06:36:39] INFO - 开始检查 发布系统 服务器以及数据库配置.
+[2018-03-21 06:36:39] INFO - 
+[2018-03-21 06:36:39] INFO - ##############(server1)###############
+[2018-03-21 06:36:39] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 06:36:39] INFO - 开始从数据库初始化数据...
+[2018-03-21 06:36:39] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 06:36:39] INFO - (server1)--获取到该服务器: id:1,app_key:server1,其他信息请见数据库.
+[2018-03-21 06:36:39] INFO - (server1)--数据库初始化数据完成...
+[2018-03-21 06:36:39] INFO - (server1)--Get配置-1:id:1,app_key:server1,pro_init:/etc/init.d/tomcat-server1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 06:36:39] INFO - (server1)--Get配置-2:pro_key:tomcat-server1,pro_dir:/data/www/html1,config_dir:/data/www/config1,server_name:后台服务集群1
+[2018-03-21 06:36:39] INFO - ##############[后台服务集群1]###############
+[2018-03-21 06:36:39] INFO - Running task Deploy:Core:prepare on current connection
+[2018-03-21 06:36:39] INFO - (server1)--第一次连接,获取远程服务器基本信息.
+[2018-03-21 06:36:41] INFO - (server1)--启动文件: /etc/init.d/tomcat-server1:存在OK
+[2018-03-21 06:36:41] INFO - (server1)--工程目录: /data/www/html1:存在OK
+[2018-03-21 06:36:41] INFO - (server1)--配置目录: /data/www/config1:存在OK
+[2018-03-21 06:36:41] WARN - (server1)--系统应用进程不存在
+[2018-03-21 06:36:41] INFO - (server1)--第一次连接,初始化服务器信息完成.
+[2018-03-21 06:36:41] INFO - 检查 发布系统 服务器以及数据库配置完成.
+[2018-03-21 06:36:42] INFO - All tasks successful on all hosts
