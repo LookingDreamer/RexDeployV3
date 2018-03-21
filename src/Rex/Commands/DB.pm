@@ -119,6 +119,10 @@ sub db {
     return;
   }
 
+   $dbh->do('set SESSION wait_timeout=72000');
+   $dbh->do('set SESSION interactive_timeout=72000');
+
+
   if ( $type eq "select" ) {
     my $sql = sprintf(
       "SELECT %s FROM %s WHERE %s",

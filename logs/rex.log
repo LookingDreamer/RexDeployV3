@@ -204,3 +204,1110 @@
 [2018-03-21 06:36:41] INFO - (server1)--第一次连接,初始化服务器信息完成.
 [2018-03-21 06:36:41] INFO - 检查 发布系统 服务器以及数据库配置完成.
 [2018-03-21 06:36:42] INFO - All tasks successful on all hosts
+[2018-03-21 06:45:40] INFO - Running task list on <local>
+[2018-03-21 06:45:40] INFO - Running task Deploy:Db:getlistkey on current connection
+[2018-03-21 06:45:41] INFO - 
+[2018-03-21 06:45:41] INFO - 获取关键词如下: 
+ server1 server2 flow1 flow2 4
+[2018-03-21 06:45:42] INFO - All tasks successful on all hosts
+[2018-03-21 06:47:26] INFO - Running task check on <local>
+[2018-03-21 06:47:26] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 06:47:26] INFO - Starting ...... 操作人: autotask
+[2018-03-21 06:47:26] INFO - 
+[2018-03-21 06:47:26] INFO - 开始检查 发布系统 服务器以及数据库配置.
+[2018-03-21 06:47:26] ERROR - 关键字(se)不存在
+[2018-03-21 06:47:26] INFO - 检查 发布系统 服务器以及数据库配置完成.
+[2018-03-21 06:47:27] INFO - All tasks successful on all hosts
+[2018-03-21 06:47:37] INFO - Running task check on <local>
+[2018-03-21 06:47:37] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 06:47:37] INFO - Starting ...... 操作人: autotask
+[2018-03-21 06:47:37] INFO - 
+[2018-03-21 06:47:37] INFO - 开始检查 发布系统 服务器以及数据库配置.
+[2018-03-21 06:47:37] INFO - 
+[2018-03-21 06:47:37] INFO - ##############(server1)###############
+[2018-03-21 06:47:37] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 06:47:37] INFO - 开始从数据库初始化数据...
+[2018-03-21 06:47:37] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 06:47:37] INFO - (server1)--获取到该服务器: id:1,app_key:server1,其他信息请见数据库.
+[2018-03-21 06:47:37] INFO - (server1)--数据库初始化数据完成...
+[2018-03-21 06:47:37] INFO - (server1)--Get配置-1:id:1,app_key:server1,pro_init:/etc/init.d/tomcat-server1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 06:47:37] INFO - (server1)--Get配置-2:pro_key:tomcat-server1,pro_dir:/data/www/html1,config_dir:/data/www/config1,server_name:后台服务集群1
+[2018-03-21 06:47:37] INFO - ##############[后台服务集群1]###############
+[2018-03-21 06:47:37] INFO - Running task Deploy:Core:prepare on current connection
+[2018-03-21 06:47:37] INFO - (server1)--第一次连接,获取远程服务器基本信息.
+[2018-03-21 06:47:40] INFO - (server1)--启动文件: /etc/init.d/tomcat-server1:存在OK
+[2018-03-21 06:47:40] INFO - (server1)--工程目录: /data/www/html1:存在OK
+[2018-03-21 06:47:40] INFO - (server1)--配置目录: /data/www/config1:存在OK
+[2018-03-21 06:47:40] WARN - (server1)--系统应用进程不存在
+[2018-03-21 06:47:40] INFO - (server1)--第一次连接,初始化服务器信息完成.
+[2018-03-21 06:47:40] INFO - 
+[2018-03-21 06:47:40] INFO - ##############(server2)###############
+[2018-03-21 06:47:40] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 06:47:40] INFO - 开始从数据库初始化数据...
+[2018-03-21 06:47:40] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 06:47:40] INFO - (server2)--获取到该服务器: id:2,app_key:server2,其他信息请见数据库.
+[2018-03-21 06:47:40] INFO - (server2)--数据库初始化数据完成...
+[2018-03-21 06:47:40] INFO - (server2)--Get配置-1:id:2,app_key:server2,pro_init:/etc/init.d/tomcat-server2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 06:47:40] INFO - (server2)--Get配置-2:pro_key:tomcat-server2,pro_dir:/data/www/html2,config_dir:/data/www/config2,server_name:后台服务集群2
+[2018-03-21 06:47:40] INFO - ##############[后台服务集群2]###############
+[2018-03-21 06:47:40] INFO - Running task Deploy:Core:prepare on current connection
+[2018-03-21 06:47:40] INFO - (server2)--第一次连接,获取远程服务器基本信息.
+[2018-03-21 06:47:41] INFO - (server2)--启动文件: /etc/init.d/tomcat-server2:存在OK
+[2018-03-21 06:47:41] INFO - (server2)--工程目录: /data/www/html2:存在OK
+[2018-03-21 06:47:41] INFO - (server2)--配置目录: /data/www/config2:存在OK
+[2018-03-21 06:47:41] WARN - (server2)--系统应用进程不存在
+[2018-03-21 06:47:41] INFO - (server2)--第一次连接,初始化服务器信息完成.
+[2018-03-21 06:47:41] INFO - 检查 发布系统 服务器以及数据库配置完成.
+[2018-03-21 06:47:42] INFO - All tasks successful on all hosts
+[2018-03-21 06:48:02] INFO - Running task run on <local>
+[2018-03-21 06:48:02] INFO - Starting ...... 操作人: autotask
+[2018-03-21 06:48:02] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 06:48:02] INFO - 
+[2018-03-21 06:48:02] INFO - 开始执行命令模板.
+[2018-03-21 06:48:02] INFO - 并发控制:(0 - 2)
+[2018-03-21 06:48:02] INFO - 父进程PID:14764 子进程PID:14775
+[2018-03-21 06:48:02] INFO - 执行子进程,进程序号:0
+[2018-03-21 06:48:02] INFO - 
+[2018-03-21 06:48:02] INFO - ##############(server1)###############
+[2018-03-21 06:48:02] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 06:48:02] INFO - 开始从数据库初始化数据...
+[2018-03-21 06:48:02] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 06:48:02] INFO - (server1)--获取到该服务器: id:1,app_key:server1,其他信息请见数据库.
+[2018-03-21 06:48:02] INFO - (server1)--数据库初始化数据完成...
+[2018-03-21 06:48:02] INFO - (server1)--Get配置-1:id:1,app_key:server1,pro_init:/etc/init.d/tomcat-server1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 06:48:02] INFO - (server1)--Get配置-2:pro_key:tomcat-server1,pro_dir:/data/www/html1,config_dir:/data/www/config1,server_name:后台服务集群1
+[2018-03-21 06:48:02] INFO - ##############[后台服务集群1]###############
+[2018-03-21 06:48:02] INFO - 父进程PID:14764 子进程PID:14787
+[2018-03-21 06:48:02] INFO - 执行子进程,进程序号:1
+[2018-03-21 06:48:02] INFO - 
+[2018-03-21 06:48:02] INFO - ##############(server2)###############
+[2018-03-21 06:48:02] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 06:48:02] INFO - 开始从数据库初始化数据...
+[2018-03-21 06:48:02] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 06:48:02] INFO - (server2)--获取到该服务器: id:2,app_key:server2,其他信息请见数据库.
+[2018-03-21 06:48:02] INFO - (server2)--数据库初始化数据完成...
+[2018-03-21 06:48:02] INFO - (server2)--Get配置-1:id:2,app_key:server2,pro_init:/etc/init.d/tomcat-server2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 06:48:02] INFO - (server2)--Get配置-2:pro_key:tomcat-server2,pro_dir:/data/www/html2,config_dir:/data/www/config2,server_name:后台服务集群2
+[2018-03-21 06:48:02] INFO - ##############[后台服务集群2]###############
+[2018-03-21 06:48:04] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 06:48:04] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 06:48:04] INFO - Exiting Rex...
+[2018-03-21 06:48:04] INFO - Cleaning up...
+[2018-03-21 06:48:04] INFO - Exiting Rex...
+[2018-03-21 06:48:04] INFO - Cleaning up...
+[2018-03-21 06:48:05] INFO - 执行命令模板完成.
+[2018-03-21 06:48:05] INFO - 总共花费时间:3秒.
+[2018-03-21 06:48:05] INFO - Exiting Rex...
+[2018-03-21 06:48:05] INFO - Cleaning up...
+[2018-03-21 06:48:25] INFO - Running task run on <local>
+[2018-03-21 06:48:25] INFO - Starting ...... 操作人: autotask
+[2018-03-21 06:48:25] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 06:48:25] INFO - 
+[2018-03-21 06:48:25] INFO - 开始执行命令模板.
+[2018-03-21 06:48:25] INFO - 并发控制:(0 - 2)
+[2018-03-21 06:48:25] INFO - 父进程PID:15127 子进程PID:15138
+[2018-03-21 06:48:25] INFO - 执行子进程,进程序号:0
+[2018-03-21 06:48:25] INFO - 
+[2018-03-21 06:48:25] INFO - ##############(server1)###############
+[2018-03-21 06:48:25] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 06:48:25] INFO - 开始从数据库初始化数据...
+[2018-03-21 06:48:25] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 06:48:25] INFO - (server1)--获取到该服务器: id:1,app_key:server1,其他信息请见数据库.
+[2018-03-21 06:48:25] INFO - (server1)--数据库初始化数据完成...
+[2018-03-21 06:48:25] INFO - (server1)--Get配置-1:id:1,app_key:server1,pro_init:/etc/init.d/tomcat-server1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 06:48:25] INFO - (server1)--Get配置-2:pro_key:tomcat-server1,pro_dir:/data/www/html1,config_dir:/data/www/config1,server_name:后台服务集群1
+[2018-03-21 06:48:25] INFO - ##############[后台服务集群1]###############
+[2018-03-21 06:48:25] INFO - 父进程PID:15127 子进程PID:15150
+[2018-03-21 06:48:25] INFO - 执行子进程,进程序号:1
+[2018-03-21 06:48:25] INFO - 
+[2018-03-21 06:48:25] INFO - ##############(server2)###############
+[2018-03-21 06:48:25] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 06:48:25] INFO - 开始从数据库初始化数据...
+[2018-03-21 06:48:25] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 06:48:25] INFO - (server2)--获取到该服务器: id:2,app_key:server2,其他信息请见数据库.
+[2018-03-21 06:48:25] INFO - (server2)--数据库初始化数据完成...
+[2018-03-21 06:48:25] INFO - (server2)--Get配置-1:id:2,app_key:server2,pro_init:/etc/init.d/tomcat-server2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 06:48:25] INFO - (server2)--Get配置-2:pro_key:tomcat-server2,pro_dir:/data/www/html2,config_dir:/data/www/config2,server_name:后台服务集群2
+[2018-03-21 06:48:25] INFO - ##############[后台服务集群2]###############
+[2018-03-21 06:48:28] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 06:48:28] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 06:48:28] INFO - Exiting Rex...
+[2018-03-21 06:48:28] INFO - Cleaning up...
+[2018-03-21 06:48:28] INFO - Exiting Rex...
+[2018-03-21 06:48:28] INFO - Cleaning up...
+[2018-03-21 06:48:28] INFO - 执行命令模板完成.
+[2018-03-21 06:48:28] INFO - 总共花费时间:3秒.
+[2018-03-21 06:48:28] INFO - Exiting Rex...
+[2018-03-21 06:48:28] INFO - Cleaning up...
+[2018-03-21 06:49:44] INFO - Running task run on <local>
+[2018-03-21 06:49:44] INFO - Starting ...... 操作人: autotask
+[2018-03-21 06:49:44] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 06:49:44] INFO - 
+[2018-03-21 06:49:44] INFO - 开始执行命令模板.
+[2018-03-21 06:49:44] INFO - 并发控制:(0 - 2)
+[2018-03-21 06:49:44] INFO - 父进程PID:15488 子进程PID:15499
+[2018-03-21 06:49:44] INFO - 执行子进程,进程序号:0
+[2018-03-21 06:49:44] INFO - 
+[2018-03-21 06:49:44] INFO - ##############(server1)###############
+[2018-03-21 06:49:44] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 06:49:44] INFO - 开始从数据库初始化数据...
+[2018-03-21 06:49:44] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 06:49:44] INFO - (server1)--获取到该服务器: id:1,app_key:server1,其他信息请见数据库.
+[2018-03-21 06:49:44] INFO - (server1)--数据库初始化数据完成...
+[2018-03-21 06:49:44] INFO - (server1)--Get配置-1:id:1,app_key:server1,pro_init:/etc/init.d/tomcat-server1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 06:49:44] INFO - (server1)--Get配置-2:pro_key:tomcat-server1,pro_dir:/data/www/html1,config_dir:/data/www/config1,server_name:后台服务集群1
+[2018-03-21 06:49:44] INFO - ##############[后台服务集群1]###############
+[2018-03-21 06:49:44] INFO - 父进程PID:15488 子进程PID:15511
+[2018-03-21 06:49:44] INFO - 执行子进程,进程序号:1
+[2018-03-21 06:49:44] INFO - 
+[2018-03-21 06:49:44] INFO - ##############(server2)###############
+[2018-03-21 06:49:44] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 06:49:44] INFO - 开始从数据库初始化数据...
+[2018-03-21 06:49:44] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 06:49:44] INFO - (server2)--获取到该服务器: id:2,app_key:server2,其他信息请见数据库.
+[2018-03-21 06:49:44] INFO - (server2)--数据库初始化数据完成...
+[2018-03-21 06:49:44] INFO - (server2)--Get配置-1:id:2,app_key:server2,pro_init:/etc/init.d/tomcat-server2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 06:49:44] INFO - (server2)--Get配置-2:pro_key:tomcat-server2,pro_dir:/data/www/html2,config_dir:/data/www/config2,server_name:后台服务集群2
+[2018-03-21 06:49:44] INFO - ##############[后台服务集群2]###############
+[2018-03-21 06:49:46] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 06:49:46] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 06:49:46] INFO - Exiting Rex...
+[2018-03-21 06:49:46] INFO - Exiting Rex...
+[2018-03-21 06:49:46] INFO - Cleaning up...
+[2018-03-21 06:49:46] INFO - Cleaning up...
+[2018-03-21 06:49:47] INFO - 执行命令模板完成.
+[2018-03-21 06:49:47] INFO - 总共花费时间:3秒.
+[2018-03-21 06:49:47] INFO - Exiting Rex...
+[2018-03-21 06:49:47] INFO - Cleaning up...
+[2018-03-21 06:49:52] INFO - Running task run on <local>
+[2018-03-21 06:49:52] INFO - Starting ...... 操作人: autotask
+[2018-03-21 06:49:52] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 06:49:52] INFO - 
+[2018-03-21 06:49:52] INFO - 开始执行命令模板.
+[2018-03-21 06:49:52] INFO - 并发控制:(0 - 2)
+[2018-03-21 06:49:52] INFO - 父进程PID:15849 子进程PID:15860
+[2018-03-21 06:49:52] INFO - 执行子进程,进程序号:0
+[2018-03-21 06:49:52] INFO - 
+[2018-03-21 06:49:52] INFO - ##############(server1)###############
+[2018-03-21 06:49:52] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 06:49:52] INFO - 开始从数据库初始化数据...
+[2018-03-21 06:49:52] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 06:49:52] INFO - (server1)--获取到该服务器: id:1,app_key:server1,其他信息请见数据库.
+[2018-03-21 06:49:52] INFO - (server1)--数据库初始化数据完成...
+[2018-03-21 06:49:52] INFO - (server1)--Get配置-1:id:1,app_key:server1,pro_init:/etc/init.d/tomcat-server1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 06:49:52] INFO - (server1)--Get配置-2:pro_key:tomcat-server1,pro_dir:/data/www/html1,config_dir:/data/www/config1,server_name:后台服务集群1
+[2018-03-21 06:49:52] INFO - ##############[后台服务集群1]###############
+[2018-03-21 06:49:53] INFO - 父进程PID:15849 子进程PID:15873
+[2018-03-21 06:49:53] INFO - 执行子进程,进程序号:1
+[2018-03-21 06:49:53] INFO - 
+[2018-03-21 06:49:53] INFO - ##############(server2)###############
+[2018-03-21 06:49:53] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 06:49:53] INFO - 开始从数据库初始化数据...
+[2018-03-21 06:49:53] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 06:49:53] INFO - (server2)--获取到该服务器: id:2,app_key:server2,其他信息请见数据库.
+[2018-03-21 06:49:53] INFO - (server2)--数据库初始化数据完成...
+[2018-03-21 06:49:53] INFO - (server2)--Get配置-1:id:2,app_key:server2,pro_init:/etc/init.d/tomcat-server2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 06:49:53] INFO - (server2)--Get配置-2:pro_key:tomcat-server2,pro_dir:/data/www/html2,config_dir:/data/www/config2,server_name:后台服务集群2
+[2018-03-21 06:49:53] INFO - ##############[后台服务集群2]###############
+[2018-03-21 06:49:54] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 06:49:54] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 06:49:54] INFO - Exiting Rex...
+[2018-03-21 06:49:54] INFO - Cleaning up...
+[2018-03-21 06:49:54] INFO - Exiting Rex...
+[2018-03-21 06:49:54] INFO - Cleaning up...
+[2018-03-21 06:49:54] INFO - 执行命令模板完成.
+[2018-03-21 06:49:54] INFO - 总共花费时间:2秒.
+[2018-03-21 06:49:54] INFO - Exiting Rex...
+[2018-03-21 06:49:54] INFO - Cleaning up...
+[2018-03-21 06:50:30] INFO - Running task run on <local>
+[2018-03-21 06:50:30] INFO - Starting ...... 操作人: autotask
+[2018-03-21 06:50:30] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 06:50:30] INFO - 
+[2018-03-21 06:50:30] INFO - 开始执行命令模板.
+[2018-03-21 06:50:30] INFO - 并发控制:(0 - 2)
+[2018-03-21 06:50:30] INFO - 父进程PID:16211 子进程PID:16222
+[2018-03-21 06:50:30] INFO - 执行子进程,进程序号:0
+[2018-03-21 06:50:30] INFO - 
+[2018-03-21 06:50:30] INFO - ##############(server1)###############
+[2018-03-21 06:50:30] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 06:50:30] INFO - 开始从数据库初始化数据...
+[2018-03-21 06:50:30] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 06:50:30] INFO - (server1)--获取到该服务器: id:1,app_key:server1,其他信息请见数据库.
+[2018-03-21 06:50:30] INFO - (server1)--数据库初始化数据完成...
+[2018-03-21 06:50:30] INFO - (server1)--Get配置-1:id:1,app_key:server1,pro_init:/etc/init.d/tomcat-server1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 06:50:30] INFO - (server1)--Get配置-2:pro_key:tomcat-server1,pro_dir:/data/www/html1,config_dir:/data/www/config1,server_name:后台服务集群1
+[2018-03-21 06:50:30] INFO - ##############[后台服务集群1]###############
+[2018-03-21 06:50:31] INFO - 父进程PID:16211 子进程PID:16249
+[2018-03-21 06:50:31] INFO - 执行子进程,进程序号:1
+[2018-03-21 06:50:31] INFO - 
+[2018-03-21 06:50:31] INFO - ##############(server2)###############
+[2018-03-21 06:50:31] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 06:50:31] INFO - 开始从数据库初始化数据...
+[2018-03-21 06:50:31] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 06:50:31] INFO - (server2)--获取到该服务器: id:2,app_key:server2,其他信息请见数据库.
+[2018-03-21 06:50:31] INFO - (server2)--数据库初始化数据完成...
+[2018-03-21 06:50:31] INFO - (server2)--Get配置-1:id:2,app_key:server2,pro_init:/etc/init.d/tomcat-server2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 06:50:31] INFO - (server2)--Get配置-2:pro_key:tomcat-server2,pro_dir:/data/www/html2,config_dir:/data/www/config2,server_name:后台服务集群2
+[2018-03-21 06:50:31] INFO - ##############[后台服务集群2]###############
+[2018-03-21 06:50:32] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 06:50:32] INFO - Exiting Rex...
+[2018-03-21 06:50:32] INFO - Cleaning up...
+[2018-03-21 06:50:32] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 06:50:32] INFO - Exiting Rex...
+[2018-03-21 06:50:32] INFO - Cleaning up...
+[2018-03-21 06:50:32] INFO - 执行命令模板完成.
+[2018-03-21 06:50:32] INFO - 总共花费时间:2秒.
+[2018-03-21 06:50:32] INFO - Exiting Rex...
+[2018-03-21 06:50:32] INFO - Cleaning up...
+[2018-03-21 06:51:51] INFO - Running task run on <local>
+[2018-03-21 06:51:51] INFO - Starting ...... 操作人: autotask
+[2018-03-21 06:51:51] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 06:51:51] INFO - 
+[2018-03-21 06:51:51] INFO - 开始执行命令模板.
+[2018-03-21 06:51:51] INFO - 并发控制:(0 - 4)
+[2018-03-21 06:51:51] INFO - 父进程PID:16573 子进程PID:16584
+[2018-03-21 06:51:51] INFO - 执行子进程,进程序号:0
+[2018-03-21 06:51:51] INFO - 
+[2018-03-21 06:51:51] INFO - ##############(server1)###############
+[2018-03-21 06:51:51] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 06:51:51] INFO - 开始从数据库初始化数据...
+[2018-03-21 06:51:51] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 06:51:51] INFO - (server1)--获取到该服务器: id:1,app_key:server1,其他信息请见数据库.
+[2018-03-21 06:51:51] INFO - (server1)--数据库初始化数据完成...
+[2018-03-21 06:51:51] INFO - (server1)--Get配置-1:id:1,app_key:server1,pro_init:/etc/init.d/tomcat-server1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 06:51:51] INFO - (server1)--Get配置-2:pro_key:tomcat-server1,pro_dir:/data/www/html1,config_dir:/data/www/config1,server_name:后台服务集群1
+[2018-03-21 06:51:51] INFO - ##############[后台服务集群1]###############
+[2018-03-21 06:51:52] INFO - 父进程PID:16573 子进程PID:16611
+[2018-03-21 06:51:52] INFO - 执行子进程,进程序号:1
+[2018-03-21 06:51:52] INFO - 
+[2018-03-21 06:51:52] INFO - ##############(server2)###############
+[2018-03-21 06:51:52] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 06:51:52] INFO - 开始从数据库初始化数据...
+[2018-03-21 06:51:52] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 06:51:52] INFO - (server2)--获取到该服务器: id:2,app_key:server2,其他信息请见数据库.
+[2018-03-21 06:51:52] INFO - (server2)--数据库初始化数据完成...
+[2018-03-21 06:51:52] INFO - (server2)--Get配置-1:id:2,app_key:server2,pro_init:/etc/init.d/tomcat-server2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 06:51:52] INFO - (server2)--Get配置-2:pro_key:tomcat-server2,pro_dir:/data/www/html2,config_dir:/data/www/config2,server_name:后台服务集群2
+[2018-03-21 06:51:52] INFO - ##############[后台服务集群2]###############
+[2018-03-21 06:51:52] INFO - 父进程PID:16573 子进程PID:16657
+[2018-03-21 06:51:52] INFO - 执行子进程,进程序号:2
+[2018-03-21 06:51:52] INFO - 
+[2018-03-21 06:51:52] INFO - ##############(flow1)###############
+[2018-03-21 06:51:52] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 06:51:52] INFO - 开始从数据库初始化数据...
+[2018-03-21 06:51:52] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 06:51:52] INFO - (flow1)--获取到该服务器: id:3,app_key:flow1,其他信息请见数据库.
+[2018-03-21 06:51:52] INFO - (flow1)--数据库初始化数据完成...
+[2018-03-21 06:51:52] INFO - (flow1)--Get配置-1:id:3,app_key:flow1,pro_init:/etc/init.d/tomcat-flow1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 06:51:52] INFO - (flow1)--Get配置-2:pro_key:tomcat-flow1,pro_dir:/data/www/flow1,config_dir:/data/www/flow1/WEB-INF/classes/,server_name:调度服务集群1
+[2018-03-21 06:51:52] INFO - ##############[调度服务集群1]###############
+[2018-03-21 06:51:52] INFO - 父进程PID:16573 子进程PID:16728
+[2018-03-21 06:51:52] INFO - 执行子进程,进程序号:3
+[2018-03-21 06:51:52] INFO - 
+[2018-03-21 06:51:52] INFO - ##############(flow2)###############
+[2018-03-21 06:51:52] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 06:51:52] INFO - 开始从数据库初始化数据...
+[2018-03-21 06:51:52] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 06:51:52] INFO - (flow2)--获取到该服务器: id:4,app_key:flow2,其他信息请见数据库.
+[2018-03-21 06:51:52] INFO - (flow2)--数据库初始化数据完成...
+[2018-03-21 06:51:52] INFO - (flow2)--Get配置-1:id:4,app_key:flow2,pro_init:/etc/init.d/tomcat-flow2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 06:51:52] INFO - (flow2)--Get配置-2:pro_key:tomcat-flow2,pro_dir:/data/www/flow2,config_dir:/data/www/flow2/WEB-INF/classes/,server_name:调度服务集群2
+[2018-03-21 06:51:52] INFO - ##############[调度服务集群2]###############
+[2018-03-21 06:51:53] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 06:51:53] INFO - Exiting Rex...
+[2018-03-21 06:51:53] INFO - Cleaning up...
+[2018-03-21 06:51:53] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 06:51:53] INFO - Exiting Rex...
+[2018-03-21 06:51:53] INFO - Cleaning up...
+[2018-03-21 06:51:53] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 06:51:53] INFO - Exiting Rex...
+[2018-03-21 06:51:53] INFO - Cleaning up...
+[2018-03-21 06:51:54] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 06:51:54] INFO - Exiting Rex...
+[2018-03-21 06:51:54] INFO - Cleaning up...
+[2018-03-21 06:51:54] INFO - 执行命令模板完成.
+[2018-03-21 06:51:54] INFO - 总共花费时间:3秒.
+[2018-03-21 06:51:54] INFO - Exiting Rex...
+[2018-03-21 06:51:54] INFO - Cleaning up...
+[2018-03-21 06:52:06] INFO - Running task run on <local>
+[2018-03-21 06:52:06] INFO - Starting ...... 操作人: autotask
+[2018-03-21 06:52:06] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 06:52:06] INFO - 
+[2018-03-21 06:52:06] INFO - 开始执行命令模板.
+[2018-03-21 06:52:06] INFO - 并发控制:(0 - 4)
+[2018-03-21 06:52:07] INFO - 父进程PID:17267 子进程PID:17278
+[2018-03-21 06:52:07] INFO - 执行子进程,进程序号:0
+[2018-03-21 06:52:07] INFO - 
+[2018-03-21 06:52:07] INFO - ##############(server1)###############
+[2018-03-21 06:52:07] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 06:52:07] INFO - 开始从数据库初始化数据...
+[2018-03-21 06:52:07] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 06:52:07] INFO - (server1)--获取到该服务器: id:1,app_key:server1,其他信息请见数据库.
+[2018-03-21 06:52:07] INFO - (server1)--数据库初始化数据完成...
+[2018-03-21 06:52:07] INFO - (server1)--Get配置-1:id:1,app_key:server1,pro_init:/etc/init.d/tomcat-server1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 06:52:07] INFO - (server1)--Get配置-2:pro_key:tomcat-server1,pro_dir:/data/www/html1,config_dir:/data/www/config1,server_name:后台服务集群1
+[2018-03-21 06:52:07] INFO - ##############[后台服务集群1]###############
+[2018-03-21 06:52:07] INFO - 父进程PID:17267 子进程PID:17291
+[2018-03-21 06:52:07] INFO - 执行子进程,进程序号:1
+[2018-03-21 06:52:07] INFO - 
+[2018-03-21 06:52:07] INFO - ##############(server2)###############
+[2018-03-21 06:52:07] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 06:52:07] INFO - 开始从数据库初始化数据...
+[2018-03-21 06:52:07] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 06:52:07] INFO - (server2)--获取到该服务器: id:2,app_key:server2,其他信息请见数据库.
+[2018-03-21 06:52:07] INFO - (server2)--数据库初始化数据完成...
+[2018-03-21 06:52:07] INFO - (server2)--Get配置-1:id:2,app_key:server2,pro_init:/etc/init.d/tomcat-server2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 06:52:07] INFO - (server2)--Get配置-2:pro_key:tomcat-server2,pro_dir:/data/www/html2,config_dir:/data/www/config2,server_name:后台服务集群2
+[2018-03-21 06:52:07] INFO - ##############[后台服务集群2]###############
+[2018-03-21 06:52:07] INFO - 父进程PID:17267 子进程PID:17309
+[2018-03-21 06:52:07] INFO - 执行子进程,进程序号:2
+[2018-03-21 06:52:07] INFO - 
+[2018-03-21 06:52:07] INFO - ##############(flow1)###############
+[2018-03-21 06:52:07] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 06:52:07] INFO - 开始从数据库初始化数据...
+[2018-03-21 06:52:07] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 06:52:07] INFO - (flow1)--获取到该服务器: id:3,app_key:flow1,其他信息请见数据库.
+[2018-03-21 06:52:07] INFO - (flow1)--数据库初始化数据完成...
+[2018-03-21 06:52:07] INFO - (flow1)--Get配置-1:id:3,app_key:flow1,pro_init:/etc/init.d/tomcat-flow1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 06:52:07] INFO - (flow1)--Get配置-2:pro_key:tomcat-flow1,pro_dir:/data/www/flow1,config_dir:/data/www/flow1/WEB-INF/classes/,server_name:调度服务集群1
+[2018-03-21 06:52:07] INFO - ##############[调度服务集群1]###############
+[2018-03-21 06:52:07] INFO - 父进程PID:17267 子进程PID:17371
+[2018-03-21 06:52:07] INFO - 执行子进程,进程序号:3
+[2018-03-21 06:52:07] INFO - 
+[2018-03-21 06:52:07] INFO - ##############(flow2)###############
+[2018-03-21 06:52:07] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 06:52:07] INFO - 开始从数据库初始化数据...
+[2018-03-21 06:52:07] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 06:52:07] INFO - (flow2)--获取到该服务器: id:4,app_key:flow2,其他信息请见数据库.
+[2018-03-21 06:52:07] INFO - (flow2)--数据库初始化数据完成...
+[2018-03-21 06:52:07] INFO - (flow2)--Get配置-1:id:4,app_key:flow2,pro_init:/etc/init.d/tomcat-flow2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 06:52:07] INFO - (flow2)--Get配置-2:pro_key:tomcat-flow2,pro_dir:/data/www/flow2,config_dir:/data/www/flow2/WEB-INF/classes/,server_name:调度服务集群2
+[2018-03-21 06:52:07] INFO - ##############[调度服务集群2]###############
+[2018-03-21 06:52:13] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 06:52:13] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 06:52:13] INFO - Exiting Rex...
+[2018-03-21 06:52:13] INFO - Cleaning up...
+[2018-03-21 06:52:13] INFO - Exiting Rex...
+[2018-03-21 06:52:13] INFO - Cleaning up...
+[2018-03-21 06:52:14] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 06:52:14] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 06:52:15] INFO - Exiting Rex...
+[2018-03-21 06:52:15] INFO - Exiting Rex...
+[2018-03-21 06:52:15] INFO - Cleaning up...
+[2018-03-21 06:52:15] INFO - Cleaning up...
+[2018-03-21 06:52:15] INFO - 执行命令模板完成.
+[2018-03-21 06:52:15] INFO - 总共花费时间:9秒.
+[2018-03-21 06:52:15] INFO - Exiting Rex...
+[2018-03-21 06:52:15] INFO - Cleaning up...
+[2018-03-21 07:02:07] INFO - Running task run on <local>
+[2018-03-21 07:02:07] INFO - Starting ...... 操作人: autotask
+[2018-03-21 07:02:07] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 07:02:07] INFO - 
+[2018-03-21 07:02:08] INFO - 开始执行命令模板.
+[2018-03-21 07:02:08] INFO - 并发控制:(0 - 4)
+[2018-03-21 07:02:08] INFO - 父进程PID:18006 子进程PID:18017
+[2018-03-21 07:02:08] INFO - 执行子进程,进程序号:0
+[2018-03-21 07:02:08] INFO - 
+[2018-03-21 07:02:08] INFO - ##############(server1)###############
+[2018-03-21 07:02:08] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:02:08] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:02:08] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:02:08] INFO - (server1)--获取到该服务器: id:1,app_key:server1,其他信息请见数据库.
+[2018-03-21 07:02:08] INFO - (server1)--数据库初始化数据完成...
+[2018-03-21 07:02:08] INFO - (server1)--Get配置-1:id:1,app_key:server1,pro_init:/etc/init.d/tomcat-server1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:02:08] INFO - (server1)--Get配置-2:pro_key:tomcat-server1,pro_dir:/data/www/html1,config_dir:/data/www/config1,server_name:后台服务集群1
+[2018-03-21 07:02:08] INFO - ##############[后台服务集群1]###############
+[2018-03-21 07:02:08] INFO - 父进程PID:18006 子进程PID:18029
+[2018-03-21 07:02:08] INFO - 执行子进程,进程序号:1
+[2018-03-21 07:02:08] INFO - 
+[2018-03-21 07:02:08] INFO - ##############(server2)###############
+[2018-03-21 07:02:08] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:02:08] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:02:08] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:02:08] INFO - (server2)--获取到该服务器: id:2,app_key:server2,其他信息请见数据库.
+[2018-03-21 07:02:08] INFO - (server2)--数据库初始化数据完成...
+[2018-03-21 07:02:08] INFO - (server2)--Get配置-1:id:2,app_key:server2,pro_init:/etc/init.d/tomcat-server2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:02:08] INFO - (server2)--Get配置-2:pro_key:tomcat-server2,pro_dir:/data/www/html2,config_dir:/data/www/config2,server_name:后台服务集群2
+[2018-03-21 07:02:08] INFO - ##############[后台服务集群2]###############
+[2018-03-21 07:02:08] INFO - 父进程PID:18006 子进程PID:18041
+[2018-03-21 07:02:08] INFO - 执行子进程,进程序号:2
+[2018-03-21 07:02:08] INFO - 
+[2018-03-21 07:02:08] INFO - ##############(flow1)###############
+[2018-03-21 07:02:08] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:02:08] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:02:08] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:02:08] INFO - (flow1)--获取到该服务器: id:3,app_key:flow1,其他信息请见数据库.
+[2018-03-21 07:02:08] INFO - (flow1)--数据库初始化数据完成...
+[2018-03-21 07:02:08] INFO - (flow1)--Get配置-1:id:3,app_key:flow1,pro_init:/etc/init.d/tomcat-flow1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:02:08] INFO - (flow1)--Get配置-2:pro_key:tomcat-flow1,pro_dir:/data/www/flow1,config_dir:/data/www/flow1/WEB-INF/classes/,server_name:调度服务集群1
+[2018-03-21 07:02:08] INFO - ##############[调度服务集群1]###############
+[2018-03-21 07:02:09] INFO - 父进程PID:18006 子进程PID:18056
+[2018-03-21 07:02:09] INFO - 执行子进程,进程序号:3
+[2018-03-21 07:02:09] INFO - 
+[2018-03-21 07:02:09] INFO - ##############(flow2)###############
+[2018-03-21 07:02:09] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:02:09] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:02:09] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:02:09] INFO - (flow2)--获取到该服务器: id:4,app_key:flow2,其他信息请见数据库.
+[2018-03-21 07:02:09] INFO - (flow2)--数据库初始化数据完成...
+[2018-03-21 07:02:09] INFO - (flow2)--Get配置-1:id:4,app_key:flow2,pro_init:/etc/init.d/tomcat-flow2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:02:09] INFO - (flow2)--Get配置-2:pro_key:tomcat-flow2,pro_dir:/data/www/flow2,config_dir:/data/www/flow2/WEB-INF/classes/,server_name:调度服务集群2
+[2018-03-21 07:02:09] INFO - ##############[调度服务集群2]###############
+[2018-03-21 07:02:13] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:02:13] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:02:13] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:02:13] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:02:14] INFO - Exiting Rex...
+[2018-03-21 07:02:14] INFO - Cleaning up...
+[2018-03-21 07:02:14] INFO - Exiting Rex...
+[2018-03-21 07:02:14] INFO - Cleaning up...
+[2018-03-21 07:02:17] INFO - Exiting Rex...
+[2018-03-21 07:02:17] INFO - Exiting Rex...
+[2018-03-21 07:02:17] INFO - Cleaning up...
+[2018-03-21 07:02:17] INFO - Cleaning up...
+[2018-03-21 07:02:17] INFO - 执行命令模板完成.
+[2018-03-21 07:02:17] INFO - 总共花费时间:10秒.
+[2018-03-21 07:02:17] INFO - Exiting Rex...
+[2018-03-21 07:02:17] INFO - Cleaning up...
+[2018-03-21 07:02:30] INFO - Running task run on <local>
+[2018-03-21 07:02:30] INFO - Starting ...... 操作人: autotask
+[2018-03-21 07:02:30] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 07:02:30] INFO - 
+[2018-03-21 07:02:30] INFO - 开始执行命令模板.
+[2018-03-21 07:02:30] INFO - 并发控制:(0 - 4)
+[2018-03-21 07:02:31] INFO - 父进程PID:18705 子进程PID:18716
+[2018-03-21 07:02:31] INFO - 执行子进程,进程序号:0
+[2018-03-21 07:02:31] INFO - 
+[2018-03-21 07:02:31] INFO - ##############(server1)###############
+[2018-03-21 07:02:31] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:02:31] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:02:31] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:02:31] INFO - (server1)--获取到该服务器: id:1,app_key:server1,其他信息请见数据库.
+[2018-03-21 07:02:31] INFO - (server1)--数据库初始化数据完成...
+[2018-03-21 07:02:31] INFO - (server1)--Get配置-1:id:1,app_key:server1,pro_init:/etc/init.d/tomcat-server1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:02:31] INFO - (server1)--Get配置-2:pro_key:tomcat-server1,pro_dir:/data/www/html1,config_dir:/data/www/config1,server_name:后台服务集群1
+[2018-03-21 07:02:31] INFO - ##############[后台服务集群1]###############
+[2018-03-21 07:02:31] INFO - 父进程PID:18705 子进程PID:18728
+[2018-03-21 07:02:31] INFO - 执行子进程,进程序号:1
+[2018-03-21 07:02:31] INFO - 
+[2018-03-21 07:02:31] INFO - ##############(server2)###############
+[2018-03-21 07:02:31] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:02:31] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:02:31] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:02:31] INFO - (server2)--获取到该服务器: id:2,app_key:server2,其他信息请见数据库.
+[2018-03-21 07:02:31] INFO - (server2)--数据库初始化数据完成...
+[2018-03-21 07:02:31] INFO - (server2)--Get配置-1:id:2,app_key:server2,pro_init:/etc/init.d/tomcat-server2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:02:31] INFO - (server2)--Get配置-2:pro_key:tomcat-server2,pro_dir:/data/www/html2,config_dir:/data/www/config2,server_name:后台服务集群2
+[2018-03-21 07:02:31] INFO - ##############[后台服务集群2]###############
+[2018-03-21 07:02:31] INFO - 父进程PID:18705 子进程PID:18746
+[2018-03-21 07:02:31] INFO - 执行子进程,进程序号:2
+[2018-03-21 07:02:31] INFO - 
+[2018-03-21 07:02:31] INFO - ##############(flow1)###############
+[2018-03-21 07:02:31] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:02:31] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:02:31] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:02:31] INFO - (flow1)--获取到该服务器: id:3,app_key:flow1,其他信息请见数据库.
+[2018-03-21 07:02:31] INFO - (flow1)--数据库初始化数据完成...
+[2018-03-21 07:02:31] INFO - (flow1)--Get配置-1:id:3,app_key:flow1,pro_init:/etc/init.d/tomcat-flow1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:02:31] INFO - (flow1)--Get配置-2:pro_key:tomcat-flow1,pro_dir:/data/www/flow1,config_dir:/data/www/flow1/WEB-INF/classes/,server_name:调度服务集群1
+[2018-03-21 07:02:31] INFO - ##############[调度服务集群1]###############
+[2018-03-21 07:02:31] INFO - 父进程PID:18705 子进程PID:18778
+[2018-03-21 07:02:31] INFO - 执行子进程,进程序号:3
+[2018-03-21 07:02:31] INFO - 
+[2018-03-21 07:02:31] INFO - ##############(flow2)###############
+[2018-03-21 07:02:31] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:02:31] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:02:32] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:02:32] INFO - (flow2)--获取到该服务器: id:4,app_key:flow2,其他信息请见数据库.
+[2018-03-21 07:02:32] INFO - (flow2)--数据库初始化数据完成...
+[2018-03-21 07:02:32] INFO - (flow2)--Get配置-1:id:4,app_key:flow2,pro_init:/etc/init.d/tomcat-flow2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:02:32] INFO - (flow2)--Get配置-2:pro_key:tomcat-flow2,pro_dir:/data/www/flow2,config_dir:/data/www/flow2/WEB-INF/classes/,server_name:调度服务集群2
+[2018-03-21 07:02:32] INFO - ##############[调度服务集群2]###############
+[2018-03-21 07:02:35] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:02:35] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:02:35] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:02:35] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:02:35] INFO - Exiting Rex...
+[2018-03-21 07:02:35] INFO - Cleaning up...
+[2018-03-21 07:02:35] INFO - Exiting Rex...
+[2018-03-21 07:02:35] INFO - Exiting Rex...
+[2018-03-21 07:02:35] INFO - Cleaning up...
+[2018-03-21 07:02:35] INFO - Cleaning up...
+[2018-03-21 07:02:35] INFO - Exiting Rex...
+[2018-03-21 07:02:35] INFO - Cleaning up...
+[2018-03-21 07:02:37] INFO - 执行命令模板完成.
+[2018-03-21 07:02:37] INFO - 总共花费时间:7秒.
+[2018-03-21 07:02:37] INFO - Exiting Rex...
+[2018-03-21 07:02:37] INFO - Cleaning up...
+[2018-03-21 07:09:00] INFO - Running task run on <local>
+[2018-03-21 07:09:00] INFO - Starting ...... 操作人: autotask
+[2018-03-21 07:09:00] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 07:09:00] INFO - 
+[2018-03-21 07:09:00] INFO - 开始执行命令模板.
+[2018-03-21 07:09:00] INFO - 并发控制:(0 - 4)
+[2018-03-21 07:09:01] INFO - 父进程PID:19423 子进程PID:19434
+[2018-03-21 07:09:01] INFO - 执行子进程,进程序号:0
+[2018-03-21 07:09:01] INFO - 
+[2018-03-21 07:09:01] INFO - ##############(server1)###############
+[2018-03-21 07:09:01] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:09:01] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:09:01] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:09:01] INFO - (server1)--获取到该服务器: id:1,app_key:server1,其他信息请见数据库.
+[2018-03-21 07:09:01] INFO - (server1)--数据库初始化数据完成...
+[2018-03-21 07:09:01] INFO - (server1)--Get配置-1:id:1,app_key:server1,pro_init:/etc/init.d/tomcat-server1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:09:01] INFO - (server1)--Get配置-2:pro_key:tomcat-server1,pro_dir:/data/www/html1,config_dir:/data/www/config1,server_name:后台服务集群1
+[2018-03-21 07:09:01] INFO - ##############[后台服务集群1]###############
+[2018-03-21 07:09:01] INFO - 父进程PID:19423 子进程PID:19446
+[2018-03-21 07:09:01] INFO - 执行子进程,进程序号:1
+[2018-03-21 07:09:01] INFO - 
+[2018-03-21 07:09:01] INFO - ##############(server2)###############
+[2018-03-21 07:09:01] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:09:01] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:09:01] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:09:01] INFO - (server2)--获取到该服务器: id:2,app_key:server2,其他信息请见数据库.
+[2018-03-21 07:09:01] INFO - (server2)--数据库初始化数据完成...
+[2018-03-21 07:09:01] INFO - (server2)--Get配置-1:id:2,app_key:server2,pro_init:/etc/init.d/tomcat-server2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:09:01] INFO - (server2)--Get配置-2:pro_key:tomcat-server2,pro_dir:/data/www/html2,config_dir:/data/www/config2,server_name:后台服务集群2
+[2018-03-21 07:09:01] INFO - ##############[后台服务集群2]###############
+[2018-03-21 07:09:01] INFO - 父进程PID:19423 子进程PID:19460
+[2018-03-21 07:09:01] INFO - 执行子进程,进程序号:2
+[2018-03-21 07:09:01] INFO - 
+[2018-03-21 07:09:01] INFO - ##############(flow1)###############
+[2018-03-21 07:09:01] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:09:01] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:09:01] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:09:01] INFO - (flow1)--获取到该服务器: id:3,app_key:flow1,其他信息请见数据库.
+[2018-03-21 07:09:01] INFO - (flow1)--数据库初始化数据完成...
+[2018-03-21 07:09:01] INFO - (flow1)--Get配置-1:id:3,app_key:flow1,pro_init:/etc/init.d/tomcat-flow1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:09:01] INFO - (flow1)--Get配置-2:pro_key:tomcat-flow1,pro_dir:/data/www/flow1,config_dir:/data/www/flow1/WEB-INF/classes/,server_name:调度服务集群1
+[2018-03-21 07:09:01] INFO - ##############[调度服务集群1]###############
+[2018-03-21 07:09:01] INFO - 父进程PID:19423 子进程PID:19479
+[2018-03-21 07:09:01] INFO - 执行子进程,进程序号:3
+[2018-03-21 07:09:01] INFO - 
+[2018-03-21 07:09:01] INFO - ##############(flow2)###############
+[2018-03-21 07:09:01] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:09:01] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:09:02] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:09:02] INFO - (flow2)--获取到该服务器: id:4,app_key:flow2,其他信息请见数据库.
+[2018-03-21 07:09:02] INFO - (flow2)--数据库初始化数据完成...
+[2018-03-21 07:09:02] INFO - (flow2)--Get配置-1:id:4,app_key:flow2,pro_init:/etc/init.d/tomcat-flow2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:09:02] INFO - (flow2)--Get配置-2:pro_key:tomcat-flow2,pro_dir:/data/www/flow2,config_dir:/data/www/flow2/WEB-INF/classes/,server_name:调度服务集群2
+[2018-03-21 07:09:02] INFO - ##############[调度服务集群2]###############
+[2018-03-21 07:09:05] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:09:05] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:09:05] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:09:05] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:09:05] INFO - Exiting Rex...
+[2018-03-21 07:09:05] INFO - Exiting Rex...
+[2018-03-21 07:09:05] INFO - Cleaning up...
+[2018-03-21 07:09:05] INFO - Cleaning up...
+[2018-03-21 07:09:05] INFO - Exiting Rex...
+[2018-03-21 07:09:05] INFO - Exiting Rex...
+[2018-03-21 07:09:05] INFO - Cleaning up...
+[2018-03-21 07:09:05] INFO - Cleaning up...
+[2018-03-21 07:09:06] INFO - 执行命令模板完成.
+[2018-03-21 07:09:06] INFO - 总共花费时间:6秒.
+[2018-03-21 07:09:06] INFO - Exiting Rex...
+[2018-03-21 07:09:06] INFO - Cleaning up...
+[2018-03-21 07:10:36] INFO - Running task run on <local>
+[2018-03-21 07:10:36] INFO - Starting ...... 操作人: autotask
+[2018-03-21 07:10:36] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 07:10:36] INFO - 
+[2018-03-21 07:10:36] INFO - 开始执行命令模板.
+[2018-03-21 07:10:36] INFO - 并发控制:(0 - 4)
+[2018-03-21 07:10:36] INFO - 父进程PID:20122 子进程PID:20133
+[2018-03-21 07:10:36] INFO - 执行子进程,进程序号:0
+[2018-03-21 07:10:36] INFO - 
+[2018-03-21 07:10:36] INFO - ##############(server1)###############
+[2018-03-21 07:10:36] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:10:36] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:10:36] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:10:36] INFO - (server1)--获取到该服务器: id:1,app_key:server1,其他信息请见数据库.
+[2018-03-21 07:10:36] INFO - (server1)--数据库初始化数据完成...
+[2018-03-21 07:10:36] INFO - (server1)--Get配置-1:id:1,app_key:server1,pro_init:/etc/init.d/tomcat-server1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:10:36] INFO - (server1)--Get配置-2:pro_key:tomcat-server1,pro_dir:/data/www/html1,config_dir:/data/www/config1,server_name:??????1
+[2018-03-21 07:10:36] INFO - ##############[??????1]###############
+[2018-03-21 07:10:36] INFO - 父进程PID:20122 子进程PID:20146
+[2018-03-21 07:10:36] INFO - 执行子进程,进程序号:1
+[2018-03-21 07:10:36] INFO - 
+[2018-03-21 07:10:36] INFO - ##############(server2)###############
+[2018-03-21 07:10:36] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:10:36] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:10:36] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:10:36] INFO - (server2)--获取到该服务器: id:2,app_key:server2,其他信息请见数据库.
+[2018-03-21 07:10:36] INFO - (server2)--数据库初始化数据完成...
+[2018-03-21 07:10:36] INFO - (server2)--Get配置-1:id:2,app_key:server2,pro_init:/etc/init.d/tomcat-server2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:10:36] INFO - (server2)--Get配置-2:pro_key:tomcat-server2,pro_dir:/data/www/html2,config_dir:/data/www/config2,server_name:??????2
+[2018-03-21 07:10:36] INFO - ##############[??????2]###############
+[2018-03-21 07:10:36] INFO - 父进程PID:20122 子进程PID:20163
+[2018-03-21 07:10:36] INFO - 执行子进程,进程序号:2
+[2018-03-21 07:10:36] INFO - 
+[2018-03-21 07:10:36] INFO - ##############(flow1)###############
+[2018-03-21 07:10:36] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:10:36] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:10:36] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:10:36] INFO - (flow1)--获取到该服务器: id:3,app_key:flow1,其他信息请见数据库.
+[2018-03-21 07:10:36] INFO - (flow1)--数据库初始化数据完成...
+[2018-03-21 07:10:36] INFO - (flow1)--Get配置-1:id:3,app_key:flow1,pro_init:/etc/init.d/tomcat-flow1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:10:36] INFO - (flow1)--Get配置-2:pro_key:tomcat-flow1,pro_dir:/data/www/flow1,config_dir:/data/www/flow1/WEB-INF/classes/,server_name:??????1
+[2018-03-21 07:10:36] INFO - ##############[??????1]###############
+[2018-03-21 07:10:37] INFO - 父进程PID:20122 子进程PID:20214
+[2018-03-21 07:10:37] INFO - 执行子进程,进程序号:3
+[2018-03-21 07:10:37] INFO - 
+[2018-03-21 07:10:37] INFO - ##############(flow2)###############
+[2018-03-21 07:10:37] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:10:37] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:10:37] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:10:37] INFO - (flow2)--获取到该服务器: id:4,app_key:flow2,其他信息请见数据库.
+[2018-03-21 07:10:37] INFO - (flow2)--数据库初始化数据完成...
+[2018-03-21 07:10:37] INFO - (flow2)--Get配置-1:id:4,app_key:flow2,pro_init:/etc/init.d/tomcat-flow2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:10:37] INFO - (flow2)--Get配置-2:pro_key:tomcat-flow2,pro_dir:/data/www/flow2,config_dir:/data/www/flow2/WEB-INF/classes/,server_name:??????2
+[2018-03-21 07:10:37] INFO - ##############[??????2]###############
+[2018-03-21 07:10:40] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:10:40] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:10:40] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:10:40] INFO - Exiting Rex...
+[2018-03-21 07:10:40] INFO - Exiting Rex...
+[2018-03-21 07:10:40] INFO - Exiting Rex...
+[2018-03-21 07:10:40] INFO - Cleaning up...
+[2018-03-21 07:10:40] INFO - Cleaning up...
+[2018-03-21 07:10:40] INFO - Cleaning up...
+[2018-03-21 07:10:40] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:10:40] INFO - Exiting Rex...
+[2018-03-21 07:10:40] INFO - Cleaning up...
+[2018-03-21 07:10:40] INFO - 执行命令模板完成.
+[2018-03-21 07:10:40] INFO - 总共花费时间:4秒.
+[2018-03-21 07:10:40] INFO - Exiting Rex...
+[2018-03-21 07:10:40] INFO - Cleaning up...
+[2018-03-21 07:10:47] INFO - Running task run on <local>
+[2018-03-21 07:10:47] INFO - Starting ...... 操作人: autotask
+[2018-03-21 07:10:47] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 07:10:47] INFO - 
+[2018-03-21 07:10:47] INFO - 开始执行命令模板.
+[2018-03-21 07:10:47] INFO - 并发控制:(0 - 4)
+[2018-03-21 07:10:47] INFO - 父进程PID:20818 子进程PID:20829
+[2018-03-21 07:10:47] INFO - 执行子进程,进程序号:0
+[2018-03-21 07:10:47] INFO - 
+[2018-03-21 07:10:47] INFO - ##############(server1)###############
+[2018-03-21 07:10:47] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:10:47] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:10:47] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:10:47] INFO - (server1)--获取到该服务器: id:1,app_key:server1,其他信息请见数据库.
+[2018-03-21 07:10:47] INFO - (server1)--数据库初始化数据完成...
+[2018-03-21 07:10:47] INFO - (server1)--Get配置-1:id:1,app_key:server1,pro_init:/etc/init.d/tomcat-server1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:10:47] INFO - (server1)--Get配置-2:pro_key:tomcat-server1,pro_dir:/data/www/html1,config_dir:/data/www/config1,server_name:??????1
+[2018-03-21 07:10:47] INFO - ##############[??????1]###############
+[2018-03-21 07:10:48] INFO - 父进程PID:20818 子进程PID:20856
+[2018-03-21 07:10:48] INFO - 执行子进程,进程序号:1
+[2018-03-21 07:10:48] INFO - 
+[2018-03-21 07:10:48] INFO - ##############(server2)###############
+[2018-03-21 07:10:48] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:10:48] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:10:48] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:10:48] INFO - (server2)--获取到该服务器: id:2,app_key:server2,其他信息请见数据库.
+[2018-03-21 07:10:48] INFO - (server2)--数据库初始化数据完成...
+[2018-03-21 07:10:48] INFO - (server2)--Get配置-1:id:2,app_key:server2,pro_init:/etc/init.d/tomcat-server2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:10:48] INFO - (server2)--Get配置-2:pro_key:tomcat-server2,pro_dir:/data/www/html2,config_dir:/data/www/config2,server_name:??????2
+[2018-03-21 07:10:48] INFO - ##############[??????2]###############
+[2018-03-21 07:10:48] INFO - 父进程PID:20818 子进程PID:20905
+[2018-03-21 07:10:48] INFO - 执行子进程,进程序号:2
+[2018-03-21 07:10:48] INFO - 
+[2018-03-21 07:10:48] INFO - ##############(flow1)###############
+[2018-03-21 07:10:48] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:10:48] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:10:48] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:10:48] INFO - (flow1)--获取到该服务器: id:3,app_key:flow1,其他信息请见数据库.
+[2018-03-21 07:10:48] INFO - (flow1)--数据库初始化数据完成...
+[2018-03-21 07:10:48] INFO - (flow1)--Get配置-1:id:3,app_key:flow1,pro_init:/etc/init.d/tomcat-flow1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:10:48] INFO - (flow1)--Get配置-2:pro_key:tomcat-flow1,pro_dir:/data/www/flow1,config_dir:/data/www/flow1/WEB-INF/classes/,server_name:??????1
+[2018-03-21 07:10:48] INFO - ##############[??????1]###############
+[2018-03-21 07:10:48] INFO - 父进程PID:20818 子进程PID:20976
+[2018-03-21 07:10:48] INFO - 执行子进程,进程序号:3
+[2018-03-21 07:10:48] INFO - 
+[2018-03-21 07:10:48] INFO - ##############(flow2)###############
+[2018-03-21 07:10:48] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:10:48] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:10:48] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:10:48] INFO - (flow2)--获取到该服务器: id:4,app_key:flow2,其他信息请见数据库.
+[2018-03-21 07:10:48] INFO - (flow2)--数据库初始化数据完成...
+[2018-03-21 07:10:48] INFO - (flow2)--Get配置-1:id:4,app_key:flow2,pro_init:/etc/init.d/tomcat-flow2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:10:48] INFO - (flow2)--Get配置-2:pro_key:tomcat-flow2,pro_dir:/data/www/flow2,config_dir:/data/www/flow2/WEB-INF/classes/,server_name:??????2
+[2018-03-21 07:10:48] INFO - ##############[??????2]###############
+[2018-03-21 07:10:51] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:10:51] INFO - Exiting Rex...
+[2018-03-21 07:10:51] INFO - Cleaning up...
+[2018-03-21 07:10:51] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:10:51] INFO - Exiting Rex...
+[2018-03-21 07:10:51] INFO - Cleaning up...
+[2018-03-21 07:10:51] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:10:51] INFO - Exiting Rex...
+[2018-03-21 07:10:51] INFO - Cleaning up...
+[2018-03-21 07:10:51] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:10:51] INFO - Exiting Rex...
+[2018-03-21 07:10:51] INFO - Cleaning up...
+[2018-03-21 07:10:51] INFO - 执行命令模板完成.
+[2018-03-21 07:10:51] INFO - 总共花费时间:4秒.
+[2018-03-21 07:10:51] INFO - Exiting Rex...
+[2018-03-21 07:10:51] INFO - Cleaning up...
+[2018-03-21 07:11:45] INFO - Running task run on <local>
+[2018-03-21 07:11:45] INFO - Starting ...... 操作人: autotask
+[2018-03-21 07:11:45] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 07:11:45] ERROR - Error executing task:
+[2018-03-21 07:11:45] ERROR - You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'SELECT app_key FROM pre_server_detail WHERE app_key != '' and app_key is not nul' at line 1 at /usr/share/perl5/vendor_perl/Rex/Commands/DB.pm line 135.
+
+[2018-03-21 07:11:45] ERROR - Error executing task:
+[2018-03-21 07:11:45] ERROR - You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'SELECT app_key FROM pre_server_detail WHERE app_key != '' and app_key is not nul' at line 1 at /usr/share/perl5/vendor_perl/Rex/Commands/DB.pm line 135.
+
+[2018-03-21 07:11:46] ERROR - 1 out of 1 task(s) failed:
+[2018-03-21 07:11:46] ERROR - 	run failed on <local>
+[2018-03-21 07:11:46] ERROR - 		You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'SELECT app_key FROM pre_server_detail WHERE app_key != '' and app_key is not nul' at line 1 at /usr/share/perl5/vendor_perl/Rex/Commands/DB.pm line 135.
+[2018-03-21 07:14:47] INFO - Running task run on <local>
+[2018-03-21 07:14:47] INFO - Starting ...... 操作人: autotask
+[2018-03-21 07:14:47] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 07:14:47] INFO - 
+[2018-03-21 07:14:47] INFO - 开始执行命令模板.
+[2018-03-21 07:14:47] INFO - 并发控制:(0 - 4)
+[2018-03-21 07:14:47] INFO - 父进程PID:21553 子进程PID:21564
+[2018-03-21 07:14:47] INFO - 执行子进程,进程序号:0
+[2018-03-21 07:14:47] INFO - 
+[2018-03-21 07:14:47] INFO - ##############(server1)###############
+[2018-03-21 07:14:47] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:14:47] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:14:47] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:14:47] INFO - (server1)--获取到该服务器: id:1,app_key:server1,其他信息请见数据库.
+[2018-03-21 07:14:47] INFO - (server1)--数据库初始化数据完成...
+[2018-03-21 07:14:47] INFO - (server1)--Get配置-1:id:1,app_key:server1,pro_init:/etc/init.d/tomcat-server1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:14:47] INFO - (server1)--Get配置-2:pro_key:tomcat-server1,pro_dir:/data/www/html1,config_dir:/data/www/config1,server_name:??????1
+[2018-03-21 07:14:47] INFO - ##############[??????1]###############
+[2018-03-21 07:14:47] INFO - 父进程PID:21553 子进程PID:21579
+[2018-03-21 07:14:47] INFO - 执行子进程,进程序号:1
+[2018-03-21 07:14:47] INFO - 
+[2018-03-21 07:14:47] INFO - ##############(server2)###############
+[2018-03-21 07:14:47] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:14:47] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:14:47] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:14:47] INFO - (server2)--获取到该服务器: id:2,app_key:server2,其他信息请见数据库.
+[2018-03-21 07:14:47] INFO - (server2)--数据库初始化数据完成...
+[2018-03-21 07:14:47] INFO - (server2)--Get配置-1:id:2,app_key:server2,pro_init:/etc/init.d/tomcat-server2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:14:47] INFO - (server2)--Get配置-2:pro_key:tomcat-server2,pro_dir:/data/www/html2,config_dir:/data/www/config2,server_name:??????2
+[2018-03-21 07:14:47] INFO - ##############[??????2]###############
+[2018-03-21 07:14:47] INFO - 父进程PID:21553 子进程PID:21620
+[2018-03-21 07:14:48] INFO - 执行子进程,进程序号:2
+[2018-03-21 07:14:48] INFO - 
+[2018-03-21 07:14:48] INFO - ##############(flow1)###############
+[2018-03-21 07:14:48] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:14:48] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:14:48] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:14:48] INFO - (flow1)--获取到该服务器: id:3,app_key:flow1,其他信息请见数据库.
+[2018-03-21 07:14:48] INFO - (flow1)--数据库初始化数据完成...
+[2018-03-21 07:14:48] INFO - (flow1)--Get配置-1:id:3,app_key:flow1,pro_init:/etc/init.d/tomcat-flow1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:14:48] INFO - (flow1)--Get配置-2:pro_key:tomcat-flow1,pro_dir:/data/www/flow1,config_dir:/data/www/flow1/WEB-INF/classes/,server_name:??????1
+[2018-03-21 07:14:48] INFO - ##############[??????1]###############
+[2018-03-21 07:14:48] INFO - 父进程PID:21553 子进程PID:21687
+[2018-03-21 07:14:48] INFO - 执行子进程,进程序号:3
+[2018-03-21 07:14:48] INFO - 
+[2018-03-21 07:14:48] INFO - ##############(flow2)###############
+[2018-03-21 07:14:48] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:14:48] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:14:48] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:14:48] INFO - (flow2)--获取到该服务器: id:4,app_key:flow2,其他信息请见数据库.
+[2018-03-21 07:14:48] INFO - (flow2)--数据库初始化数据完成...
+[2018-03-21 07:14:48] INFO - (flow2)--Get配置-1:id:4,app_key:flow2,pro_init:/etc/init.d/tomcat-flow2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:14:48] INFO - (flow2)--Get配置-2:pro_key:tomcat-flow2,pro_dir:/data/www/flow2,config_dir:/data/www/flow2/WEB-INF/classes/,server_name:??????2
+[2018-03-21 07:14:48] INFO - ##############[??????2]###############
+[2018-03-21 07:14:50] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:14:50] INFO - Exiting Rex...
+[2018-03-21 07:14:50] INFO - Cleaning up...
+[2018-03-21 07:14:51] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:14:51] INFO - Exiting Rex...
+[2018-03-21 07:14:51] INFO - Cleaning up...
+[2018-03-21 07:14:51] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:14:51] INFO - Exiting Rex...
+[2018-03-21 07:14:51] INFO - Cleaning up...
+[2018-03-21 07:14:51] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:14:51] INFO - Exiting Rex...
+[2018-03-21 07:14:51] INFO - Cleaning up...
+[2018-03-21 07:14:51] INFO - 执行命令模板完成.
+[2018-03-21 07:14:51] INFO - 总共花费时间:4秒.
+[2018-03-21 07:14:51] INFO - Exiting Rex...
+[2018-03-21 07:14:51] INFO - Cleaning up...
+[2018-03-21 07:16:05] INFO - Running task run on <local>
+[2018-03-21 07:16:05] INFO - Starting ...... 操作人: autotask
+[2018-03-21 07:16:05] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 07:16:05] INFO - 
+[2018-03-21 07:16:05] INFO - 开始执行命令模板.
+[2018-03-21 07:16:05] INFO - 并发控制:(0 - 4)
+[2018-03-21 07:16:05] INFO - 父进程PID:22257 子进程PID:22268
+[2018-03-21 07:16:05] INFO - 执行子进程,进程序号:0
+[2018-03-21 07:16:05] INFO - 
+[2018-03-21 07:16:05] INFO - ##############(server1)###############
+[2018-03-21 07:16:05] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:16:05] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:16:05] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:16:05] INFO - (server1)--获取到该服务器: id:1,app_key:server1,其他信息请见数据库.
+[2018-03-21 07:16:05] INFO - (server1)--数据库初始化数据完成...
+[2018-03-21 07:16:05] INFO - (server1)--Get配置-1:id:1,app_key:server1,pro_init:/etc/init.d/tomcat-server1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:16:05] INFO - (server1)--Get配置-2:pro_key:tomcat-server1,pro_dir:/data/www/html1,config_dir:/data/www/config1,server_name:??????1
+[2018-03-21 07:16:05] INFO - ##############[??????1]###############
+[2018-03-21 07:16:06] INFO - 父进程PID:22257 子进程PID:22283
+[2018-03-21 07:16:06] INFO - 执行子进程,进程序号:1
+[2018-03-21 07:16:06] INFO - 
+[2018-03-21 07:16:06] INFO - ##############(server2)###############
+[2018-03-21 07:16:06] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:16:06] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:16:06] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:16:06] INFO - (server2)--获取到该服务器: id:2,app_key:server2,其他信息请见数据库.
+[2018-03-21 07:16:06] INFO - (server2)--数据库初始化数据完成...
+[2018-03-21 07:16:06] INFO - (server2)--Get配置-1:id:2,app_key:server2,pro_init:/etc/init.d/tomcat-server2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:16:06] INFO - (server2)--Get配置-2:pro_key:tomcat-server2,pro_dir:/data/www/html2,config_dir:/data/www/config2,server_name:??????2
+[2018-03-21 07:16:06] INFO - ##############[??????2]###############
+[2018-03-21 07:16:06] INFO - 父进程PID:22257 子进程PID:22333
+[2018-03-21 07:16:06] INFO - 执行子进程,进程序号:2
+[2018-03-21 07:16:06] INFO - 
+[2018-03-21 07:16:06] INFO - ##############(flow1)###############
+[2018-03-21 07:16:06] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:16:06] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:16:06] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:16:06] INFO - (flow1)--获取到该服务器: id:3,app_key:flow1,其他信息请见数据库.
+[2018-03-21 07:16:06] INFO - (flow1)--数据库初始化数据完成...
+[2018-03-21 07:16:06] INFO - (flow1)--Get配置-1:id:3,app_key:flow1,pro_init:/etc/init.d/tomcat-flow1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:16:06] INFO - (flow1)--Get配置-2:pro_key:tomcat-flow1,pro_dir:/data/www/flow1,config_dir:/data/www/flow1/WEB-INF/classes/,server_name:??????1
+[2018-03-21 07:16:06] INFO - ##############[??????1]###############
+[2018-03-21 07:16:06] INFO - 父进程PID:22257 子进程PID:22404
+[2018-03-21 07:16:06] INFO - 执行子进程,进程序号:3
+[2018-03-21 07:16:06] INFO - 
+[2018-03-21 07:16:06] INFO - ##############(flow2)###############
+[2018-03-21 07:16:06] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:16:06] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:16:06] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:16:06] INFO - (flow2)--获取到该服务器: id:4,app_key:flow2,其他信息请见数据库.
+[2018-03-21 07:16:06] INFO - (flow2)--数据库初始化数据完成...
+[2018-03-21 07:16:06] INFO - (flow2)--Get配置-1:id:4,app_key:flow2,pro_init:/etc/init.d/tomcat-flow2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:16:06] INFO - (flow2)--Get配置-2:pro_key:tomcat-flow2,pro_dir:/data/www/flow2,config_dir:/data/www/flow2/WEB-INF/classes/,server_name:??????2
+[2018-03-21 07:16:06] INFO - ##############[??????2]###############
+[2018-03-21 07:16:09] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:16:09] INFO - Exiting Rex...
+[2018-03-21 07:16:09] INFO - Cleaning up...
+[2018-03-21 07:16:09] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:16:09] INFO - Exiting Rex...
+[2018-03-21 07:16:09] INFO - Cleaning up...
+[2018-03-21 07:16:09] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:16:09] INFO - Exiting Rex...
+[2018-03-21 07:16:09] INFO - Cleaning up...
+[2018-03-21 07:16:09] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:16:09] INFO - Exiting Rex...
+[2018-03-21 07:16:09] INFO - Cleaning up...
+[2018-03-21 07:16:09] INFO - 执行命令模板完成.
+[2018-03-21 07:16:09] INFO - 总共花费时间:4秒.
+[2018-03-21 07:16:09] INFO - Exiting Rex...
+[2018-03-21 07:16:09] INFO - Cleaning up...
+[2018-03-21 07:16:25] INFO - Running task run on <local>
+[2018-03-21 07:16:25] INFO - Starting ...... 操作人: autotask
+[2018-03-21 07:16:25] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 07:16:25] INFO - 
+[2018-03-21 07:16:25] INFO - 开始执行命令模板.
+[2018-03-21 07:16:25] INFO - 并发控制:(0 - 4)
+[2018-03-21 07:16:26] INFO - 父进程PID:22958 子进程PID:22969
+[2018-03-21 07:16:26] INFO - 执行子进程,进程序号:0
+[2018-03-21 07:16:26] INFO - 
+[2018-03-21 07:16:26] INFO - ##############(server1)###############
+[2018-03-21 07:16:26] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:16:26] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:16:26] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:16:26] INFO - (server1)--获取到该服务器: id:1,app_key:server1,其他信息请见数据库.
+[2018-03-21 07:16:26] INFO - (server1)--数据库初始化数据完成...
+[2018-03-21 07:16:26] INFO - (server1)--Get配置-1:id:1,app_key:server1,pro_init:/etc/init.d/tomcat-server1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:16:26] INFO - (server1)--Get配置-2:pro_key:tomcat-server1,pro_dir:/data/www/html1,config_dir:/data/www/config1,server_name:后台服务集群1
+[2018-03-21 07:16:26] INFO - ##############[后台服务集群1]###############
+[2018-03-21 07:16:26] INFO - 父进程PID:22958 子进程PID:22992
+[2018-03-21 07:16:26] INFO - 执行子进程,进程序号:1
+[2018-03-21 07:16:26] INFO - 
+[2018-03-21 07:16:26] INFO - ##############(server2)###############
+[2018-03-21 07:16:26] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:16:26] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:16:26] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:16:26] INFO - (server2)--获取到该服务器: id:2,app_key:server2,其他信息请见数据库.
+[2018-03-21 07:16:26] INFO - (server2)--数据库初始化数据完成...
+[2018-03-21 07:16:26] INFO - (server2)--Get配置-1:id:2,app_key:server2,pro_init:/etc/init.d/tomcat-server2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:16:26] INFO - (server2)--Get配置-2:pro_key:tomcat-server2,pro_dir:/data/www/html2,config_dir:/data/www/config2,server_name:后台服务集群2
+[2018-03-21 07:16:26] INFO - ##############[后台服务集群2]###############
+[2018-03-21 07:16:26] INFO - 父进程PID:22958 子进程PID:23045
+[2018-03-21 07:16:26] INFO - 执行子进程,进程序号:2
+[2018-03-21 07:16:26] INFO - 
+[2018-03-21 07:16:26] INFO - ##############(flow1)###############
+[2018-03-21 07:16:26] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:16:26] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:16:26] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:16:26] INFO - (flow1)--获取到该服务器: id:3,app_key:flow1,其他信息请见数据库.
+[2018-03-21 07:16:26] INFO - (flow1)--数据库初始化数据完成...
+[2018-03-21 07:16:26] INFO - (flow1)--Get配置-1:id:3,app_key:flow1,pro_init:/etc/init.d/tomcat-flow1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:16:26] INFO - (flow1)--Get配置-2:pro_key:tomcat-flow1,pro_dir:/data/www/flow1,config_dir:/data/www/flow1/WEB-INF/classes/,server_name:调度服务集群1
+[2018-03-21 07:16:26] INFO - ##############[调度服务集群1]###############
+[2018-03-21 07:16:26] INFO - 父进程PID:22958 子进程PID:23116
+[2018-03-21 07:16:26] INFO - 执行子进程,进程序号:3
+[2018-03-21 07:16:26] INFO - 
+[2018-03-21 07:16:26] INFO - ##############(flow2)###############
+[2018-03-21 07:16:26] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:16:26] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:16:26] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:16:26] INFO - (flow2)--获取到该服务器: id:4,app_key:flow2,其他信息请见数据库.
+[2018-03-21 07:16:26] INFO - (flow2)--数据库初始化数据完成...
+[2018-03-21 07:16:26] INFO - (flow2)--Get配置-1:id:4,app_key:flow2,pro_init:/etc/init.d/tomcat-flow2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:16:26] INFO - (flow2)--Get配置-2:pro_key:tomcat-flow2,pro_dir:/data/www/flow2,config_dir:/data/www/flow2/WEB-INF/classes/,server_name:调度服务集群2
+[2018-03-21 07:16:26] INFO - ##############[调度服务集群2]###############
+[2018-03-21 07:16:29] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:16:29] INFO - Exiting Rex...
+[2018-03-21 07:16:29] INFO - Cleaning up...
+[2018-03-21 07:16:29] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:16:29] INFO - Exiting Rex...
+[2018-03-21 07:16:29] INFO - Cleaning up...
+[2018-03-21 07:16:29] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:16:29] INFO - Exiting Rex...
+[2018-03-21 07:16:29] INFO - Cleaning up...
+[2018-03-21 07:16:29] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:16:30] INFO - Exiting Rex...
+[2018-03-21 07:16:30] INFO - Cleaning up...
+[2018-03-21 07:16:30] INFO - 执行命令模板完成.
+[2018-03-21 07:16:30] INFO - 总共花费时间:5秒.
+[2018-03-21 07:16:30] INFO - Exiting Rex...
+[2018-03-21 07:16:30] INFO - Cleaning up...
+[2018-03-21 07:16:33] INFO - Running task run on <local>
+[2018-03-21 07:16:33] INFO - Starting ...... 操作人: autotask
+[2018-03-21 07:16:33] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 07:16:33] INFO - 
+[2018-03-21 07:16:33] INFO - 开始执行命令模板.
+[2018-03-21 07:16:33] INFO - 并发控制:(0 - 4)
+[2018-03-21 07:16:33] INFO - 父进程PID:23656 子进程PID:23667
+[2018-03-21 07:16:33] INFO - 执行子进程,进程序号:0
+[2018-03-21 07:16:33] INFO - 
+[2018-03-21 07:16:33] INFO - ##############(server1)###############
+[2018-03-21 07:16:33] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:16:33] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:16:33] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:16:33] INFO - (server1)--获取到该服务器: id:1,app_key:server1,其他信息请见数据库.
+[2018-03-21 07:16:33] INFO - (server1)--数据库初始化数据完成...
+[2018-03-21 07:16:33] INFO - (server1)--Get配置-1:id:1,app_key:server1,pro_init:/etc/init.d/tomcat-server1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:16:33] INFO - (server1)--Get配置-2:pro_key:tomcat-server1,pro_dir:/data/www/html1,config_dir:/data/www/config1,server_name:后台服务集群1
+[2018-03-21 07:16:33] INFO - ##############[后台服务集群1]###############
+[2018-03-21 07:16:33] INFO - 父进程PID:23656 子进程PID:23694
+[2018-03-21 07:16:33] INFO - 执行子进程,进程序号:1
+[2018-03-21 07:16:33] INFO - 
+[2018-03-21 07:16:33] INFO - ##############(server2)###############
+[2018-03-21 07:16:33] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:16:33] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:16:33] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:16:34] INFO - (server2)--获取到该服务器: id:2,app_key:server2,其他信息请见数据库.
+[2018-03-21 07:16:34] INFO - (server2)--数据库初始化数据完成...
+[2018-03-21 07:16:34] INFO - (server2)--Get配置-1:id:2,app_key:server2,pro_init:/etc/init.d/tomcat-server2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:16:34] INFO - (server2)--Get配置-2:pro_key:tomcat-server2,pro_dir:/data/www/html2,config_dir:/data/www/config2,server_name:后台服务集群2
+[2018-03-21 07:16:34] INFO - ##############[后台服务集群2]###############
+[2018-03-21 07:16:34] INFO - 父进程PID:23656 子进程PID:23743
+[2018-03-21 07:16:34] INFO - 执行子进程,进程序号:2
+[2018-03-21 07:16:34] INFO - 
+[2018-03-21 07:16:34] INFO - ##############(flow1)###############
+[2018-03-21 07:16:34] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:16:34] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:16:34] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:16:34] INFO - (flow1)--获取到该服务器: id:3,app_key:flow1,其他信息请见数据库.
+[2018-03-21 07:16:34] INFO - (flow1)--数据库初始化数据完成...
+[2018-03-21 07:16:34] INFO - (flow1)--Get配置-1:id:3,app_key:flow1,pro_init:/etc/init.d/tomcat-flow1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:16:34] INFO - (flow1)--Get配置-2:pro_key:tomcat-flow1,pro_dir:/data/www/flow1,config_dir:/data/www/flow1/WEB-INF/classes/,server_name:调度服务集群1
+[2018-03-21 07:16:34] INFO - ##############[调度服务集群1]###############
+[2018-03-21 07:16:34] INFO - 父进程PID:23656 子进程PID:23805
+[2018-03-21 07:16:34] INFO - 执行子进程,进程序号:3
+[2018-03-21 07:16:34] INFO - 
+[2018-03-21 07:16:34] INFO - ##############(flow2)###############
+[2018-03-21 07:16:34] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:16:34] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:16:34] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:16:34] INFO - (flow2)--获取到该服务器: id:4,app_key:flow2,其他信息请见数据库.
+[2018-03-21 07:16:34] INFO - (flow2)--数据库初始化数据完成...
+[2018-03-21 07:16:34] INFO - (flow2)--Get配置-1:id:4,app_key:flow2,pro_init:/etc/init.d/tomcat-flow2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:16:34] INFO - (flow2)--Get配置-2:pro_key:tomcat-flow2,pro_dir:/data/www/flow2,config_dir:/data/www/flow2/WEB-INF/classes/,server_name:调度服务集群2
+[2018-03-21 07:16:34] INFO - ##############[调度服务集群2]###############
+[2018-03-21 07:16:37] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:16:37] INFO - Exiting Rex...
+[2018-03-21 07:16:37] INFO - Cleaning up...
+[2018-03-21 07:16:37] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:16:37] INFO - Exiting Rex...
+[2018-03-21 07:16:37] INFO - Cleaning up...
+[2018-03-21 07:16:37] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:16:37] INFO - Exiting Rex...
+[2018-03-21 07:16:37] INFO - Cleaning up...
+[2018-03-21 07:16:37] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:16:37] INFO - Exiting Rex...
+[2018-03-21 07:16:37] INFO - Cleaning up...
+[2018-03-21 07:16:37] INFO - 执行命令模板完成.
+[2018-03-21 07:16:37] INFO - 总共花费时间:4秒.
+[2018-03-21 07:16:37] INFO - Exiting Rex...
+[2018-03-21 07:16:37] INFO - Cleaning up...
+[2018-03-21 07:16:46] INFO - Running task run on <local>
+[2018-03-21 07:16:46] INFO - Starting ...... 操作人: autotask
+[2018-03-21 07:16:46] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-21 07:16:46] INFO - 
+[2018-03-21 07:16:46] INFO - 开始执行命令模板.
+[2018-03-21 07:16:46] INFO - 并发控制:(0 - 4)
+[2018-03-21 07:16:46] INFO - 父进程PID:24354 子进程PID:24365
+[2018-03-21 07:16:46] INFO - 执行子进程,进程序号:0
+[2018-03-21 07:16:46] INFO - 
+[2018-03-21 07:16:46] INFO - ##############(server1)###############
+[2018-03-21 07:16:46] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:16:46] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:16:46] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:16:46] INFO - (server1)--获取到该服务器: id:1,app_key:server1,其他信息请见数据库.
+[2018-03-21 07:16:46] INFO - (server1)--数据库初始化数据完成...
+[2018-03-21 07:16:46] INFO - (server1)--Get配置-1:id:1,app_key:server1,pro_init:/etc/init.d/tomcat-server1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:16:46] INFO - (server1)--Get配置-2:pro_key:tomcat-server1,pro_dir:/data/www/html1,config_dir:/data/www/config1,server_name:后台服务集群1
+[2018-03-21 07:16:46] INFO - ##############[后台服务集群1]###############
+[2018-03-21 07:16:46] INFO - 父进程PID:24354 子进程PID:24392
+[2018-03-21 07:16:46] INFO - 执行子进程,进程序号:1
+[2018-03-21 07:16:46] INFO - 
+[2018-03-21 07:16:46] INFO - ##############(server2)###############
+[2018-03-21 07:16:46] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:16:46] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:16:46] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:16:46] INFO - (server2)--获取到该服务器: id:2,app_key:server2,其他信息请见数据库.
+[2018-03-21 07:16:46] INFO - (server2)--数据库初始化数据完成...
+[2018-03-21 07:16:46] INFO - (server2)--Get配置-1:id:2,app_key:server2,pro_init:/etc/init.d/tomcat-server2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:16:46] INFO - (server2)--Get配置-2:pro_key:tomcat-server2,pro_dir:/data/www/html2,config_dir:/data/www/config2,server_name:后台服务集群2
+[2018-03-21 07:16:46] INFO - ##############[后台服务集群2]###############
+[2018-03-21 07:16:46] INFO - 父进程PID:24354 子进程PID:24441
+[2018-03-21 07:16:46] INFO - 执行子进程,进程序号:2
+[2018-03-21 07:16:46] INFO - 
+[2018-03-21 07:16:46] INFO - ##############(flow1)###############
+[2018-03-21 07:16:46] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:16:46] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:16:46] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:16:46] INFO - (flow1)--获取到该服务器: id:3,app_key:flow1,其他信息请见数据库.
+[2018-03-21 07:16:46] INFO - (flow1)--数据库初始化数据完成...
+[2018-03-21 07:16:46] INFO - (flow1)--Get配置-1:id:3,app_key:flow1,pro_init:/etc/init.d/tomcat-flow1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:16:46] INFO - (flow1)--Get配置-2:pro_key:tomcat-flow1,pro_dir:/data/www/flow1,config_dir:/data/www/flow1/WEB-INF/classes/,server_name:调度服务集群1
+[2018-03-21 07:16:46] INFO - ##############[调度服务集群1]###############
+[2018-03-21 07:16:47] INFO - 父进程PID:24354 子进程PID:24509
+[2018-03-21 07:16:47] INFO - 执行子进程,进程序号:3
+[2018-03-21 07:16:47] INFO - 
+[2018-03-21 07:16:47] INFO - ##############(flow2)###############
+[2018-03-21 07:16:47] INFO - Running task Deploy:Core:init on current connection
+[2018-03-21 07:16:47] INFO - 开始从数据库初始化数据...
+[2018-03-21 07:16:47] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-21 07:16:47] INFO - (flow2)--获取到该服务器: id:4,app_key:flow2,其他信息请见数据库.
+[2018-03-21 07:16:47] INFO - (flow2)--数据库初始化数据完成...
+[2018-03-21 07:16:47] INFO - (flow2)--Get配置-1:id:4,app_key:flow2,pro_init:/etc/init.d/tomcat-flow2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-21 07:16:47] INFO - (flow2)--Get配置-2:pro_key:tomcat-flow2,pro_dir:/data/www/flow2,config_dir:/data/www/flow2/WEB-INF/classes/,server_name:调度服务集群2
+[2018-03-21 07:16:47] INFO - ##############[调度服务集群2]###############
+[2018-03-21 07:16:49] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:16:49] INFO - Exiting Rex...
+[2018-03-21 07:16:49] INFO - Cleaning up...
+[2018-03-21 07:16:49] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:16:49] INFO - Exiting Rex...
+[2018-03-21 07:16:49] INFO - Cleaning up...
+[2018-03-21 07:16:50] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:16:50] INFO - Exiting Rex...
+[2018-03-21 07:16:50] INFO - Cleaning up...
+[2018-03-21 07:16:50] INFO - Running task Deploy:Db:showname on current connection
+[2018-03-21 07:16:50] INFO - Exiting Rex...
+[2018-03-21 07:16:50] INFO - Cleaning up...
+[2018-03-21 07:16:50] INFO - 执行命令模板完成.
+[2018-03-21 07:16:50] INFO - 总共花费时间:4秒.
+[2018-03-21 07:16:50] INFO - Exiting Rex...
+[2018-03-21 07:16:50] INFO - Cleaning up...
