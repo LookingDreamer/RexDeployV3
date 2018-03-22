@@ -45,18 +45,4 @@ rm html2/WEB-INF/classes/{config.properties,applicationContext.xml,generatorConf
 cp /data/RexDeployV3/docker/tomcat* /etc/init.d/
 chmod a+x /etc/init.d/tomcat*
 echo "客户端初始化结束....`date`"
-echo "开始进行数据处理..."
-rm /var/lib/mysql/* -rf 
-mysql_install_db --user=mysql
-cd /usr ; /usr/bin/mysqld_safe &
-sleep 2
-mysqladmin -u root password 'root' 
-mysql -uroot -p'root'  -e 'CREATE DATABASE autotask DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci'
-cd /data/RexDeployV3
-/bin/bash install/dockerinit.sh setConfig
-mysqladmin -uroot -p'root' shutdown
-adduser autotask
-echo "autotask" |passwd --stdin  autotask
-echo "结束数据处理..."
-
 
