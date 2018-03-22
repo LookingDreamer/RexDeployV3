@@ -27,10 +27,6 @@ find tomcat-server2/ -name server.xml -exec sed -i  "s/8009/8029/g" {} \;
 find tomcat-flow1/ -name server.xml -exec sed -i  "s/8009/8039/g" {} \;
 find tomcat-flow2/ -name server.xml -exec sed -i  "s/8009/8049/g" {} \;
 
-mkdir -p /data/www/html1_2018_0321_1628
-wget https://download.osichina.net/package/pack.war 
-unzip pack.war -d /data/www/html1_2018_0321_1628 
-rm -f pack.war 
 cp /data/www/html1_2018_0321_1628 /data/www/html2_2018_0321_1628 -ar
 cp /data/www/html1_2018_0321_1628 /data/www/flow1_2018_0321_1628 -ar
 cp /data/www/html1_2018_0321_1628 /data/www/flow2_2018_0321_1628 -ar
@@ -43,10 +39,24 @@ cd /data/www
 mv html1/WEB-INF/classes/config.properties config1/
 mv html1/WEB-INF/classes/applicationContext.xml config1/
 mv html1/WEB-INF/classes/log4j.properties config1/
-mv html1/WEB-INF/classes/ config1/
+mv html1/WEB-INF/classes/generatorConfig.xml config1/
 cp config1 config2 -ar
 rm html2/WEB-INF/classes/{config.properties,applicationContext.xml,generatorConfig.xml,log4j.properties} -f
 cp /data/RexDeployV3/docker/tomcat* /etc/init.d/
 chmod a+x /etc/init.d/tomcat*
 echo "客户端初始化结束....`date`"
+echo "开始进行数据处理..."
+rm /var/lib/mysql/* -rf 
+mysql_install_db --user=mysql
+cd /usr ; /usr/bin/mysqld_safe &
+sleep 2
+mysqladmin -u root password 'root' 
+mysql -uroot -p'root'  -e 'CREATE DATABASE autotask DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci'
+cd /data/RexDeployV3
+/bin/bash install/dockerinit.sh setConfig
+mysqladmin -uroot -p'root' shutdown
+adduser autotask
+echo "autotask" |passwd --stdin  autotask
+echo "结束数据处理..."
+
 
