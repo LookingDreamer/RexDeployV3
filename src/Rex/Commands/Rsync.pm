@@ -327,6 +327,16 @@ sub sync {
          
 
         ],
+
+        [
+          qr{password: ?$},
+          sub {
+            Rex::Logger::info("[文件传输] 输入密码 xxxx");
+            $exp->send( $pass . "\n" );
+            exp_continue;
+          }
+        ],
+
         [
           qr{return_result0},
           sub {
