@@ -153,7 +153,7 @@ sub sync {
   }
   else {
     Rex::Logger::debug("Uploading $source -> $dest");
-    push @rsync_cmd, "rsync -a -e '\%s' --verbose --stats $params $source ";
+    push @rsync_cmd, "rsync -a -W --numeric-ids  -e '\%s' --verbose --stats $params $source ";
     push @rsync_cmd, $auth->{user} . "\@$server:$dest";
   }
 
@@ -250,11 +250,11 @@ sub sync {
     if ( $auth_type eq "key" ) {
       $cmd = sprintf( $cmd,
         #'ssh -tt -i ' . $server->get_private_key . " -o StrictHostKeyChecking=no ",
-        'ssh  -i ' . $server->get_private_key . " -o StrictHostKeyChecking=no ",
+        'ssh  -i ' . $server->get_private_key . " -T -o Compression=no -x -o StrictHostKeyChecking=no ",
         $port );
     }
     else {
-      $cmd = sprintf( $cmd, 'ssh -o StrictHostKeyChecking=no ' );
+      $cmd = sprintf( $cmd, 'ssh  -T -o Compression=no -x -o StrictHostKeyChecking=no ' );
     }
     push(
       @expect_options,
