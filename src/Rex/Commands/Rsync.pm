@@ -147,7 +147,7 @@ sub sync {
 
   if ( $opt && exists $opt->{'download'} && $opt->{'download'} == 1 ) {
     Rex::Logger::debug("Downloading $source -> $dest");
-    push @rsync_cmd, "rsync -a -e '\%s' --verbose --stats $params ";
+    push @rsync_cmd, "rsync -a -W --numeric-ids -e '\%s' --verbose --stats $params ";
     push @rsync_cmd, $auth->{user} . "\@" . $server . ":" . $source;
     push @rsync_cmd, $dest;
   }
@@ -175,6 +175,8 @@ sub sync {
     }else{
       push @rsync_cmd, "--rsync-path='rsync'; echo return_result\$?";
     } 
+  }else{
+    push @rsync_cmd, "--rsync-path='rsync'; echo return_result\$?";
   }
 
   $cmd = join( " ", @rsync_cmd );
@@ -194,7 +196,7 @@ sub sync {
 
   if ( $auth_type eq "pass" ) {
     $cmd = sprintf( $cmd,
-      'ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no ', $port );
+      'ssh  -T -o Compression=no -x -o StrictHostKeyChecking=no -o PubkeyAuthentication=no ', $port );
     push(
       @expect_options,
       [
