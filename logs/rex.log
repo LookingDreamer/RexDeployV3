@@ -1,0 +1,99 @@
+[2018-03-22 22:22:19] ERROR - No task named 'lost' found. Task names are case sensitive and the module delimiter is a single colon.
+[2018-03-22 22:22:22] INFO - Running task list on <local>
+[2018-03-22 22:22:22] INFO - Running task Deploy:Db:getlistkey on current connection
+[2018-03-22 22:22:22] INFO - 
+[2018-03-22 22:22:22] INFO - 获取关键词如下: 
+ server1 server2 flow1 flow2 4
+[2018-03-22 22:22:23] INFO - All tasks successful on all hosts
+[2018-03-23 05:35:14] INFO - Running task list on <local>
+[2018-03-23 05:35:14] INFO - Running task Deploy:Db:getlistkey on current connection
+[2018-03-23 05:35:14] INFO - 
+[2018-03-23 05:35:14] INFO - 获取关键词如下: 
+ server1 server2 flow1 flow2 4
+[2018-03-23 05:35:14] INFO - All tasks successful on all hosts
+[2018-03-23 06:40:01] INFO - Running task check on <local>
+[2018-03-23 06:40:01] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-23 06:40:01] INFO - 关键字(--k='')不能为空
+[2018-03-23 06:40:01] INFO - Exiting Rex...
+[2018-03-23 06:40:01] INFO - Cleaning up...
+[2018-03-23 06:40:14] INFO - Running task check on <local>
+[2018-03-23 06:40:14] INFO - Running task Deploy:Db:getallkey on current connection
+[2018-03-23 06:40:14] INFO - Starting ...... 操作人: autotask
+[2018-03-23 06:40:14] INFO - 
+[2018-03-23 06:40:14] INFO - 开始检查 发布系统 服务器以及数据库配置.
+[2018-03-23 06:40:14] INFO - 
+[2018-03-23 06:40:14] INFO - ##############(server1)###############
+[2018-03-23 06:40:14] INFO - Running task Deploy:Core:init on current connection
+[2018-03-23 06:40:14] INFO - 开始从数据库初始化数据...
+[2018-03-23 06:40:14] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-23 06:40:14] INFO - (server1)--获取到该服务器: id:1,app_key:server1,其他信息请见数据库.
+[2018-03-23 06:40:14] INFO - (server1)--数据库初始化数据完成...
+[2018-03-23 06:40:14] INFO - (server1)--Get配置-1:id:1,app_key:server1,pro_init:/etc/init.d/tomcat-server1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-23 06:40:14] INFO - (server1)--Get配置-2:pro_key:tomcat-server1,pro_dir:/data/www/html1,config_dir:/data/www/config1,server_name:后台服务集群1
+[2018-03-23 06:40:14] INFO - ##############[后台服务集群1]###############
+[2018-03-23 06:40:14] INFO - Running task Deploy:Core:prepare on current connection
+[2018-03-23 06:40:14] INFO - (server1)--第一次连接,获取远程服务器基本信息.
+[2018-03-23 06:40:16] INFO - (server1)--启动文件: /etc/init.d/tomcat-server1:存在OK
+[2018-03-23 06:40:16] INFO - (server1)--工程目录: /data/www/html1:存在OK
+[2018-03-23 06:40:16] INFO - (server1)--配置目录: /data/www/config1:存在OK
+[2018-03-23 06:40:16] WARN - (server1)--系统应用进程不存在
+[2018-03-23 06:40:16] INFO - (server1)--第一次连接,初始化服务器信息完成.
+[2018-03-23 06:40:16] INFO - 
+[2018-03-23 06:40:16] INFO - ##############(server2)###############
+[2018-03-23 06:40:16] INFO - Running task Deploy:Core:init on current connection
+[2018-03-23 06:40:16] INFO - 开始从数据库初始化数据...
+[2018-03-23 06:40:16] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-23 06:40:16] INFO - (server2)--获取到该服务器: id:2,app_key:server2,其他信息请见数据库.
+[2018-03-23 06:40:16] INFO - (server2)--数据库初始化数据完成...
+[2018-03-23 06:40:16] INFO - (server2)--Get配置-1:id:2,app_key:server2,pro_init:/etc/init.d/tomcat-server2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-23 06:40:16] INFO - (server2)--Get配置-2:pro_key:tomcat-server2,pro_dir:/data/www/html2,config_dir:/data/www/config2,server_name:后台服务集群2
+[2018-03-23 06:40:16] INFO - ##############[后台服务集群2]###############
+[2018-03-23 06:40:16] INFO - Running task Deploy:Core:prepare on current connection
+[2018-03-23 06:40:16] INFO - (server2)--第一次连接,获取远程服务器基本信息.
+[2018-03-23 06:40:17] INFO - (server2)--启动文件: /etc/init.d/tomcat-server2:存在OK
+[2018-03-23 06:40:17] INFO - (server2)--工程目录: /data/www/html2:存在OK
+[2018-03-23 06:40:17] INFO - (server2)--配置目录: /data/www/config2:存在OK
+[2018-03-23 06:40:17] WARN - (server2)--系统应用进程不存在
+[2018-03-23 06:40:17] INFO - (server2)--第一次连接,初始化服务器信息完成.
+[2018-03-23 06:40:17] INFO - 
+[2018-03-23 06:40:17] INFO - ##############(flow1)###############
+[2018-03-23 06:40:17] INFO - Running task Deploy:Core:init on current connection
+[2018-03-23 06:40:17] INFO - 开始从数据库初始化数据...
+[2018-03-23 06:40:17] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-23 06:40:17] INFO - (flow1)--获取到该服务器: id:3,app_key:flow1,其他信息请见数据库.
+[2018-03-23 06:40:17] INFO - (flow1)--数据库初始化数据完成...
+[2018-03-23 06:40:17] INFO - (flow1)--Get配置-1:id:3,app_key:flow1,pro_init:/etc/init.d/tomcat-flow1,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-23 06:40:17] INFO - (flow1)--Get配置-2:pro_key:tomcat-flow1,pro_dir:/data/www/flow1,config_dir:/data/www/flow1/WEB-INF/classes/,server_name:调度服务集群1
+[2018-03-23 06:40:17] INFO - ##############[调度服务集群1]###############
+[2018-03-23 06:40:17] INFO - Running task Deploy:Core:prepare on current connection
+[2018-03-23 06:40:17] INFO - (flow1)--第一次连接,获取远程服务器基本信息.
+[2018-03-23 06:40:18] INFO - (flow1)--启动文件: /etc/init.d/tomcat-flow1:存在OK
+[2018-03-23 06:40:18] INFO - (flow1)--工程目录: /data/www/flow1:存在OK
+[2018-03-23 06:40:18] INFO - (flow1)--配置目录: /data/www/flow1/WEB-INF/classes/:存在OK
+[2018-03-23 06:40:18] WARN - (flow1)--系统应用进程不存在
+[2018-03-23 06:40:18] INFO - (flow1)--第一次连接,初始化服务器信息完成.
+[2018-03-23 06:40:18] INFO - 
+[2018-03-23 06:40:18] INFO - ##############(flow2)###############
+[2018-03-23 06:40:18] INFO - Running task Deploy:Core:init on current connection
+[2018-03-23 06:40:18] INFO - 开始从数据库初始化数据...
+[2018-03-23 06:40:18] INFO - 读取数据库表数据:pre_server_detail
+[2018-03-23 06:40:18] INFO - (flow2)--获取到该服务器: id:4,app_key:flow2,其他信息请见数据库.
+[2018-03-23 06:40:18] INFO - (flow2)--数据库初始化数据完成...
+[2018-03-23 06:40:18] INFO - (flow2)--Get配置-1:id:4,app_key:flow2,pro_init:/etc/init.d/tomcat-flow2,pro_type:tomcat,network_ip:127.0.0.1
+[2018-03-23 06:40:18] INFO - (flow2)--Get配置-2:pro_key:tomcat-flow2,pro_dir:/data/www/flow2,config_dir:/data/www/flow2/WEB-INF/classes/,server_name:调度服务集群2
+[2018-03-23 06:40:18] INFO - ##############[调度服务集群2]###############
+[2018-03-23 06:40:18] INFO - Running task Deploy:Core:prepare on current connection
+[2018-03-23 06:40:18] INFO - (flow2)--第一次连接,获取远程服务器基本信息.
+[2018-03-23 06:40:20] INFO - (flow2)--启动文件: /etc/init.d/tomcat-flow2:存在OK
+[2018-03-23 06:40:20] INFO - (flow2)--工程目录: /data/www/flow2:存在OK
+[2018-03-23 06:40:20] INFO - (flow2)--配置目录: /data/www/flow2/WEB-INF/classes/:存在OK
+[2018-03-23 06:40:20] WARN - (flow2)--系统应用进程不存在
+[2018-03-23 06:40:20] INFO - (flow2)--第一次连接,初始化服务器信息完成.
+[2018-03-23 06:40:20] INFO - 检查 发布系统 服务器以及数据库配置完成.
+[2018-03-23 06:40:20] INFO - All tasks successful on all hosts
+[2018-03-23 06:44:22] INFO - Running task list on <local>
+[2018-03-23 06:44:22] INFO - Running task Deploy:Db:getlistkey on current connection
+[2018-03-23 06:44:22] INFO - 
+[2018-03-23 06:44:22] INFO - 获取关键词如下: 
+ server1 server2 flow1 flow2 4
+[2018-03-23 06:44:22] INFO - All tasks successful on all hosts
