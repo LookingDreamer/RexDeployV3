@@ -98,15 +98,14 @@ task "download", sub {
     $username = $param->{user} ;
   });
   if (Rex::is_sudo) {
-    if ( $key_auth eq "true" ) {
-        my $sudo_config_status = run "grep 'Defaults:$username !requiretty' /etc/sudoers |wc -l";
+
+       my $sudo_config_status = run "grep 'Defaults:$username !requiretty' /etc/sudoers |wc -l";
        if (  $sudo_config_status eq '0') {
          run "echo 'Defaults:$username !requiretty' >> /etc/sudoers ";
          Rex::Logger::info("[文件传输] echo 'Defaults:$username !requiretty' >> /etc/sudoers ");
        }else{
          Rex::Logger::info("[文件传输] sudo tty终端已经关闭.");
        }
-    }
   };
 
    my $real_size = run " du -sh $dir1 | awk '{print \$1}'";
@@ -266,15 +265,14 @@ task "upload", sub {
   Rex::Logger::info("---------aaa---");
   if (Rex::is_sudo) {
     Rex::Logger::info("------------");	
-    if ( $key_auth eq "true" ) {
-        my $sudo_config_status = run "grep 'Defaults:$username !requiretty' /etc/sudoers |wc -l";
+       my $sudo_config_status = run "grep 'Defaults:$username !requiretty' /etc/sudoers |wc -l";
        if (  $sudo_config_status eq '0') {
          run "echo 'Defaults:$username !requiretty' >> /etc/sudoers ";
          Rex::Logger::info("[文件传输] echo 'Defaults:$username !requiretty' >> /etc/sudoers ");
        }else{
          Rex::Logger::info("[文件传输] sudo tty终端已经关闭.");
        }
-    }
+    
   };
 
    my $size = $sizearr[0];
@@ -369,15 +367,15 @@ task "upload", sub {
         $username = $param->{user} ;
       });
       if (Rex::is_sudo) {
-        if ( $key_auth eq "true" ) {
-            my $sudo_config_status = run "grep 'Defaults:$username !requiretty' /etc/sudoers |wc -l";
+ 
+           my $sudo_config_status = run "grep 'Defaults:$username !requiretty' /etc/sudoers |wc -l";
            if (  $sudo_config_status eq '0') {
              run "echo 'Defaults:$username !requiretty' >> /etc/sudoers ";
              Rex::Logger::info("[文件传输] echo 'Defaults:$username !requiretty' >> /etc/sudoers ");
            }else{
              Rex::Logger::info("[文件传输] sudo tty终端已经关闭.");
            }
-        }
+
       };
 
       
