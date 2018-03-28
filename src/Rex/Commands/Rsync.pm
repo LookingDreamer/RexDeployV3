@@ -170,13 +170,9 @@ sub sync {
     $rsync_log_stdout = $param->{rsync_log_stdout} ;
   });
   if (Rex::is_sudo) {
-    if ( $key_auth eq "true" ) {
       push @rsync_cmd, "--rsync-path='sudo rsync'; echo return_result\$?";
-    }else{
-      push @rsync_cmd, "--rsync-path='rsync'; echo return_result\$?";
-    } 
   }else{
-    push @rsync_cmd, "--rsync-path='rsync'; echo return_result\$?";
+      push @rsync_cmd, "--rsync-path='rsync'; echo return_result\$?"; 
   }
 
   $cmd = join( " ", @rsync_cmd );
@@ -314,7 +310,6 @@ sub sync {
     if ( lc($rsync_log_stdout) eq  'true') {
        $exp->log_stdout(1);
     }
-    
 
     eval {
       $exp->expect(
@@ -322,10 +317,9 @@ sub sync {
         [
           qr{Enter passphrase for key.*: $},
           sub {
-            Rex::Logger::info("[文件传输] 输入密码 xxxx");
             Rex::Logger::info("[文件传输] 开始传输......");
             $exp->send( $pass . "\n" );
-	    exp_continue;
+      exp_continue;
           }
          
 
@@ -334,7 +328,6 @@ sub sync {
         [
           qr{password: ?$},
           sub {
-            Rex::Logger::info("[文件传输] 输入密码 xxxx");
             Rex::Logger::info("[文件传输] 开始传输......");
             $exp->send( $pass . "\n" );
             exp_continue;
