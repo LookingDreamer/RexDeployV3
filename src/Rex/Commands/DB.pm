@@ -143,7 +143,8 @@ sub db {
       push @return, $row;
     }
     $sth->finish;
-
+    # Disconnect from the database.
+    $dbh->disconnect(); 
     return @return;
   }
   elsif ( $type eq "insert" ) {
@@ -168,6 +169,9 @@ sub db {
     }
 
     $sth->execute or die( $sth->errstr );
+    $sth->finish;
+    # Disconnect from the database.
+    $dbh->disconnect(); 
   }
   elsif ( $type eq "update" ) {
     my $sql = "UPDATE %s SET %s WHERE %s";
@@ -189,11 +193,17 @@ sub db {
     }
 
     $sth->execute or die( $sth->errstr );
+    $sth->finish;
+    # Disconnect from the database.
+    $dbh->disconnect(); 
   }
   elsif ( $type eq "delete" ) {
     my $sql = sprintf( "DELETE FROM %s WHERE %s", $table, $data->{"where"} );
     my $sth = $dbh->prepare($sql);
     $sth->execute or die( $sth->errstr );
+    $sth->finish;
+    # Disconnect from the database.
+    $dbh->disconnect(); 
   }
   else {
     Rex::Logger::info("DB: action $type not supported.");
@@ -206,10 +216,16 @@ sub import {
   my ( $class, $opt ) = @_;
 
   if ($opt) {
+    # $dbh = DBI->connect(
+    #   $opt->{"dsn"}, $opt->{"user"},
+    #   $opt->{"password"} || "", $opt->{"attr"}
+    # );
+
     $dbh = DBI->connect(
       $opt->{"dsn"}, $opt->{"user"},
-      $opt->{"password"} || "", $opt->{"attr"}
+      $opt->{"password"} || "", { RaiseError => 1, AutoCommit => 1 }
     );
+
     $dbh->{mysql_auto_reconnect} = 1;
   }
 
