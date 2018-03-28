@@ -5,6 +5,7 @@ use Rex -base;
 use Data::Dumper;
 use Mojo::JSON;
 use Rex::Commands::Network;
+use Rex::Commands::Service;
 use File::Basename;
 
 desc "获取远程服务器信息";
@@ -161,8 +162,16 @@ task "services"=>sub{
                 return '0';
                 last;
            }else{
-                Rex::Logger::info("cmd($i): source /etc/profile ;  nohup /bin/bash $pro_init start  & > /dev/null");
-                run "source /etc/profile ;  nohup /bin/bash $pro_init start & > /dev/null ";
+                # Rex::Logger::info("cmd($i): source /etc/profile ;  nohup /bin/bash $pro_init start  & > /dev/null");
+                Rex::Logger::info("service($i): 开始启动应用....");
+                #run "source /etc/profile ;  /bin/bash $pro_init start ";
+                service "newservice",
+                   ensure  => "started",
+                   start   => "$pro_init start",
+                   stop    => "killall $pro_key",
+                   status  => "ps -efww | grep $pro_key",
+                   restart => "killall $pro_key && $pro_init start",
+                   reload  => "killall $pro_key && $pro_init start";
            }
            select(undef, undef, undef, 0.25);
            my $resultProcessNumber=run "ps aux |grep $pro_key |grep -v grep |grep -v sudo |wc -l";

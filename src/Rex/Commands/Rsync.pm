@@ -323,6 +323,7 @@ sub sync {
           qr{Enter passphrase for key.*: $},
           sub {
             Rex::Logger::info("[文件传输] 输入密码 xxxx");
+            Rex::Logger::info("[文件传输] 开始传输......");
             $exp->send( $pass . "\n" );
 	    exp_continue;
           }
@@ -334,6 +335,7 @@ sub sync {
           qr{password: ?$},
           sub {
             Rex::Logger::info("[文件传输] 输入密码 xxxx");
+            Rex::Logger::info("[文件传输] 开始传输......");
             $exp->send( $pass . "\n" );
             exp_continue;
           }

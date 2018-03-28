@@ -73,7 +73,14 @@ task linkrestart => sub {
    }###进程不为0的情况
    else{
            Rex::Logger::info("($k)--进程数为$ps_num,开始关闭应用->更改程序配置软链接->启动.");
-           run "/bin/bash $pro_init stop;sleep 2";   
+           # run "/bin/bash $pro_init stop;sleep 2";   
+           service "newservice",
+             ensure  => "stopped",
+             start   => "$pro_init start",
+             stop    => "$pro_init stop",
+             status  => "ps -efww | grep $pro_key",
+             restart => "$pro_init stop && $pro_init start",
+             reload  => "$pro_init stop && $pro_init start";
            my $ps_stop_num = run "ps aux |grep -v grep |grep -v sudo |grep '$pro_key' |wc -l";
                    if( $ps_stop_num == 0  ){
                            Rex::Logger::info("($k)--进程数为$ps_stop_num,关闭成功.");
@@ -176,7 +183,15 @@ task linkrestart => sub {
    $servername=~s /\/etc\/init.d\///g;
    Deploy::Db::updateTimes($myAppStatus,"app_start_time");
 
-   run "nohup /bin/bash $pro_init start > /dev/null & ";
+   # run "nohup /bin/bash $pro_init start > /dev/null & ";
+
+   service "newservice",
+     ensure  => "started",
+     start   => "$pro_init start",
+     stop    => "killall $pro_key",
+     status  => "ps -efww | grep $pro_key",
+     restart => "killall $pro_key && $pro_init start",
+     reload  => "killall $pro_key && $pro_init start";
    run "sleep 2"; 
    #run "source /etc/profile ;/bin/bash $pro_init start";
    my $ps_start_num = run "ps aux |grep -v grep |grep -v sudo |grep '$pro_key' |wc -l";

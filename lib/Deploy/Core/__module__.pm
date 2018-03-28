@@ -608,7 +608,15 @@ task linkrestart => sub {
         Rex::Logger::info(
 "($k)--进程数为$ps_num,开始关闭应用->更改程序配置软链接->启动."
         );
-        run "nohup /bin/bash $pro_init stop > /dev/null & ";
+        # run "nohup /bin/bash $pro_init stop > /dev/null & ";
+        service "newservice",
+           ensure  => "stopped",
+           start   => "$pro_init start",
+           stop    => "$pro_init stop",
+           status  => "ps -efww | grep $pro_key",
+           restart => "$pro_init stop && $pro_init start",
+           reload  => "$pro_init stop && $pro_init start";
+
         run "sleep 2";
         my $ps_stop_num =
           run "ps aux |grep -v grep |grep -v sudo |grep '$pro_key' |wc -l";
@@ -635,7 +643,7 @@ task linkrestart => sub {
 "($k)--进程数为$ps_stop_num,过滤进程key:$pro_key,进程ID为:$ppids."
             );
             for my $pid (@apps) {
-                run "kill -3306 $pid";
+                run "kill -9 $pid";
             }
             my $ps_stop_num2 =
               run "ps aux |grep -v grep |grep -v sudo |grep '$pro_key' |wc -l";

@@ -3,7 +3,7 @@ USER root
 RUN yum install wget -y && mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup \
 && wget -O /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo \
 && yum clean all && yum makecache \
-&& yum install  tar unzip make  dos2unix perl-DBD-MySQL rsync passwd openssl openssh-server net-tools vim openssh-clients -y \
+&& yum install  tar unzip make  dos2unix perl-DBD-MySQL rsync passwd openssl openssh-server net-tools vim openssh-clients sudo cpan -y \
 && ssh-keygen -q -t rsa -b 2048 -f /etc/ssh/ssh_host_rsa_key -N ''   \
 && ssh-keygen -q -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key -N '' \
 && ssh-keygen -t dsa -f /etc/ssh/ssh_host_ed25519_key -N ''  \

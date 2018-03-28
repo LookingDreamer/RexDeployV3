@@ -8,8 +8,10 @@ mysql -uroot -p'root'  -e 'CREATE DATABASE autotask DEFAULT CHARACTER SET utf8 C
 cd /data/RexDeployV3
 /bin/bash install/dockerinit.sh setConfig
 mysqladmin -uroot -p'root' shutdown
-adduser autotask
+adduser autotask -g wheel
 echo "autotask" |passwd --stdin  autotask
+echo "autotask2015" |passwd --stdin  root
+chmod a+x /usr/local/tomcat-*/bin/*.sh
 /usr/sbin/sshd -D &
 cd /usr ; /usr/bin/mysqld_safe 
 
