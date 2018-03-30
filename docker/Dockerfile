@@ -28,6 +28,7 @@ RUN yum install wget -y && mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d
 &&  tar -zxvf jdk-8u161-linux-x64.tar.gz -C /usr/local/ \
 && ln -s /usr/local/jdk1.8.0_161 /usr/local/jdk \
 && echo "export PATH=/usr/local/jdk/bin:\$PATH" >> /etc/profile \ 
+&& echo "export JAVA_HOME=/usr/local/jdk/" >> /etc/profile \ 
 && rm -f jdk-8u161-linux-x64.tar.gz \
 && mkdir -p /data/www/html1_2018_0321_1628 \
 && wget https://download.osichina.net/package/pack.war  \
