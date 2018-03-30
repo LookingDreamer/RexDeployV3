@@ -96,7 +96,7 @@ task "services"=>sub{
         return;
     }
 
-    my $processNumber=run "ps aux |grep '$pro_key' |grep -v grep |grep -v sudo |wc -l";
+    my $processNumber=run "ps aux |grep '$pro_key' |grep -v 'Enter:route:service' |grep -v grep |grep -v sudo |wc -l";
     if($action eq 'start'){
         if($processNumber == 0 ){
             my $result_start = start($pro_init,$pro_key,$service_start_retry);
@@ -138,7 +138,7 @@ task "services"=>sub{
         }else{
             Rex::Logger::info("进程已经处于关闭的状态.","warn");
         }
-        my $processNumber=run "ps aux |grep '$pro_key' |grep -v grep |grep -v sudo |wc -l";
+        my $processNumber=run "ps aux |grep '$pro_key' |grep -v 'Enter:route:service' |grep -v grep |grep -v sudo |wc -l";
         if($processNumber == 0 ){
             my $result_start = start($pro_init,$pro_key,$service_start_retry);
             if($result_start eq '1'){
@@ -156,7 +156,7 @@ task "services"=>sub{
     sub start{
        my ($pro_init,$pro_key,$service_start_retry) = @_;
        foreach my $i(1..$service_start_retry){
-           my $processNumber=run "ps aux |grep $pro_key |grep -v grep |grep -v sudo |wc -l";
+           my $processNumber=run "ps aux |grep $pro_key |grep -v 'Enter:route:service'|grep -v grep |grep -v sudo |wc -l";
            if($processNumber ne '0' ){
                 Rex::Logger::info("进程已存在:$processNumber","error");
                 return '0';
@@ -174,7 +174,7 @@ task "services"=>sub{
                    reload  => "killall $pro_key && $pro_init start";
            }
            select(undef, undef, undef, 0.25);
-           my $resultProcessNumber=run "ps aux |grep $pro_key |grep -v grep |grep -v sudo |wc -l";
+           my $resultProcessNumber=run "ps aux |grep $pro_key |grep -v 'Enter:route:service'|grep -v grep |grep -v sudo |wc -l";
            if($resultProcessNumber ne '0' ){
                return '1';
                last;
@@ -187,8 +187,8 @@ task "services"=>sub{
     }     
     sub stop{
        my ($pro_init,$pro_key,$service_start_retry) = @_;
-       my $processNumber=run "ps aux |grep $pro_key |grep -v grep |grep -v sudo |wc -l";
-       my $process=run "ps aux |grep $pro_key |grep -v grep |grep -v sudo |awk '{print \$2}' |xargs ";
+       my $processNumber=run "ps aux |grep $pro_key |grep -v 'Enter:route:service' |grep -v grep |grep -v sudo |wc -l";
+       my $process=run "ps aux |grep $pro_key |grep -v 'Enter:route:service' |grep -v grep |grep -v sudo |awk '{print \$2}' |xargs ";
        if($processNumber eq 0 ){
             Rex::Logger::info("进程已经停止","warn");
             return '0';
@@ -199,7 +199,7 @@ task "services"=>sub{
             }
        }
        select(undef, undef, undef, 0.25);
-       my $resultProcessNumber=run "ps aux |grep $pro_key |grep -v grep |grep -v sudo |wc -l";
+       my $resultProcessNumber=run "ps aux |grep $pro_key |grep -v 'Enter:route:service' |grep -v grep |grep -v sudo |wc -l";
        if($resultProcessNumber ne '0' ){
            return '1';
        }else{
