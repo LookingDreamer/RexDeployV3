@@ -8,15 +8,19 @@ cp tomcat-server1 tomcat-server2 -ar
 cp tomcat-server1 tomcat-flow1 -ar
 cp tomcat-server1 tomcat-flow2 -ar
 find tomcat-server1/ -name server.xml -exec sed -i  "s/8080/6080/g" {} \;
+find tomcat-server1/ -name logging.properties  -exec sed -i  "s/\${catalina\.base}\/logs/\/data\/log\/server1/g" {} \;
 find tomcat-server2/ -name server.xml -exec sed -i  "s/8080/7080/g" {} \;
 find tomcat-server2/  -type f -exec  sed -i "s/\/data\/log\/server1/\/data\/log\/server2/g" {} \;
 find tomcat-server2/ -name server.xml -exec sed -i  "s/\/data\/www\/html1/\/data\/www\/html2/g" {} \;
+find tomcat-server2/ -name logging.properties  -exec sed -i  "s/\${catalina\.base}\/logs/\/data\/log\/server2/g" {} \;
 find tomcat-flow1/ -name server.xml -exec sed -i  "s/8080/8080/g" {} \;
 find tomcat-flow2/ -name server.xml -exec sed -i  "s/8080/9080/g" {} \;
 find tomcat-flow1/  -type f -exec  sed -i "s/\/data\/log\/server1/\/data\/log\/flow1/g" {} \;
 find tomcat-flow2/  -type f -exec  sed -i "s/\/data\/log\/server1/\/data\/log\/flow2/g" {} \;
 find tomcat-flow1/ -name server.xml -exec sed -i  "s/\/data\/www\/html1/\/data\/www\/flow1/g" {} \;
 find tomcat-flow2/ -name server.xml -exec sed -i  "s/\/data\/www\/html1/\/data\/www\/flow2/g" {} \;
+find tomcat-flow1/ -name logging.properties  -exec sed -i  "s/\${catalina\.base}\/logs/\/data\/log\/flow1/g" {} \;
+find tomcat-flow2/ -name logging.properties  -exec sed -i  "s/\${catalina\.base}\/logs/\/data\/log\/flow2/g" {} \;
 find tomcat-server1/ -name server.xml -exec sed -i  "s/8005/8015/g" {} \;
 find tomcat-server2/ -name server.xml -exec sed -i  "s/8005/8025/g" {} \;
 find tomcat-flow1/ -name server.xml -exec sed -i  "s/8005/8035/g" {} \;

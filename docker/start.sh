@@ -6,6 +6,8 @@ sleep 1
 mysqladmin -u root password 'root' 
 mysql -uroot -p'root'  -e 'CREATE DATABASE autotask DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci'
 mysql -uroot -p'root'  -e "grant all privileges on *.* to 'root'@'%' identified by 'root'"
+mysql -uroot -p'root'  -e "use autotask ; ALTER TABLE pre_server_detail ADD COLUMN logfile  varchar(255) NULL COMMENT '日志文件' AFTER configure_file_status;"
+mysql -uroot -p'root'  -e "use autotask ; update pre_server_detail set logfile='catalina.#%Y-%m-%d.log' ;"
 cd /data/RexDeployV3
 /bin/bash install/dockerinit.sh setConfig
 mysqladmin -uroot -p'root' shutdown
