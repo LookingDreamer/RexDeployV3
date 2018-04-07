@@ -40,6 +40,7 @@ task "download", sub {
    my $self = shift;
    my $dir1 = $self->{dir1};
    my $dir2 = $self->{dir2};
+   my $ipsep = $self->{ipsep};
    my %hash_pids;
    my $server = Rex::get_current_connection()->{server};
    my %hash;
@@ -47,6 +48,11 @@ task "download", sub {
    my $sufer_dir1_status;
    my $du_dir;
    my $basename;
+
+   if ( $ipsep eq "1") {
+     $dir2 = "$dir2/$server";
+   }
+
    if(  $dir2  =~m/\/$/ ) { 
      $sufer_dir2_status = "true";
    }else{
@@ -199,6 +205,7 @@ task "upload", sub {
     my $self = shift;
     my $dir1 = $self->{dir1};
     my $dir2 = $self->{dir2};
+    my $ipsep = $self->{ipsep};
    my %hash_pids;
    my $server = Rex::get_current_connection()->{server};
    my %hash;
@@ -208,6 +215,10 @@ task "upload", sub {
    my $du_dir;
    my $basename;
    my $time_start;
+
+   if ( $ipsep eq "1") {
+     $dir2 = "$dir2/$server";
+   }
    if(  $dir2  =~m/\/$/ ) { 
      $sufer_dir2_status = "true";
    }else{

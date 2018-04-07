@@ -171,12 +171,15 @@ sub createUser{
 	my $dir = @_[6];
 	if ( $query eq "0" ) {
 		if ( $level eq "0") {
-			create($user);
+			create($user,$pass);
 			if ($allow eq "1") {
 				append_allow($user);
 			}
+			if ($sudo eq "1") {
+				create_sudo($user);
+			}
 		}elsif($level eq "1" or $level eq "2" or $level eq "3"){
-			my $res = create($user);
+			my $res = create($user,$pass);
 			if ( $res eq "0") {
 				exit;
 			}
@@ -200,6 +203,7 @@ sub createUser{
 
 sub create{
 	my $user = @_[0];
+	my $pass = @_[1];
 	my $cmd;
 	my $group_cmd = "egrep '\^$user\:' /etc/group &&  result=\$? ;echo status=\$result";
 	Rex::Logger::info("__SUB__:开始创建普通用户"); 
@@ -207,12 +211,21 @@ sub create{
 	my $group = run "$group_cmd";
 	Rex::Logger::info("cmd用户组判断:$group"); 
 	if ( $group =~ /status=0/ ) {
-		 $cmd = "useradd $user -g $user && echo $random | passwd --stdin $user &&  result=\$? ;echo status=\$result" ;
+		 if ( $pass eq "0" ) {
+		 	$cmd = "useradd $user -g $user && echo $user | passwd --stdin $user &&  result=\$? ;echo status=\$result" ;
+		 }else{
+		 	$cmd = "useradd $user -g $user && echo $pass | passwd --stdin $user &&  result=\$? ;echo status=\$result" ;
+		 }
 	}else{
-		 $cmd = "useradd $user  && echo $random | passwd --stdin $user &&  result=\$? ;echo status=\$result" ;
+		 if ( $pass eq "0" ) {
+		 	$cmd = "useradd $user  && echo $user | passwd --stdin $user &&  result=\$? ;echo status=\$result" ;
+		 	}else{
+		 	$cmd = "useradd $user  && echo $pass | passwd --stdin $user &&  result=\$? ;echo status=\$result" ;
+
+		 	}
 
 	}
-	Rex::Logger::info("开始创建普通用户:$user 密码:$random");
+	Rex::Logger::info("开始创建普通用户:$user");
 	Rex::Logger::info("cmd:$cmd");
 	my $res = run "$cmd";
 	if ( $res =~ /status=0/ ) {
@@ -310,9 +323,11 @@ sub create_authorized_keys{
 		}
 		
 	}elsif($level eq "2"){
-		my $key = general_key($user);
-		$common_public_key = run "cat /tmp/$user/$random/$user\.pub" ;
-		$common_private_key = run "cat /tmp/$user/$random/$user" ;
+		my $key = general_key($user,$pass);
+		# $common_public_key = run "cat /tmp/$user/$random/$user\.pub" ;
+		# $common_private_key = run "cat /tmp/$user/$random/$user" ;
+		$common_public_key = run "cat /tmp/$random/$user\.pub" ;
+		$common_private_key = run "cat /tmp/$random/$user" ;
 		$cmd = "mkdir /home/$user/.ssh ;echo $common_public_key > /home/$user/.ssh/authorized_keys ;chown $user:$user  /home/$user -R &&  result=\$? ;echo status=\$result" ;
 	}elsif($level eq "3"){
 		my $key = general_key($user,$pass);
