@@ -1,8 +1,8 @@
 #!/usr/bin/perl
-##author: QingFeng
+##author: 黄高明
 ##qq: 530035210
 ##blog: http://my.oschina.net/pwd/blog
-##date: 2015-05-05
+##date: 2018-04-05
 ##des:生产动态发布
 
 #开启相关模块支持
@@ -303,3 +303,4 @@ task "list",sub{
    Rex::Logger::info("");
    Rex::Logger::info("获取关键词如下: \n $keys");
 };
+
