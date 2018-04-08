@@ -3,7 +3,9 @@ USER root
 RUN yum install wget -y && mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup \
 && wget -O /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo \
 && yum clean all && yum makecache \
-&& yum install  tar unzip make  dos2unix perl-DBD-MySQL rsync passwd openssl openssh-server net-tools vim openssh-clients sudo cpan -y \
+&& yum install  tar unzip make  dos2unix perl-DBD-MySQL rsync passwd openssl openssh-server net-tools vim openssh-clients sudo httpd -y \
+&& sed -i "s/\/var\/www\/html/\/data\/rsync/g" /etc/httpd/conf/httpd.conf \
+&& mkdir -p /data/rsync && chmod 777 /data/rsync -R \
 && ssh-keygen -q -t rsa -b 2048 -f /etc/ssh/ssh_host_rsa_key -N ''   \
 && ssh-keygen -q -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key -N '' \
 && ssh-keygen -t dsa -f /etc/ssh/ssh_host_ed25519_key -N ''  \
@@ -14,7 +16,6 @@ RUN yum install wget -y && mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d
 && yum install mysql-community-server  --nogpgcheck -y \
 && rm -f mysql-community-release-el7-5.noarch.rpm \
 && wget https://download.osichina.net/package/RexDeployV3.tar.gz \
-&& mkdir /data \
 && tar -zxvf RexDeployV3.tar.gz  -C /data/ \
 && rm -f RexDeployV3.tar.gz \
 && cd /data/RexDeployV3 \
@@ -37,6 +38,8 @@ RUN yum install wget -y && mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d
 && /bin/bash /data/RexDeployV3/docker/client.sh \
 && cd /data/RexDeployV3  && /bin/bash install/initStall.sh instalib
 
+ADD rsyncd.conf /etc/rsyncd.conf
+ADD rsyncd.secrets /etc/rsyncd.secrets
 ADD start.sh /data/RexDeployV3/docker/start.sh
 WORKDIR /data/RexDeployV3 
 #ENTRYPOINT [ "top", "-b" ]

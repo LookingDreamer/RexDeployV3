@@ -30,6 +30,7 @@ find tomcat-server1/ -name server.xml -exec sed -i  "s/8009/8019/g" {} \;
 find tomcat-server2/ -name server.xml -exec sed -i  "s/8009/8029/g" {} \;
 find tomcat-flow1/ -name server.xml -exec sed -i  "s/8009/8039/g" {} \;
 find tomcat-flow2/ -name server.xml -exec sed -i  "s/8009/8049/g" {} \;
+find tomcat* -name "catalina.sh" -exec sed -i "s/catalina.out/catalina.%Y-%m-%d/g" {} \;
 
 cp /data/www/html1_2018_0321_1628 /data/www/html2_2018_0321_1628 -ar
 cp /data/www/html1_2018_0321_1628 /data/www/flow1_2018_0321_1628 -ar
