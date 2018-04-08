@@ -16,7 +16,6 @@ RUN yum install wget -y && mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d
 && yum install mysql-community-server  --nogpgcheck -y \
 && rm -f mysql-community-release-el7-5.noarch.rpm \
 && wget https://download.osichina.net/package/RexDeployV3.tar.gz \
-&& mkdir /data \
 && tar -zxvf RexDeployV3.tar.gz  -C /data/ \
 && rm -f RexDeployV3.tar.gz \
 && cd /data/RexDeployV3 \
