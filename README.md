@@ -44,7 +44,7 @@ RexDeploy是一个免客户端安装的管控平台，支持基于`名字服务�
 新版本git地址: 
 
 RexDeployV3 码云地址: [https://gitee.com/lookingdreamer/RexDeployV3](https://gitee.com/lookingdreamer/RexDeployV3)  
-RexDeployV3 Github地址: [https://github.com/LookingDreamer/RexDeploy](https://github.com/LookingDreamer/RexDeploy)  
+RexDeployV3 Github地址: [https://github.com/LookingDreamer/RexDeployV3](https://github.com/LookingDreamer/RexDeployV3)  
 
 有任何问题欢迎提issue
 
