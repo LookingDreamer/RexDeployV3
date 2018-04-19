@@ -728,7 +728,7 @@ task update_differcount=>sub {
 		    where => "app_key = '$app_key'",
 	};
 
-	Rex::Logger::info("更新($app_key)校验值($differcount)完成");
+	Rex::Logger::info("更新($app_key)校验差异值($differcount)完成");
 };
 
 desc "查询服务器校验变化 ";
@@ -744,7 +744,38 @@ task query_differcount=>sub {
 	unshift(@data,$count);
 	return \@data;
 
-	Rex::Logger::info("查询($app_key)校验值完成");
+	Rex::Logger::info("查询($app_key)校验差异值完成");
+};
+
+desc "更新校验url结果";
+task update_checkurl_status=>sub {
+	my $self = shift;
+	my $app_key = $self->{app_key};
+	my $checkurl_status = $self->{checkurl_status};
+	my @data = db update => "$table", {
+		set => {
+			checkurl_status => $checkurl_status,
+		},
+		    where => "app_key = '$app_key'",
+	};
+
+	Rex::Logger::info("更新($app_key)校验url结果($checkurl_status)完成");
+};
+
+desc "查询校验url结果";
+task query_checkurl_status=>sub {
+	my $self = shift;
+	my $app_key = $self->{app_key};
+	my @data = db select => {
+		fields => "server_name,network_ip,checkurl_status",
+		       from  => $table,
+		        where => "app_key = '$app_key'",
+	};
+	my $count= @data;
+	unshift(@data,$count);
+	return \@data;
+
+	Rex::Logger::info("查询($app_key)校验url结果完成");
 };
 
 1;

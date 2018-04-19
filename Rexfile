@@ -18,6 +18,7 @@ use Enter::route;
 use logCenter::main;
 use User::main;
 use loadService::main;
+use Enter::deploy;
 
 #自定义config配置
 my $env;

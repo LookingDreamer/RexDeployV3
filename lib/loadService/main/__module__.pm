@@ -296,6 +296,7 @@ task check => sub {
                if ( "$code"  eq "$requirecode" ) {
                    Rex::Logger::info("校验返回码成功");
                }else{
+                   run_task "Deploy:Db:update_checkurl_status", params => { app_key => "$kv" ,checkurl_status=>0};
                    Rex::Logger::info("校验返回码失败","error"); 
                }
            }
@@ -303,6 +304,7 @@ task check => sub {
                if (  $message =~ m/$require/ ) {
                    Rex::Logger::info("校验返回内容成功");
                }else{
+                   run_task "Deploy:Db:update_checkurl_status", params => { app_key => "$kv" ,checkurl_status=>0};
                    Rex::Logger::info("校验返回内容失败","error"); 
                }
            }
