@@ -491,7 +491,7 @@ task downloading => sub {
         $update_local_prodir =~ s/\/$//;
         $update_local_confdir =~ s/\/$//;
         my $localdir_remote = $localdir ;
-        my $local_config_dir_remote = $localdir ;
+        my $local_config_dir_remote = $local_config_dir ;
         $localdir_remote =~ s/\/$//; 
         $local_config_dir_remote =~ s/\/$//; 
         if ( ! is_dir($update_local_prodir)) {
@@ -1205,7 +1205,7 @@ task "diff", sub {
             }
             my $randomfile = "/tmp/differ" . get_random( 8, 'a' .. 'z' ) . time().".txt";
             my $proDiffer = run "diff -rbq $down_prodir $deploy_prodir > $randomfile";
-            Rex::Logger::info("开始解析differ文件: $randomfile");
+            #Rex::Logger::info("开始解析differ文件: $randomfile");
 
             my $i = 0 ;
             my $c = 0 ;
@@ -1214,15 +1214,14 @@ task "diff", sub {
             my @data ;
             open(DATA, "<$randomfile") or  Rex::Logger::info("$randomfile 文件无法打开, $!","error");        
             while(<DATA>){
-               print "$_";
+               #Rex::Logger::info("$_"); 
                if ( $_ =~ m/differ$/ ) {
                  $c = $c + 1 ;
                }
-               if ( $_ =~ m/Only/i ) {
+               if ( $_ =~ m/^Only/  && $_ =~ m/$deploy_prodir/ ) {
                  $a = $a + 1 ;
-                 print "a========";
                }
-               if ( $_ =~ m/^Only/i  &&  $_ =~ m/$down_prodir/) {
+               if ( $_ =~ m/^Only/  &&  $_ =~ m/$down_prodir/) {
                  $d = $d + 1 ;
                }
                $i = $i + 1 ;
@@ -1231,27 +1230,52 @@ task "diff", sub {
             if (is_file($randomfile)) {
                 unlink($randomfile);
             }
-            Rex::Logger::info("$app_key 程序目录: 合计变化的文件数: $i 变化的文件数:$a 删除的文件数:$d 新增文件数:$a");
-            exit;
-
-
-
+            my $prodiffercount;
+            my $confdiffercount;
+            Rex::Logger::info("$app_key 程序目录: 合计变化的文件数: $i 变化的文件数:$c 删除的文件数:$d 新增文件数:$a");
+            $prodiffercount = "$i,$c,$d,$a";
+            
             #处理配置目录
             if ( is_dir($down_confdir) ) {
-                if ( is_dir($deploy_confdir) ) {
-                    #rmdir($deploy_confdir);
+                if ( ! is_dir($deploy_confdir) ) {
                     Rex::Logger::info(
-                        "删除发布配置目录完成: rmdir $deploy_confdir."
+                        "待发布配置目录不存在: $deploy_confdir.","error"
                     );
-                }
-                if ( !is_dir("$configuredir/$local_name") ) {
-                    #mkdir("$configuredir/$local_name");
+                    next;
                 }
                 my $configure_group_result = run_task "Deploy:Db:configure_group", params => { app_key => "$app_key" };
                 if ( $configure_group_result eq '0' ) {
-                    #mv( $down_confdir, $deploy_confdir );
-                    Rex::Logger::info(
-                        "mv配置目录完成: mv($down_confdir,$deploy_confdir).");
+
+                    my $randomfile = "/tmp/differconfig" . get_random( 8, 'a' .. 'z' ) . time().".txt";
+                    my $proDiffer = run "diff -rbq $down_confdir $deploy_confdir > $randomfile";
+                    #Rex::Logger::info("开始解析配置differ文件: $randomfile");
+                    my $i = 0 ;
+                    my $c = 0 ;
+                    my $a = 0 ;
+                    my $d = 0 ;
+                    my @data ;
+                    open(DATA, "<$randomfile") or  Rex::Logger::info("$randomfile 文件无法打开, $!","error");        
+                    while(<DATA>){
+                       #Rex::Logger::info("$_"); 
+                       if ( $_ =~ m/differ$/ ) {
+                         $c = $c + 1 ;
+                       }
+                       if ( $_ =~ m/^Only/  && $_ =~ m/$deploy_confdir/ ) {
+                         $a = $a + 1 ;
+                       }
+                       if ( $_ =~ m/^Only/  &&  $_ =~ m/$down_confdir/) {
+                         $d = $d + 1 ;
+                       }
+                       $i = $i + 1 ;
+                    }
+                    close(DATA) || die Rex::Logger::info("$randomfile 文件无法关闭","error");
+                    # if (is_file($randomfile)) {
+                    #     unlink($randomfile);
+                    # }
+                    Rex::Logger::info("$app_key 配置目录: 合计变化的文件数: $i 变化的文件数:$c 删除的文件数:$d 新增文件数:$a");
+                    Rex::Logger::info("校验配置目录: diff -rbq $down_confdir $deploy_confdir ");
+                    $confdiffercount = "$i,$c,$d,$a";
+
                 }else{
                     my @configure_group_list = split( /,/, $configure_group_result );
                     foreach my $file (@configure_group_list) {
@@ -1272,10 +1296,14 @@ task "diff", sub {
             }
             else {
                 Rex::Logger::info(
-                    "待上传配置目录不存在:  $down_confdir.", "error" );
+                    "下载配置目录不存在:  $down_confdir.", "error" );
+                     next;
             }
+            my $differcount = "{\"prodiffercount\":\"$prodiffercount\",\"confdiffercount\":\"$confdiffercount\"}";
+            run_task "Deploy:Db:update_differcount", params => { app_key => "$app_key" ,differcount=>"$differcount"};
             Rex::Logger::info(
-                "开启校验对比($app_key)下载目录到待发布目录差异完成.");
+                "校验对比($app_key)下载目录到待发布目录差异完成.");
+            Rex::Logger::info("");
 
         }
     }

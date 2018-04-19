@@ -715,6 +715,38 @@ task query_weight=>sub {
 	Rex::Logger::info("查询($app_key)权重完成");
 };
 
+
+desc "更新服务器校验变化";
+task update_differcount=>sub {
+	my $self = shift;
+	my $app_key = $self->{app_key};
+	my $differcount = $self->{differcount};
+	my @data = db update => "$table", {
+		set => {
+			differcount => "$differcount",
+		},
+		    where => "app_key = '$app_key'",
+	};
+
+	Rex::Logger::info("更新($app_key)校验值($differcount)完成");
+};
+
+desc "查询服务器校验变化 ";
+task query_differcount=>sub {
+	my $self = shift;
+	my $app_key = $self->{app_key};
+	my @data = db select => {
+		fields => "server_name,network_ip,differcount",
+		       from  => $table,
+		        where => "app_key = '$app_key'",
+	};
+	my $count= @data;
+	unshift(@data,$count);
+	return \@data;
+
+	Rex::Logger::info("查询($app_key)校验值完成");
+};
+
 1;
 
 =pod
