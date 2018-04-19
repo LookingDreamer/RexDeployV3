@@ -2,6 +2,7 @@ package Enter::route;
 
 use Rex -base;
 use Rex::Commands::Rsync;
+use Rex::Commands::Fs;
 use Deploy::Db;
 use Data::Dumper;
 use Deploy::Core;
@@ -14,6 +15,8 @@ my $s;
 my $i;
 my %hash_pids; 
 my $env;
+my $update_local_prodir;
+my $update_local_confdir;
 Rex::Config->register_config_handler("env", sub {
  my ($param) = @_;
  $env = $param->{key} ;
@@ -21,12 +24,15 @@ Rex::Config->register_config_handler("env", sub {
 Rex::Config->register_config_handler("$env", sub {
  my ($param) = @_;
  our $user = $param->{user} ;
+     $update_local_prodir   = $param->{update_local_prodir};
+     $update_local_confdir  = $param->{update_local_confdir};
  });
 
-desc "应用下载模块: rex  Enter:route:download   --k='server1 server2 ../groupname/all'";
+desc "应用下载模块: rex  Enter:route:download   --k='server1 server2 ../groupname/all' [--update='1']";
 task "download",sub{
    my $self = shift;
    my $k=$self->{k};
+   my $update=$self->{update};
    my $username=$user;
    my $keys=Deploy::Db::getallkey();
    my @keys=split(/,/, $keys);
@@ -51,6 +57,15 @@ task "download",sub{
    exit;
    }
 
+   if ( "$update" eq "1") {
+      if (  is_dir($update_local_prodir)) {
+          rmdir("$update_local_prodir");
+      }
+      if (  is_dir($update_local_confdir)) {
+          rmdir("$update_local_confdir");
+      }
+   }
+
    Rex::Logger::info("Starting ...... 操作人: $username");
    if ( $k eq "all" ){
        Rex::Logger::info("");
@@ -60,7 +75,7 @@ task "download",sub{
            Rex::Logger::info("##############($keys[$num])###############");
            my $config=Deploy::Core::init("$keys[$num]");
            my $FistSerInfo=Deploy::Core::prepare($keys[$num],$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
-           Deploy::Core::downloading($keys[$num],$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config);	
+           Deploy::Core::downloading($keys[$num],$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config,$update);	
        }
        Rex::Logger::info("下载远程服务器数据到本地完成---$keys[-1] 个.");
    }else{
@@ -83,7 +98,7 @@ task "download",sub{
                    Rex::Logger::info("##############($apps[$num1])###############");
                    my $config=Deploy::Core::init("$apps[$num1]");
                    my $FistSerInfo=Deploy::Core::prepare($apps[$num1],$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
-                   Deploy::Core::downloading($apps[$num1],$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config); 
+                   Deploy::Core::downloading($apps[$num1],$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config,$update); 
                } 
            }
        }
@@ -129,7 +144,7 @@ task "download",sub{
 		       Rex::Logger::info("##############($kv)###############");
 		       my $config=Deploy::Core::init("$kv");
 		       my $FistSerInfo=Deploy::Core::prepare($kv,$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
-		       Deploy::Core::downloading($kv,$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config);	
+		       Deploy::Core::downloading($kv,$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config,$update);	
 		       }else{
 		       Rex::Logger::info("关键字($kv)不存在","error");
 		       }

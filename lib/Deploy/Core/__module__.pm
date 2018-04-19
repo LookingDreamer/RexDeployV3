@@ -14,6 +14,7 @@ use Rex::Commands::Sync;
 use Deploy::other;
 use Rex::Misc::ShellBlock;
 use Common::Use;
+use Rex::Commands::Fs;
 
 my $env;
 my $table_string;
@@ -30,6 +31,8 @@ my $is_start;
 my $download_record_log;
 my $backup_dir;
 my $baseapp_dir;
+my $update_local_prodir;
+my $update_local_confdir;
 Rex::Config->register_config_handler(
     "env",
     sub {
@@ -55,6 +58,8 @@ Rex::Config->register_config_handler(
         $is_start            = $param->{is_start};
         $download_record_log = $param->{download_record_log};
         $download_all        = $param->{download_all};
+        $update_local_prodir        = $param->{update_local_prodir};
+        $update_local_confdir        = $param->{update_local_confdir};
     }
 );
 
@@ -409,6 +414,7 @@ task downloading => sub {
     my $network_ip        = $_[3];
     my $remote_confir_dir = $_[4];
     my $config            = $_[5];
+    my $update            = $_[6];
     my $datetime          = run "date '+%Y%m%d_%H%M%S'";
     if ( $remotedir =~ m/\/$/ ) {
         $remotedir = "${remotedir}";
@@ -479,6 +485,32 @@ task downloading => sub {
     Rex::Logger::info(
 "($k)--传输程序和配置目录到本地完成:$localdir:$size1 || $local_config_dir:$size2"
     );
+    if ( "$update" eq "1") {
+        Rex::Logger::info("");
+        Rex::Logger::info("($k)--开始拷贝本地程序和配置目录到更新目录.");
+        $update_local_prodir =~ s/\/$//;
+        $update_local_confdir =~ s/\/$//;
+        my $localdir_remote = $localdir ;
+        my $local_config_dir_remote = $localdir ;
+        $localdir_remote =~ s/\/$//; 
+        $local_config_dir_remote =~ s/\/$//; 
+        if ( ! is_dir($update_local_prodir)) {
+            mkdir("$update_local_prodir");
+        }
+        if ( ! is_dir($update_local_confdir)) {
+            mkdir("$update_local_confdir");
+        }
+        eval {
+            cp("$localdir_remote", "$update_local_prodir");
+            cp("$local_config_dir_remote", "$update_local_confdir");
+        };
+        if ($@) {
+        Rex::Logger::info("($k)--拷贝本地程序和配置目录到本地更新目录异常:$@","error");
+        }
+        Rex::Logger::info("($k)--拷贝本地程序和配置目录到本地更新目录完成"); 
+
+    }
+
     my $standtime = run "date '+%Y-%m-%d %H:%M:%S'";
     run
 "echo '['$standtime'] 下载$k: $remotedir => $localdir $size1' >> $download_record_log";
@@ -912,13 +944,22 @@ task "execSpecial", sub {
 };
 
 desc
-"同步本地(远程download)的程序和配置=>待发布目录: rex  Deploy:Core:syncpro --k='server1 server2 ../all'";
+"同步本地(远程download)的程序和配置=>待发布目录: rex  Deploy:Core:syncpro --k='server1 server2 ../all' [--update='1']";
 task "syncpro", sub {
     my $self       = shift;
     my $k          = $self->{k};
+    my $update          = $self->{update};
     my $localnames = run_task "Deploy:Db:getlocalname";
     my @base       = split( /,/, $localnames );
     my @keys;
+    if ( "$update" eq "1") {
+        $update_local_prodir =~ s/\/$//;
+        $update_local_confdir =~ s/\/$//;
+        $local_prodir = $update_local_prodir;
+        $local_confdir = $update_local_confdir;
+    }
+    $softdir =~ s/\/$//;
+    $configuredir =~ s/\/$//;
     for my $item (@base) {
         my @list       = split( / /, $item );
         my $local_name = $list[0];
@@ -955,11 +996,19 @@ task "syncpro", sub {
             my $down_prodir    = "$local_prodir/$app_key";
             my $down_confdir   = "$local_confdir/$app_key";
 
-    #say "mv $down_prodir --> $deploy_prodir ;mv $down_confdir $deploy_confdir";
+    # say "mv $down_prodir --> $deploy_prodir ;mv $down_confdir $deploy_confdir";
+    # exit;
     #处理程序目录
             if ( is_dir($down_prodir) ) {
                 if ( is_dir($deploy_prodir) ) {
-                    rmdir($deploy_prodir);
+                    eval {
+                        rmdir("$deploy_prodir");
+                    };
+                    if ($@) {
+                        Rex::Logger::info("删除发布程序目录异常: $@","error");
+                        exit;
+                    }
+                    # rmdir($deploy_prodir);
                     Rex::Logger::info(
                         "删除发布程序目录完成: rmdir $deploy_prodir."
                     );
@@ -1093,6 +1142,148 @@ task "syncpro", sub {
         Rex::Logger::info("同步本地所有目录到待发布目录完成.");
     }
 };
+
+
+
+desc
+"校验下载目录程序和配置和待发布目录差异: rex  Deploy:Core:diff --k='server1 server2 '";
+task "diff", sub {
+    my $self       = shift;
+    my $k          = $self->{k};
+    my $update          = $self->{update};
+    my $localnames = run_task "Deploy:Db:getlocalname";
+    my @base       = split( /,/, $localnames );
+    my @keys;
+    $softdir =~ s/\/$//;
+    $configuredir =~ s/\/$//;
+    for my $item (@base) {
+        my @list       = split( / /, $item );
+        my $local_name = $list[0];
+        my $app_key    = $list[1];
+        push @keys, $app_key;
+    }
+    if ( $k eq "" ) {
+        Rex::Logger::info("关键字(--k='')不能为空");
+    }
+    my @ks = split( / /, $k );
+    my %vars = map { $_ => 1 } @keys;
+    my @real_keys;
+    foreach my $key (@ks) {
+        if ( $key ne "" ) {
+            if ( exists( $vars{$key} ) ) {
+                push @real_keys, $key;
+            }
+            else {
+                if ( $key ne "all" ) {
+                    Rex::Logger::info( "关键字($key)不存在", "error" );
+                }
+            }
+        }
+    }
+    for my $item (@base) {
+        my @list       = split( / /, $item );
+        my $local_name = $list[0];
+        my $app_key    = $list[1];
+        if ( grep { $app_key eq $_ } @real_keys ) {
+            Rex::Logger::info(
+                "开启校验对比($app_key)下载目录到待发布目录差异.");
+            my $deploy_prodir  = "$softdir/$local_name";
+            my $deploy_confdir = "$configuredir/$local_name/$app_key";
+            my $down_prodir    = "$local_prodir/$app_key";
+            my $down_confdir   = "$local_confdir/$app_key";
+
+
+            #处理程序目录
+            Rex::Logger::info("开始校验程序目录: diff -rbq $down_prodir $deploy_prodir ");
+            if (!  is_dir($down_prodir) ) {
+                Rex::Logger::info("下载程序目录不存在:  $down_prodir.", "error" ); 
+                next; 
+            }
+            if (!  is_dir($deploy_prodir) ) {
+                Rex::Logger::info("待发布程序目录不存在:  $deploy_prodir.", "error" ); 
+                next; 
+            }
+            my $randomfile = "/tmp/differ" . get_random( 8, 'a' .. 'z' ) . time().".txt";
+            my $proDiffer = run "diff -rbq $down_prodir $deploy_prodir > $randomfile";
+            Rex::Logger::info("开始解析differ文件: $randomfile");
+
+            my $i = 0 ;
+            my $c = 0 ;
+            my $a = 0 ;
+            my $d = 0 ;
+            my @data ;
+            open(DATA, "<$randomfile") or  Rex::Logger::info("$randomfile 文件无法打开, $!","error");        
+            while(<DATA>){
+               print "$_";
+               if ( $_ =~ m/differ$/ ) {
+                 $c = $c + 1 ;
+               }
+               if ( $_ =~ m/Only/i ) {
+                 $a = $a + 1 ;
+                 print "a========";
+               }
+               if ( $_ =~ m/^Only/i  &&  $_ =~ m/$down_prodir/) {
+                 $d = $d + 1 ;
+               }
+               $i = $i + 1 ;
+            }
+            close(DATA) || die Rex::Logger::info("$randomfile 文件无法关闭","error");
+            if (is_file($randomfile)) {
+                unlink($randomfile);
+            }
+            Rex::Logger::info("$app_key 程序目录: 合计变化的文件数: $i 变化的文件数:$a 删除的文件数:$d 新增文件数:$a");
+            exit;
+
+
+
+            #处理配置目录
+            if ( is_dir($down_confdir) ) {
+                if ( is_dir($deploy_confdir) ) {
+                    #rmdir($deploy_confdir);
+                    Rex::Logger::info(
+                        "删除发布配置目录完成: rmdir $deploy_confdir."
+                    );
+                }
+                if ( !is_dir("$configuredir/$local_name") ) {
+                    #mkdir("$configuredir/$local_name");
+                }
+                my $configure_group_result = run_task "Deploy:Db:configure_group", params => { app_key => "$app_key" };
+                if ( $configure_group_result eq '0' ) {
+                    #mv( $down_confdir, $deploy_confdir );
+                    Rex::Logger::info(
+                        "mv配置目录完成: mv($down_confdir,$deploy_confdir).");
+                }else{
+                    my @configure_group_list = split( /,/, $configure_group_result );
+                    foreach my $file (@configure_group_list) {
+                        my @extent_dir = split( /\//, $file);
+                        my $length = @extent_dir;
+                        my @last_dir = split( /$extent_dir[$length-1]/, $file );
+                        my $lastdir = "$deploy_confdir/$last_dir[0]";
+                        if ( !is_dir($lastdir) ) {
+                            run "mkdir -p $lastdir";
+                        }
+                         #cp("$down_confdir/$file", "$lastdir");
+                    Rex::Logger::info("拷贝配置文件: copy $down_confdir/$file => $lastdir");
+                    }
+
+                }
+     
+                
+            }
+            else {
+                Rex::Logger::info(
+                    "待上传配置目录不存在:  $down_confdir.", "error" );
+            }
+            Rex::Logger::info(
+                "开启校验对比($app_key)下载目录到待发布目录差异完成.");
+
+        }
+    }
+
+
+};
+
+
 
 1;
 

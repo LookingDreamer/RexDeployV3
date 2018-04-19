@@ -75,16 +75,23 @@ task getconfig => sub {
 		$config{backupdir_same_level}=$list->{'backupdir_same_level'};
 		$config{deploydir_same_level}=$list->{'deploydir_same_level'};
 		$config{server_name}=$list->{'server_name'};
+		$config{loadBalancerId}=$list->{'loadBalancerId'};
+		$config{url}=$list->{'url'};
+		$config{header}=$list->{'header'};
+		$config{params}=$list->{'params'};
+		$config{require}=$list->{'require'};
+		$config{requirecode}=$list->{'requirecode'};
 
 		$config{config_dir}=~ s/ //g;
 		$config{pro_dir}=~ s/ //g;
 #$config{log_dir}=~ s/ //g;
 		$config{pro_init}=~ s/ //g;   
-			$config{network_ip}=~ s/\s+$//;
+		$config{network_ip}=~ s/\s+$//;
 		$config{network_ip}=~ s/^\s+//;
 		$config{app_key}=~ s/ //g;   
-			$config{local_name}=~ s/ //g;   
-			$config{container_dir}=~ s/ //g;
+		$config{local_name}=~ s/ //g;   
+		$config{container_dir}=~ s/ //g;
+		$config{loadBalancerId}=~ s/ //g;
 	}
 	my $len=@ids;
 	if($len == 0 ){
@@ -674,6 +681,38 @@ task server_info=>sub {
 	unshift(@server_list,$count);
 	# say Dumper(@server_list);exit;
 	return \@server_list;
+};
+
+
+desc "更新服务器权重 ";
+task update_weight=>sub {
+	my $self = shift;
+	my $app_key = $self->{app_key};
+	my $weight = $self->{weight};
+	my @data = db update => "$table", {
+		set => {
+			weight => "$weight",
+		},
+		    where => "app_key = '$app_key'",
+	};
+
+	Rex::Logger::info("更新($app_key)权重($weight)完成");
+};
+
+desc "查询服务器权重 ";
+task query_weight=>sub {
+	my $self = shift;
+	my $app_key = $self->{app_key};
+	my @data = db select => {
+		fields => "server_name,network_ip,weight",
+		       from  => $table,
+		        where => "app_key = '$app_key'",
+	};
+	my $count= @data;
+	unshift(@data,$count);
+	return \@data;
+
+	Rex::Logger::info("查询($app_key)权重完成");
 };
 
 1;

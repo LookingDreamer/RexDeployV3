@@ -3,7 +3,7 @@ USER root
 RUN yum install wget -y && mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup \
 && wget -O /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo \
 && yum clean all && yum makecache \
-&& yum install  tar unzip make  dos2unix perl-DBD-MySQL rsync passwd openssl openssh-server net-tools vim openssh-clients sudo httpd -y \
+&& yum install  tar unzip make  dos2unix perl-DBD-MySQL rsync passwd openssl openssh-server net-tools vim openssh-clients sudo httpd gcc -y \
 && sed -i "s/\/var\/www\/html/\/data\/rsync/g" /etc/httpd/conf/httpd.conf \
 && mkdir -p /data/rsync && chmod 777 /data/rsync -R \
 && ssh-keygen -q -t rsa -b 2048 -f /etc/ssh/ssh_host_rsa_key -N ''   \
@@ -25,6 +25,12 @@ RUN yum install wget -y && mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d
 && wget https://download.osichina.net/tools/apache-tomcat-9.0.0.M4.zip \
 && unzip apache-tomcat-9.0.0.M4.zip -d /usr/local \
 && rm -f apache-tomcat-9.0.0.M4.zip \
+&& wget https://download.osichina.net/tools/cronolog-1.6.2.tar.gz \
+&& tar -zxvf cronolog-1.6.2.tar.gz \
+&& cd cronolog-1.6.2 \
+&& ./configure && make && make install \
+&& cd .. && rm -f cronolog-1.6.2.tar.gz \
+&& rm -rf cronolog-1.6.2 \
 &&  wget -q https://download.osichina.net/tools/jdk-8u161-linux-x64.tar.gz \
 &&  tar -zxvf jdk-8u161-linux-x64.tar.gz -C /usr/local/ \
 && ln -s /usr/local/jdk1.8.0_161 /usr/local/jdk \
