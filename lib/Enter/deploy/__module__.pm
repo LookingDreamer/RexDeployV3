@@ -67,9 +67,27 @@ task main => sub {
 	#4.开始发布
 	startDeplopy($k,$subject,$content,$is_finish);
 };
+
+#5.校验url
+sub checkURL{
+	my ($k,$subject,$content,$is_finish) = @_;
+	my $subject = "灰度发布-滚动发布(5)";
+	eval {
+		my $errData = run_task "loadService:main:check",params => { k => $k };
+
+	};
+	if ($@) {
+		Rex::Logger::info("($k) 校验url异常:$@","error");
+		sendMsg($subject,"($k)  校验url异常:$@",$is_finish);
+		exit;
+	}
+
+}
+
 #4.开始发布
 sub startDeplopy{
 	my ($k,$subject,$content,$is_finish) = @_;
+	my $subject = "灰度发布-滚动发布(4)";
 	eval {
 		my $errData = run_task "Enter:route:deploy",params => { k => $k };
 		my @errData = @$errData;
