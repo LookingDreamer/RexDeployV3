@@ -17,6 +17,7 @@ my %hash_pids;
 my $env;
 my $update_local_prodir;
 my $update_local_confdir;
+my $random_temp_file;
 Rex::Config->register_config_handler("env", sub {
  my ($param) = @_;
  $env = $param->{key} ;
@@ -26,6 +27,7 @@ Rex::Config->register_config_handler("$env", sub {
  our $user = $param->{user} ;
      $update_local_prodir   = $param->{update_local_prodir};
      $update_local_confdir  = $param->{update_local_confdir};
+     $random_temp_file  = $param->{random_temp_file};
  });
 
 desc "应用下载模块: rex  Enter:route:download   --k='server1 server2 ../groupname/all' [--update='1']";
@@ -57,12 +59,20 @@ task "download",sub{
    exit;
    }
 
+   #如果是上传到更新目录，先清空更新目录
    if ( "$update" eq "1") {
       if (  is_dir($update_local_prodir)) {
           rmdir("$update_local_prodir");
       }
       if (  is_dir($update_local_confdir)) {
           rmdir("$update_local_confdir");
+      }
+
+      if ( ! is_dir($update_local_prodir)) {
+          mkdir("$update_local_prodir");
+      }
+      if ( ! is_dir($update_local_confdir)) {
+          mkdir("$update_local_confdir");
       }
    }
 
@@ -126,7 +136,8 @@ task "download",sub{
 		    Rex::Logger::info("执行下载模板完成.");
 		    my $take_time = time - $start;
 		    Rex::Logger::info("总共花费时间:$take_time秒.");
-		    exit; 
+        return ;
+		    # exit; 
 		    #全部结束
 		  }
 		  select(undef, undef, undef, 0.25);
@@ -165,6 +176,7 @@ task "download",sub{
    Rex::Logger::info("");
    Rex::Logger::info("下载远程服务器数据到本地完成.");
    }
+   return ;
 };
 
 
@@ -178,6 +190,9 @@ task "deploy", sub {
    my %vars = map { $_ => 1 } @keys;
    my $lastnum=$keys[-1] - 1;
    my $start = time;
+   my @errData ;
+   my @randomArray ;
+   push @errData,1;
    if( $k eq ""  ){
    Rex::Logger::info("关键字(--k='')不能为空","error");
    exit;
@@ -189,6 +204,19 @@ task "deploy", sub {
    }
 
    Rex::Logger::info("Starting ...... 操作人: $username");
+
+    if ( "$random_temp_file" ne "" ) {
+         my $fh;
+         eval {
+              $fh = file_write "$random_temp_file";
+          };
+          if ($@) {
+              Rex::Logger::info("写入随机数据文件:$random_temp_file 异常:$@","warn");
+          } 
+         
+         $fh->write("");
+         $fh->close;
+  }
 
 
    my @ks = split(/ /, $k);
@@ -217,7 +245,10 @@ task "deploy", sub {
 		    Rex::Logger::info("应用发布模块完成.");
 		    my $take_time = time - $start;
 		    Rex::Logger::info("总共花费时间:$take_time秒.");
-		    exit; 
+        my $ranomstring = join(",",@randomArray);
+        push @errData,$ranomstring;
+        return \@errData;
+		    # exit; 
 		    #全部结束
 		  }
 		  select(undef, undef, undef, 0.25);
@@ -245,14 +276,24 @@ task "deploy", sub {
 				   if ( $auto_deloy eq "0"){
 				     Rex::Logger::info("($kv)--该应用没有加入自动发布","warn");
 				     # next;
-				     exit 0;
+				     # exit 0;
+             $errData[0] = 0;
+             my $ranomstring = join(",",@randomArray);
+             push @errData,$ranomstring;
+             return \@errData;
 				   }
 				   #查询该系统是否处于发布的状态,并记录初始化的的信息
 				   my $myAppStatus=Deploy::Db::getDeployStatus($kv,$config->{'network_ip'},"$username");
+           push @randomArray,$myAppStatus;
+           saveFile($random_temp_file,$myAppStatus.",");
 				   if($myAppStatus eq "1" ){
 				     Rex::Logger::info("($kv)--该应用正在发布,跳过本次操作.","warn");
 				     # next;
-				     exit 0;
+				     # exit 0;
+             $errData[0] = 0;
+             my $ranomstring = join(",",@randomArray);
+             push @errData,$ranomstring;
+             return \@errData;
 				   }
 				   #第一次连接获取远程服务器信息
 				   my $FistSerInfo=Deploy::Core::prepare($kv,$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
@@ -263,10 +304,18 @@ task "deploy", sub {
 				   run_task "Deploy:Core:linkrestart",on=>$config->{'network_ip'},params=>{ k => $kv,config =>$config,FistSerInfo=>$FistSerInfo,dir=>$dir,myAppStatus=>"$myAppStatus"};	
 			   }else{
 			   	   Rex::Logger::info("关键字($kv)不存在","error");
+             $errData[0] = 0;
+             my $ranomstring = join(",",@randomArray);
+             push @errData,$ranomstring;
+             return \@errData;
 			   }
 	        }
 
-		    exit 0;             # child is done
+        # $errData[0] = 0;
+        my $ranomstring = join(",",@randomArray);
+        push @errData,$ranomstring;
+        return \@errData;
+		    # exit 0;             # child is done
 		    #在子进程中执行相关动作结束
 		 } 
 		}
@@ -410,6 +459,32 @@ task "service", sub {
    Rex::Logger::info("应用服务控制模块完成.");
 };
 
+
+
+sub saveFile{
+  my ($file,$content) = @_;
+  my @data ; 
+  $data[0] = "1";
+  if ( "$file" ne "" ) {
+   my $fh;
+   eval {
+        $fh = file_append "$file";
+    };
+    if ($@) {
+        Rex::Logger::info("写入文件:$file 异常:$@","error");
+        $data[0] = "0";
+        $data[1] = "写入文件:$file 异常:$@";
+        return \@data;
+    } 
+   
+   $fh->write("$content");
+   $fh->close;
+
+  }
+  $data[1] = "写入文件:$file $content 成功";
+  return \@data;
+
+}
 
 1;
 

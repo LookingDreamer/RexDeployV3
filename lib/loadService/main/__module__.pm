@@ -77,10 +77,9 @@ task queryk => sub {
    exit;
    }
    if ( "$file" ne "" ) {
-       if ( ! is_file($file) ) {
            my $fh;
            eval {
-                $fh = file_append "$file";
+                $fh = file_write "$file";
             };
             if ($@) {
                 Rex::Logger::info("写入文件:$file 异常:$@","error");
@@ -89,7 +88,6 @@ task queryk => sub {
            
            $fh->write("");
            $fh->close;
-       }
    }
    my @ks = split(/ /, $k);
    Rex::Logger::info("");
@@ -145,8 +143,11 @@ task queryk => sub {
                  }
              }
            }
-           my $weightString = join(",",@weightArray);;
-           run_task "Deploy:Db:update_weight", params => { app_key => "$kv" ,weight=>"$weightString"};
+           my $weightString = join(",",@weightArray);
+           if ("$weightString" ne "") {
+             run_task "Deploy:Db:update_weight", params => { app_key => "$kv" ,weight=>"$weightString"};
+           }
+           
            Rex::Logger::info("");        
            Rex::Logger::info("##############($kv)-(end)###############");
            Rex::Logger::info("");
@@ -212,7 +213,7 @@ task update => sub {
              }
              my $lanIpLength = @lanIpArray;
              if ( "$lanIpLength" eq "1" && "$is_weight_allow" eq "1") {
-                 if ( "$lanIpArray[0]" == "$network_ip" && "$w" eq "0") {
+                 if ( "$lanIpArray[0]" eq "$network_ip" && "$w" eq "0") {
                      Rex::Logger::info("不允许摘掉最后1个节点,否则负载无法正常运转","error");
                      next;
                  }

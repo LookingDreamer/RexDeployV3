@@ -697,22 +697,27 @@ task update_weight=>sub {
 	};
 
 	Rex::Logger::info("更新($app_key)权重($weight)完成");
+	return \@data;
 };
 
 desc "查询服务器权重 ";
 task query_weight=>sub {
 	my $self = shift;
 	my $app_key = $self->{app_key};
+	my @app_keys_array = split(" ",$app_key);
+	my $app_keys = join(" ",@app_keys_array);
+    $app_keys =~ s/ /','/;
+    $app_keys = "'".$app_keys."'";
 	my @data = db select => {
 		fields => "server_name,network_ip,weight",
 		       from  => $table,
-		        where => "app_key = '$app_key'",
+		        where => "app_key in ($app_keys)",
 	};
-	my $count= @data;
-	unshift(@data,$count);
-	return \@data;
+	# my $count= @data;
+	# unshift(@data,$count);
 
 	Rex::Logger::info("查询($app_key)权重完成");
+	return \@data;
 };
 
 
@@ -729,6 +734,7 @@ task update_differcount=>sub {
 	};
 
 	Rex::Logger::info("更新($app_key)校验差异值($differcount)完成");
+	return \@data;
 };
 
 desc "查询服务器校验变化 ";
@@ -742,9 +748,10 @@ task query_differcount=>sub {
 	};
 	my $count= @data;
 	unshift(@data,$count);
-	return \@data;
+	
 
 	Rex::Logger::info("查询($app_key)校验差异值完成");
+	return \@data;
 };
 
 desc "更新校验url结果";
@@ -760,6 +767,7 @@ task update_checkurl_status=>sub {
 	};
 
 	Rex::Logger::info("更新($app_key)校验url结果($checkurl_status)完成");
+	return \@data;
 };
 
 desc "查询校验url结果";
@@ -773,10 +781,51 @@ task query_checkurl_status=>sub {
 	};
 	my $count= @data;
 	unshift(@data,$count);
-	return \@data;
+	
 
 	Rex::Logger::info("查询($app_key)校验url结果完成");
+	return \@data;
 };
+
+
+desc "初始化灰度发布信息";
+task update_deploy_status=>sub {
+	my $app_keys = @_[0];
+	my @app_keys_array = split(" ",$app_keys);
+	my $app_keys = join(" ",@app_keys_array);
+    $app_keys =~ s/ /','/;
+    $app_keys = "'".$app_keys."'";
+	my @data = db update => "$table", {
+		set => {
+			checkurl_status => 1,
+			weight => 'NULL',
+			differcount => 'NULL',
+		},
+		    where => "app_key in ($app_keys)",
+	};
+
+	Rex::Logger::info("初始化($app_keys)灰度发布信息完成");
+	return \@data;
+};
+
+desc "查询发布信息";
+task query_deploy_info=>sub {
+	my $randomStr = @_[0];
+	my $app_keys = @_[1];
+	my @randomStr_array = split(" ",$randomStr);
+	my $randomStr = join(" ",@randomStr_array);
+    $randomStr =~ s/ /','/;
+    $randomStr = "'".$randomStr."'";
+	my @data = db select => {
+		fields => "*",
+		       from  => $deploy_table,
+		        where => "randomStr in ($randomStr)",
+	};
+
+	Rex::Logger::info("查询($app_keys)发布信息完成");
+	return \@data;
+};
+
 
 1;
 
