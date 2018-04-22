@@ -6,6 +6,7 @@ use JSON qw( decode_json );
 use Encode;
 use URI::Escape;
 use POSIX qw(strftime); 
+use POSIX; 
 
 my $env;
 my $is_weixin;
@@ -15,6 +16,12 @@ my $qq_config;
 my $finish_qq_config;
 my $max_sleep_time;
 my $random_temp_file;
+my $checkurl_max_count;
+my $checkurl_interval_time;
+my $checkurl_init_time;
+my $deploy_finish_file;
+my $deploy_max_count;
+my $deploy_interval_time;
 Rex::Config->register_config_handler(
     "env",
     sub {
@@ -33,6 +40,12 @@ Rex::Config->register_config_handler(
         $finish_qq_config = $param->{finish_qq_config};
         $max_sleep_time = $param->{max_sleep_time};
         $random_temp_file = $param->{random_temp_file};
+        $checkurl_max_count = $param->{checkurl_max_count};
+        $checkurl_interval_time = $param->{checkurl_interval_time};
+        $checkurl_init_time = $param->{checkurl_init_time};
+        $deploy_finish_file = $param->{deploy_finish_file};
+        $deploy_max_count = $param->{deploy_max_count};
+        $deploy_interval_time = $param->{deploy_interval_time};
     }
 );
 
@@ -43,12 +56,17 @@ task main => sub {
 	my $is_finish = 0;
 	my $weigts;
 	my $datetime = strftime("%Y-%m-%d %H:%M:%S", localtime(time));
-	my $subject = "灰度发布-滚动发布(1)";
+	my $subject = "灰度发布-滚动发布(0)";
 	my $content = "开始时间: $datetime 发布系统: $k";
 	if ( "$k" eq "" ) {
 		Rex::Logger::info("关键字(--k='')不能为空","error");
 	    exit;	
 	}
+
+
+	# startDeplopy($k,$subject,$content,$is_finish);
+	# print "end";
+	# exit;
 
 	sendMsg($subject,$content,$is_finish);
 	#0.初始化灰度发布
@@ -56,6 +74,7 @@ task main => sub {
 	#1.摘取节点并判断节点是否成功摘取
 	pickLoad($k,$subject,$content,$is_finish);
 	if ( "$max_sleep_time" != 0 ) {
+		my $subject = "灰度发布-滚动发布(1-2)";
 		Rex::Logger::info("($k) 已配置超时时间,开始等待超时时间$max_sleep_time秒");
 		sendMsg($subject,"($k) 已配置超时时间,开始等待超时时间$max_sleep_time秒",$is_finish);
 		select(undef, undef, undef, $max_sleep_time);
@@ -66,15 +85,80 @@ task main => sub {
 	checkDiff($k,$subject,$content,$is_finish);
 	#4.开始发布
 	startDeplopy($k,$subject,$content,$is_finish);
+	#5.校验url
+	checkURL($k,$subject,$content,$is_finish);
+	#6.添加节点并判断节点是否成功摘取
+	addLoad($k,$subject,$content,$is_finish);
 };
+
+
+#6.添加节点并判断节点是否成功摘取
+sub addLoad{
+	my ($k,$subject,$content,$is_finish) = @_;
+	my $subject = "灰度发布-滚动发布(6)";
+	my $weigts;
+	eval {
+		run_task "loadService:main:update",params => { k => $k,w => 10};
+		run_task "loadService:main:queryk",params => { k => $k};
+		$weigts = run_task "Deploy:Db:query_weight",params => { app_key => $k};
+		for my $weight (@$weigts) {
+			my $realWeigts = $weight->{"weight"};
+			my $realServer_name = $weight->{"server_name"};
+			my $realNetwork_ip = $weight->{"network_ip"};
+			my @realWeigtsArray = split(",",$realWeigts);
+			for my $realWeigt (@realWeigtsArray){
+				if ( "$realWeigt" eq "NULL") {
+					Rex::Logger::info("($realServer_name) 修改权重失败,没有获取负载对应的节点IP","error");
+					sendMsg($subject,"($realServer_name) 修改权重失败,没有获取负载对应的节点IP",$is_finish);
+					exit;
+				}
+				if ( "$realWeigt" ne "10") {
+					Rex::Logger::info("($realServer_name):$realWeigts 修改权重失败","error");
+					sendMsg($subject,"($realServer_name):$realWeigts 修改权重失败",$is_finish);
+					exit;
+				}
+			}
+		}
+		my $endtime = strftime("%Y-%m-%d %H:%M:%S", localtime(time));
+		Rex::Logger::info("开始时间:$endtime ($k) 添加节点成功,结束本次节点发布");
+		sendMsg($subject,"开始时间:$endtime ($k) 添加节点成功,结束本次节点发布",$is_finish);
+	};
+	if ($@) {
+		Rex::Logger::info("($k) 添加并保存权重数据异常:$@","error");
+		sendMsg($subject,"($k) 添加并保存权重数据异常:$@",$is_finish);
+		exit;
+	}
+
+}
 
 #5.校验url
 sub checkURL{
 	my ($k,$subject,$content,$is_finish) = @_;
 	my $subject = "灰度发布-滚动发布(5)";
 	eval {
-		my $errData = run_task "loadService:main:check",params => { k => $k };
-
+		Rex::Logger::info("($k) 校验url 应用启动初始化中...等待$checkurl_init_time秒");
+		select(undef, undef, undef, $checkurl_init_time);
+		for (my $var = 1; $var <= $checkurl_max_count; $var++) {
+			Rex::Logger::info("($k) 校验url第$var次");
+			my $errData = run_task "loadService:main:check",params => { k => $k };
+			my @errData = @$errData;
+			my $errContent = join(",",@errData);
+			if ( $errData[0] == 0  ) {
+				Rex::Logger::info("校验url第$var次失败: $errContent","error");
+				if ( $var == $checkurl_max_count) {
+					Rex::Logger::info("校验次url失败: $errContent 校验次数:$checkurl_max_count 校验时间间隔:$checkurl_interval_time","error");
+					sendMsg($subject,"校验次url失败: $errContent 校验次数:$checkurl_max_count 校验时间间隔:$checkurl_interval_time",$is_finish);
+					exit;
+				}
+				
+			}
+			if ( $errData[0] == 1 ) {
+				last;
+			}
+			select(undef, undef, undef, $checkurl_interval_time);
+		}
+		Rex::Logger::info("($k) 校验url成功");
+		sendMsg($subject,"($k) 校验url成功",$is_finish);
 	};
 	if ($@) {
 		Rex::Logger::info("($k) 校验url异常:$@","error");
@@ -89,13 +173,65 @@ sub startDeplopy{
 	my ($k,$subject,$content,$is_finish) = @_;
 	my $subject = "灰度发布-滚动发布(4)";
 	eval {
-		my $errData = run_task "Enter:route:deploy",params => { k => $k };
-		my @errData = @$errData;
-		if ( $errData[0]  == 0 ) {
-			Rex::Logger::info("($k)  发布失败,请查看日志","error");
-			sendMsg($subject,"($k)  发布失败,请查看日志",$is_finish);
-			exit;
+	    if (is_file($deploy_finish_file)) {
+	        unlink($deploy_finish_file);
+	    }
+		run_task "Enter:route:deploy",params => { k => $k };
+
+		for (my $var = 1; $var <= $deploy_max_count; $var++) {
+			if ( is_file($deploy_finish_file) ) {
+				Rex::Logger::info("检测到发布已经结束") ;
+				last;
+			}
+			select(undef, undef, undef, $deploy_interval_time);
 		}
+		select(undef, undef, undef, 3);
+
+	    my $data = readFile($random_temp_file) ;
+	    my @data = @$data;
+	    my $datastring = join(" ",@data);
+	    Rex::Logger::info("($k) 发布随机数: $datastring");
+	    my $deployInfo = Deploy::Db::query_deploy_info($datastring,$k);
+	    my @deployInfo = @$deployInfo;
+	    my $deployInfolength = @$deployInfo;
+	    if ( $deployInfolength  ==  0 ) {
+			Rex::Logger::info("($k) 发布失败,查询到发布信息为空,请查看日志","error");
+			sendMsg($subject,"($k) 发布失败,查询到发布信息为空,请查看日志",$is_finish);
+			exit;
+	    }
+	    
+	    my @errDeploy ;
+	    for my $deployLine (@deployInfo){
+	    	my $deploy_take = $deployLine->{"deploy_take"};
+	    	my $deploy_key = $deployLine->{"deploy_key"};
+	    	my $deloy_size = $deployLine->{"deloy_size"};
+	    	my $deploy_ip = $deployLine->{"deploy_ip"};
+	    	my $processNumber = $deployLine->{"processNumber"};
+	    	# sendMsg($subject,"($deploy_key-$deploy_ip) 发布后目录:$deloy_size 发布后进程数: $processNumber 发布时间花费:$deploy_take",$is_finish);
+	    	if ( "$deloy_size" ne ""  &&  "$processNumber" ne "" && "$processNumber" ne "0" && "$deploy_take" ne "") {
+	    		Rex::Logger::info("($deploy_key-$deploy_ip) 发布后目录:$deloy_size 发布后进程数: $processNumber 发布时间花费:$deploy_take");
+	    	}else{
+	    		push @errDeploy,"($deploy_key-$deploy_ip) 目录:$deloy_size 进程数: $processNumber 时间花费:$deploy_take";
+	    		Rex::Logger::info("($deploy_key-$deploy_ip) 发布后目录:$deloy_size 发布后进程数: $processNumber 发布时间花费:$deploy_take","error");
+	    	}
+	    	
+	    }
+	    if (is_file($random_temp_file)) {
+	        unlink($random_temp_file);
+	    }
+	    my $errDeploylength = @errDeploy;
+	    if ( $errDeploylength ne 0 ) {
+	    	my $errDeployContent = join(",",@errDeploy);
+			Rex::Logger::info("($k) 发布失败.\n$errDeployContent");
+			sendMsg($subject,"($k) 发布失败\n$errDeployContent",$is_finish);
+			exit;
+	    }
+
+		Rex::Logger::info("($k) 发布完成");
+		sendMsg($subject,"($k) 发布完成",$is_finish);
+
+
+
 	};
 	if ($@) {
 		Rex::Logger::info("($k)  发布异常:$@","error");
@@ -103,40 +239,29 @@ sub startDeplopy{
 		exit;
 	}
 
-    my @data ;
-    my $datastring;
-    open(DATA, "<$random_temp_file") or  Rex::Logger::info("$random_temp_file 文件无法打开, $!","error");        
-    while(<DATA>){
-       my @singleData = split(",",$_) ;	
-       for my $var (@singleData) {
-       		if ( "$var"  ne "") {
-       			push @data,$var;
-       		}
-       }
 
-    }
-    close(DATA) || die Rex::Logger::info("$random_temp_file 文件无法关闭","error");
-    $datastring = join(" ",@data);
-    my $deployInfo = Deploy::Db::query_deploy_info($datastring,$k);
-    my @deployInfo = @$deployInfo;
-    for my $deployLine (@deployInfo){
-    	my $deploy_take = $deployLine->{"deploy_take"};
-    	my $deploy_key = $deployLine->{"deploy_key"};
-    	my $deloy_size = $deployLine->{"deloy_size"};
-    	my $deploy_ip = $deployLine->{"deploy_ip"};
-    	my $processNumber = $deployLine->{"processNumber"};
-    	Rex::Logger::info("($deploy_key-$deploy_ip) 发布后目录:$deloy_size 发布后进程数: $processNumber 发布时间花费:$deploy_take");
-    	# sendMsg($subject,"($deploy_key-$deploy_ip) 发布后目录:$deloy_size 发布后进程数: $processNumber 发布时间花费:$deploy_take",$is_finish);
-    }
-    if (is_file($random_temp_file)) {
-        unlink($random_temp_file);
-    }
-
-	Rex::Logger::info("($k) 发布完成");
-	sendMsg($subject,"($k) 发布完成",$is_finish);
 
 }
 
+#读取,分割的数据文件
+sub readFile{
+		my ($file) = @_;
+	    my $datastring;
+	    my @data;
+	    open(DATA, "<$file") or  Rex::Logger::info("$file 文件无法打开, $!","error");        
+	    while(<DATA>){
+	       my @singleData = split(",",$_) ;	
+	       for my $var (@singleData) {
+	       		if ( "$var"  ne "") {
+	       			push @data,$var;
+	       		}
+	       }
+
+	    }
+	    close(DATA) || die Rex::Logger::info("$file 文件无法关闭","error");
+	    return \@data;
+
+}
 
 #3.校验发布包和原包差异
 sub checkDiff{
@@ -154,7 +279,6 @@ sub checkDiff{
 		my $changeContent =$errData->{"proChange"}."====>".$errData->{"confChange"} ;
 		Rex::Logger::info("($k) 发布包原包差异: $changeContent");
 		sendMsg($subject,"($k) 发布包原包差异: $changeContent",$is_finish);
-		exit;			
 	};
 	if ($@) {
 		Rex::Logger::info("($k) 校验发布包和原包差异:$@","error");
@@ -204,6 +328,7 @@ sub downloadSync(){
 sub pickLoad{
 	my ($k,$subject,$content,$is_finish) = @_;
 	my $weigts;
+	my $subject = "灰度发布-滚动发布(1-1)";
 	eval {
 		run_task "loadService:main:update",params => { k => $k,w => 0};
 		run_task "loadService:main:queryk",params => { k => $k};

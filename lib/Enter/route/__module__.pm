@@ -18,6 +18,8 @@ my $env;
 my $update_local_prodir;
 my $update_local_confdir;
 my $random_temp_file;
+my $deploy_finish_file;
+my $process_temp_dir;
 Rex::Config->register_config_handler("env", sub {
  my ($param) = @_;
  $env = $param->{key} ;
@@ -28,6 +30,8 @@ Rex::Config->register_config_handler("$env", sub {
      $update_local_prodir   = $param->{update_local_prodir};
      $update_local_confdir  = $param->{update_local_confdir};
      $random_temp_file  = $param->{random_temp_file};
+     $deploy_finish_file  = $param->{deploy_finish_file};
+     $process_temp_dir  = $param->{process_temp_dir};
  });
 
 desc "应用下载模块: rex  Enter:route:download   --k='server1 server2 ../groupname/all' [--update='1']";
@@ -192,6 +196,8 @@ task "deploy", sub {
    my $start = time;
    my @errData ;
    my @randomArray ;
+   undef %hash_pids;
+   my %hash_pids;
    push @errData,1;
    if( $k eq ""  ){
    Rex::Logger::info("关键字(--k='')不能为空","error");
@@ -205,7 +211,7 @@ task "deploy", sub {
 
    Rex::Logger::info("Starting ...... 操作人: $username");
 
-    if ( "$random_temp_file" ne "" ) {
+   if ( "$random_temp_file" ne "" ) {
          my $fh;
          eval {
               $fh = file_write "$random_temp_file";
@@ -216,8 +222,7 @@ task "deploy", sub {
          
          $fh->write("");
          $fh->close;
-  }
-
+   }
 
    my @ks = split(/ /, $k);
    my $max = @ks;
@@ -247,6 +252,10 @@ task "deploy", sub {
 		    Rex::Logger::info("总共花费时间:$take_time秒.");
         my $ranomstring = join(",",@randomArray);
         push @errData,$ranomstring;
+
+        my $fh = file_write "$deploy_finish_file";
+        $fh->write("总共花费时间:$take_time秒");
+        $fh->close;
         return \@errData;
 		    # exit; 
 		    #全部结束
@@ -255,7 +264,7 @@ task "deploy", sub {
 			  my $kv = $ks[$i];
 		    my $child=fork(); #派生一个子进程
 		  if($child){   # child >; 0, so we're the parent 
-		      $hash_pids{$child} = $child;  
+		      $hash_pids{$child} = $child; 
 		      Rex::Logger::info("父进程PID:$$ 子进程PID:$child");
 		  }else{ 
 		    #在子进程中执行相关动作开始
@@ -267,8 +276,8 @@ task "deploy", sub {
 				   #初始化数据库信息
 				   my $config;
 				   my $FistSerInfo;
-		                   my $dir;
-  				   my $myAppStatus;			
+		       my $dir;
+  				 my $myAppStatus;			
 				   my $config=Deploy::Core::init("$kv");
 				   my $auto_deloy;
 				   #判断是否加入了自动发布
@@ -280,11 +289,13 @@ task "deploy", sub {
              $errData[0] = 0;
              my $ranomstring = join(",",@randomArray);
              push @errData,$ranomstring;
-             return \@errData;
+             exit 0;
+             # return \@errData;
 				   }
 				   #查询该系统是否处于发布的状态,并记录初始化的的信息
 				   my $myAppStatus=Deploy::Db::getDeployStatus($kv,$config->{'network_ip'},"$username");
            push @randomArray,$myAppStatus;
+           Rex::Logger::info("($kv)--$random_temp_file写入随机数: $myAppStatus");
            saveFile($random_temp_file,$myAppStatus.",");
 				   if($myAppStatus eq "1" ){
 				     Rex::Logger::info("($kv)--该应用正在发布,跳过本次操作.","warn");
@@ -293,7 +304,8 @@ task "deploy", sub {
              $errData[0] = 0;
              my $ranomstring = join(",",@randomArray);
              push @errData,$ranomstring;
-             return \@errData;
+             exit 0 ;
+             # return \@errData;
 				   }
 				   #第一次连接获取远程服务器信息
 				   my $FistSerInfo=Deploy::Core::prepare($kv,$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
@@ -307,15 +319,15 @@ task "deploy", sub {
              $errData[0] = 0;
              my $ranomstring = join(",",@randomArray);
              push @errData,$ranomstring;
-             return \@errData;
+             exit 0;
 			   }
 	        }
 
         # $errData[0] = 0;
         my $ranomstring = join(",",@randomArray);
         push @errData,$ranomstring;
-        return \@errData;
-		    # exit 0;             # child is done
+        # return \@errData;
+		    exit 0;             # child is done
 		    #在子进程中执行相关动作结束
 		 } 
 		}

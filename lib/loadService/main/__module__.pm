@@ -258,6 +258,8 @@ task check => sub {
    my @keys=split(/,/, $keys);
    my %vars = map { $_ => 1 } @keys;
    my $lastnum=$keys[-1] - 1;
+   my @errData;
+   $errData[0] = 1 ;
    if( $k eq ""  ){
    Rex::Logger::info("关键字(--k='')不能为空","error");
    exit;
@@ -280,6 +282,8 @@ task check => sub {
            my $requirecode = $config->{"requirecode"};
            #处理逻辑
            if ( "$url" eq "" ) {
+               $errData[0] = 0 ;
+               push @errData,"校验url为空:".$kv;
                Rex::Logger::info("校验url不能为空","error");
                next;
            }
@@ -297,6 +301,8 @@ task check => sub {
                if ( "$code"  eq "$requirecode" ) {
                    Rex::Logger::info("校验返回码成功");
                }else{
+                   $errData[0] = 0 ;
+                   push @errData,"校验返回码失败:".$kv;
                    run_task "Deploy:Db:update_checkurl_status", params => { app_key => "$kv" ,checkurl_status=>0};
                    Rex::Logger::info("校验返回码失败","error"); 
                }
@@ -305,6 +311,8 @@ task check => sub {
                if (  $message =~ m/$require/ ) {
                    Rex::Logger::info("校验返回内容成功");
                }else{
+                   $errData[0] = 0 ;
+                   push @errData,"校验返回内容失败:".$kv;
                    run_task "Deploy:Db:update_checkurl_status", params => { app_key => "$kv" ,checkurl_status=>0};
                    Rex::Logger::info("校验返回内容失败","error"); 
                }
@@ -320,6 +328,7 @@ task check => sub {
    }
    Rex::Logger::info("");
    Rex::Logger::info("校验url模块完成.");
+   return \@errData;
 };
 
 

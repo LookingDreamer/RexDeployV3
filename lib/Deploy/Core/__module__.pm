@@ -322,7 +322,7 @@ task uploading => sub {
     #my  $datetime = run "date '+%Y%m%d_%H%M%S'" ;
     $remotedir =~ s/\/$//;
     $remotedir = "${remotedir}_${datetime}";
-    our $localdir = "$softdir$local_name/";
+    our $localdir = "$softdir/$local_name/";
     my $localdir_app = "${temp}${local_name}/${app_key}";
     $remote_confir_dir =~ s/\/$//;
     $remote_confir_dir = "${remote_confir_dir}_${datetime}";
@@ -1179,16 +1179,25 @@ task "diff", sub {
     my @proChange;
     my @confChange;
     $hash{"code"} = 1;
-    $softdir =~ s/\/$//;
-    $configuredir =~ s/\/$//;
+    # $softdir =~ s/\/$//;
+    # $configuredir =~ s/\/$//;
 
     Rex::Config->register_config_handler(
         "$env",
         sub {
             my ($param) = @_;
+            $table_string        = $param->{table_string};
+            @string              = split( /,/, $table_string );
+            $softdir             = $param->{softdir};
             $configuredir        = $param->{configuredir};
             $local_prodir        = $param->{local_prodir};
             $local_confdir       = $param->{local_confdir};
+            $backup_dir          = $param->{backup_dir};
+            $baseapp_dir         = $param->{baseapp_dir};
+            $temp                = $param->{temp};
+            $is_link             = $param->{is_link};
+            $is_stop             = $param->{is_stop};
+            $is_start            = $param->{is_start};
             $download_record_log = $param->{download_record_log};
             $download_all        = $param->{download_all};
             $update_local_prodir        = $param->{update_local_prodir};
