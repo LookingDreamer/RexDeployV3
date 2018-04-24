@@ -306,3 +306,17 @@ task "list",sub{
    Rex::Logger::info("获取关键词如下: \n $keys");
 };
 
+
+desc "根据识别名称滚动发布: rex deploy --k='server' \n";
+task "deploy",sub{
+    my $self = shift;
+    my $k=$self->{k};
+
+    if ( "$k"  eq  "") {
+      Rex::Logger::info("识别名称--k不能为空","error");
+      exit;
+    }
+    my $deployInfo=Enter::deploy::getdepoloy($k);
+    Rex::Logger::info("");
+    return $deployInfo;
+};

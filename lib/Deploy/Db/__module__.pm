@@ -13,6 +13,7 @@ my $deploy_table;
 my $deploy_status_table;
 my $external_status;
 my $external_deploy_config_table;
+my $table_load_key;
 Rex::Config->register_config_handler("env", sub {
 		my ($param) = @_;
 		$env = $param->{key} ;
@@ -27,6 +28,7 @@ Rex::Config->register_config_handler("$env", sub {
 		}
 		$deploy_table = $param->{deploy_record_table} ;
 		$deploy_status_table = $param->{deploy_status_table} ;
+		$table_load_key = $param->{table_load_key} ;
 		});
 
 desc "数据库模块: 获取服务器信息";
@@ -706,7 +708,7 @@ task query_weight=>sub {
 	my $app_key = $self->{app_key};
 	my @app_keys_array = split(" ",$app_key);
 	my $app_keys = join(" ",@app_keys_array);
-    $app_keys =~ s/ /','/;
+    $app_keys =~ s/ /','/g;
     $app_keys = "'".$app_keys."'";
 	my @data = db select => {
 		fields => "server_name,network_ip,weight",
@@ -793,7 +795,7 @@ task update_deploy_status=>sub {
 	my $app_keys = @_[0];
 	my @app_keys_array = split(" ",$app_keys);
 	my $app_keys = join(" ",@app_keys_array);
-    $app_keys =~ s/ /','/;
+    $app_keys =~ s/ /','/g;
     $app_keys = "'".$app_keys."'";
 	my @data = db update => "$table", {
 		set => {
@@ -814,7 +816,7 @@ task query_deploy_info=>sub {
 	my $app_keys = @_[1];
 	my @randomStr_array = split(" ",$randomStr);
 	my $randomStr = join(" ",@randomStr_array);
-    $randomStr =~ s/ /','/;
+    $randomStr =~ s/ /','/g;
     $randomStr = "'".$randomStr."'";
 	my @data = db select => {
 		fields => "*",
@@ -823,6 +825,47 @@ task query_deploy_info=>sub {
 	};
 
 	Rex::Logger::info("查询($app_keys)发布信息完成");
+	return \@data;
+};
+
+
+desc "查询滚动更新关键词";
+task getdepoloy=>sub {
+	my $local_name = @_[0];
+	my @local_name_array = split(" ",$local_name);
+	my $local_name = join(" ",@local_name_array);
+    $local_name =~ s/ /','/g;
+    $local_name = "'".$local_name."'";
+	my @data = db select => {
+		fields => "local_name,app_key_sort",
+		       from  => $table_load_key,
+		         where => "local_name in ($local_name)  group by local_name",
+	};
+	unshift(@data);
+	Rex::Logger::info("查询($local_name)滚动更新关键词完成");
+	return \@data;
+};
+
+
+desc "根据多个关键词查询服务器信息";
+task query_keys=>sub {
+	my $app_key = @_[0];
+	my @app_keys_array = split(" ",$app_key);
+	my $app_keys = join(" ",@app_keys_array);
+    $app_keys =~ s/ /','/g;
+    $app_keys = "'".$app_keys."'";
+	my @data = db select => {
+		fields => "*",
+		       from  => $table,
+		        where => "app_key in ($app_keys)",
+	};
+	my $count = @data;
+	if ( $count == 0 ) {
+		Rex::Logger::info("查询($app_key)服务器信息完成,返回记录数:$count","warn");
+	}else{
+		Rex::Logger::info("查询($app_key)服务器信息完成,返回记录数:$count");		
+	}
+	
 	return \@data;
 };
 

@@ -49,6 +49,83 @@ Rex::Config->register_config_handler(
     }
 );
 
+
+
+
+desc "查询滚动更新关键词";
+task getdepoloy=>sub {
+	my ($k) = @_;
+	my $is_finish = 0;
+	my $datetime = strftime("%Y-%m-%d %H:%M:%S", localtime(time));
+	my $subject = "灰度发布-滚动发布(0000)";	
+	my %res ;
+	my $deploy = Deploy::Db::getdepoloy($k);
+	my @deploy = @$deploy;
+	my $deploylength = @deploy;
+	if ( $deploylength == 0 ) {
+		$res{"code"} = 0;
+		$res{"msg"} = "根据识别名称查询到关键词为空,请确认是否已经录入数据";
+		Rex::Logger::info("($k) 根据识别名称查询到关键词为空,请确认是否已经录入数据","error");
+		return \%res;
+	}
+	Rex::Logger::info("($k) 根据识别名称查询到$deploylength条记录");
+	for my $info (@deploy){
+		my $local_name = $info->{"local_name"};			
+		my $app_key_sort = $info->{"app_key_sort"};
+		my @app_keys = split(";",$app_key_sort);
+		for my $app_keys (@app_keys){
+			my $apps = Deploy::Db::query_keys($app_keys);
+			my @apps = @$apps;
+			my $appslength = @apps ;
+			if ( $appslength == 0 ) {
+				$res{"code"} = 0;
+				$res{"msg"} = "根据识别名称($local_name)查询到关键词$app_keys记录为空,请确认是否已经录入数据";
+				Rex::Logger::info("根据识别名称($local_name)查询到关键词$app_keys记录为空,请确认是否已经录入数据","error");
+				return \%res;
+			}
+
+		}			
+
+	}
+	Rex::Logger::info("($k) 校验关键词完成");
+	for my $info (@deploy){
+		my $local_name = $info->{"local_name"};			
+		my $app_key_sort = $info->{"app_key_sort"};
+		my @app_keys = split(";",$app_key_sort);
+		for my $app_keys (@app_keys){
+			my $apps = Deploy::Db::query_keys($app_keys);
+			my @apps = @$apps;
+			my $appslength = @apps ;
+			if ( $appslength == 0 ) {
+				$res{"code"} = 0;
+				$res{"msg"} = "根据识别名称($local_name)查询到关键词$app_keys记录为空,请确认是否已经录入数据";
+				Rex::Logger::info("根据识别名称($local_name)查询到关键词$app_keys记录为空,请确认是否已经录入数据","error");
+				return \%res;
+			}else{
+				eval {
+					Rex::Logger::info("local_name->($app_keys) 开始灰度发布...");
+					run_task "Enter:deploy:main",params => { k => $app_keys};
+					Rex::Logger::info("local_name->($app_keys) 结束灰度发布.");
+				};
+				if ($@) {
+					Rex::Logger::info("($app_keys) 执行灰度发布异常:$@","error");
+					sendMsg($subject,"($app_keys) 执行灰度发布异常:$@",$is_finish);
+					exit;
+				}
+			}
+
+		}			
+
+	}
+	$is_finish = 1;
+	$res{"code"} = 0;
+	$res{"msg"} = "$k 全部灰度发布完成";
+	sendMsg($subject,"($k) 全部灰度发布完成",$is_finish);
+	return \%res;
+	
+
+};
+
 desc "灰度发布 rex Enter:deploy:main --k='server1'";
 task main => sub {
     my $self = shift;
@@ -62,11 +139,6 @@ task main => sub {
 		Rex::Logger::info("关键字(--k='')不能为空","error");
 	    exit;	
 	}
-
-
-	# startDeplopy($k,$subject,$content,$is_finish);
-	# print "end";
-	# exit;
 
 	sendMsg($subject,$content,$is_finish);
 	#0.初始化灰度发布
@@ -120,8 +192,8 @@ sub addLoad{
 			}
 		}
 		my $endtime = strftime("%Y-%m-%d %H:%M:%S", localtime(time));
-		Rex::Logger::info("开始时间:$endtime ($k) 添加节点成功,结束本次节点发布");
-		sendMsg($subject,"开始时间:$endtime ($k) 添加节点成功,结束本次节点发布",$is_finish);
+		Rex::Logger::info("结束时间:$endtime ($k) 添加节点成功,结束本次节点发布");
+		sendMsg($subject,"结束时间:$endtime ($k) 添加节点成功,结束本次节点发布",$is_finish);
 	};
 	if ($@) {
 		Rex::Logger::info("($k) 添加并保存权重数据异常:$@","error");
@@ -146,8 +218,8 @@ sub checkURL{
 			if ( $errData[0] == 0  ) {
 				Rex::Logger::info("校验url第$var次失败: $errContent","error");
 				if ( $var == $checkurl_max_count) {
-					Rex::Logger::info("校验次url失败: $errContent 校验次数:$checkurl_max_count 校验时间间隔:$checkurl_interval_time","error");
-					sendMsg($subject,"校验次url失败: $errContent 校验次数:$checkurl_max_count 校验时间间隔:$checkurl_interval_time",$is_finish);
+					Rex::Logger::info("校验次url失败: $errContent 校验次数:$checkurl_max_count 校验时间间隔:$checkurl_interval_time秒","error");
+					sendMsg($subject,"校验次url失败: $errContent 校验次数:$checkurl_max_count 校验时间间隔:$checkurl_interval_time秒",$is_finish);
 					exit;
 				}
 				
@@ -328,7 +400,7 @@ sub downloadSync(){
 sub pickLoad{
 	my ($k,$subject,$content,$is_finish) = @_;
 	my $weigts;
-	my $subject = "灰度发布-滚动发布(1-1)";
+	my $subject = "灰度发布-滚动发布(1)";
 	eval {
 		run_task "loadService:main:update",params => { k => $k,w => 0};
 		run_task "loadService:main:queryk",params => { k => $k};
