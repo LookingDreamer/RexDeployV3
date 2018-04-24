@@ -126,6 +126,22 @@ task getdepoloy=>sub {
 
 };
 
+desc "直接发布 rex Enter:deploy:release --k='server'";
+task release => sub {
+    my $self = shift;
+    my $k=$self->{k};
+	my $datetime = strftime("%Y-%m-%d %H:%M:%S", localtime(time));
+	my $subject = "直接发布";
+	my $content = "开始时间: $datetime 发布系统: $k";
+	if ( "$k" eq "" ) {
+		Rex::Logger::info("关键字(--k='')不能为空","error");
+	    exit;	
+	}
+
+};
+
+
+
 desc "灰度发布 rex Enter:deploy:main --k='server1'";
 task main => sub {
     my $self = shift;
@@ -139,6 +155,7 @@ task main => sub {
 		Rex::Logger::info("关键字(--k='')不能为空","error");
 	    exit;	
 	}
+
 
 	sendMsg($subject,$content,$is_finish);
 	#0.初始化灰度发布
@@ -156,7 +173,7 @@ task main => sub {
 	#3.校验发布包和原包差异
 	checkDiff($k,$subject,$content,$is_finish);
 	#4.开始发布
-	startDeplopy($k,$subject,$content,$is_finish);
+	startDeplopy($k,"灰度发布-滚动发布(4)",$content,$is_finish);
 	#5.校验url
 	checkURL($k,$subject,$content,$is_finish);
 	#6.添加节点并判断节点是否成功摘取
@@ -243,7 +260,7 @@ sub checkURL{
 #4.开始发布
 sub startDeplopy{
 	my ($k,$subject,$content,$is_finish) = @_;
-	my $subject = "灰度发布-滚动发布(4)";
+	# my $subject = "灰度发布-滚动发布(4)";
 	eval {
 	    if (is_file($deploy_finish_file)) {
 	        unlink($deploy_finish_file);

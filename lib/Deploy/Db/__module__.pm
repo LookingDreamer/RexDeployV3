@@ -31,6 +31,7 @@ Rex::Config->register_config_handler("$env", sub {
 		$table_load_key = $param->{table_load_key} ;
 		});
 
+
 desc "数据库模块: 获取服务器信息";
 task getconfig => sub {
 	my $self = shift;
