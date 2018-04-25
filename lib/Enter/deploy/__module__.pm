@@ -128,15 +128,58 @@ task getdepoloy=>sub {
 
 desc "直接发布 rex Enter:deploy:release --k='server'";
 task release => sub {
-    my $self = shift;
-    my $k=$self->{k};
+    my ($k) = @_;
 	my $datetime = strftime("%Y-%m-%d %H:%M:%S", localtime(time));
-	my $subject = "直接发布";
+	my $subject = "自动发布";
 	my $content = "开始时间: $datetime 发布系统: $k";
+	my $is_finish = 0;
 	if ( "$k" eq "" ) {
 		Rex::Logger::info("关键字(--k='')不能为空","error");
 	    exit;	
 	}
+
+	my %res ;
+	my $deploy = Deploy::Db::query_name_keys($k);
+	my @deploy = @$deploy;
+	my $deploylength = @deploy;
+	if ( $deploylength == 0 ) {
+		$res{"code"} = 0;
+		$res{"msg"} = "根据识别名称查询到关键词为空,请确认是否已经录入数据";
+		Rex::Logger::info("($k) 根据识别名称local_name查询到关键词为空,请确认是否已经录入数据","error");
+		return \%res;
+	}
+	Rex::Logger::info("($k) 根据识别名称查询到$deploylength条记录");
+	sendMsg($subject,$content,$is_finish);
+	my @app_keys ;
+	my $app_keys_string;
+	for my $info (@deploy){
+		my $app_key = $info->{"app_key"};	
+		push @app_keys,$app_key;	
+	}
+	$app_keys_string = join(" ",@app_keys);
+	eval {
+		Rex::Logger::info("$app_keys_string  开始自动发布...");
+		#1.下载远程文件并同步更新目录到待发布目录
+		downloadSync($app_keys_string,$subject,$content,$is_finish);
+		#2.校验发布包和原包差异
+		checkDiff($app_keys_string,$subject,$content,$is_finish);
+		#3.开始发布		
+		startDeplopy($app_keys_string,$subject,$content,$is_finish);
+		Rex::Logger::info("$app_keys_string  结束自动发布.");
+	};
+	if ($@) {
+		Rex::Logger::info("($app_keys_string ) 执行自动发布异常:$@","error");
+		sendMsg($subject,"($app_keys_string ) 执行自动发布异常:$@",$is_finish);
+		exit;
+	}
+
+	$is_finish = 1;
+	$res{"code"} = 0;
+	$res{"msg"} = "$k 全部自动发布完成";
+	my $endtime = strftime("%Y-%m-%d %H:%M:%S", localtime(time));
+	sendMsg($subject,"当前时间: $endtime  ($k) 全部自动发布完成",$is_finish);
+	return \%res;
+
 
 };
 
@@ -161,7 +204,7 @@ task main => sub {
 	#0.初始化灰度发布
 	Deploy::Db::update_deploy_status($k);
 	#1.摘取节点并判断节点是否成功摘取
-	pickLoad($k,$subject,$content,$is_finish);
+	pickLoad($k,"灰度发布-滚动发布(1)",$content,$is_finish);
 	if ( "$max_sleep_time" != 0 ) {
 		my $subject = "灰度发布-滚动发布(1-2)";
 		Rex::Logger::info("($k) 已配置超时时间,开始等待超时时间$max_sleep_time秒");
@@ -169,22 +212,21 @@ task main => sub {
 		select(undef, undef, undef, $max_sleep_time);
 	}
 	#2.下载远程文件并同步更新目录到待发布目录
-	downloadSync($k,$subject,$content,$is_finish);
+	downloadSync($k,"灰度发布-滚动发布(2)",$content,$is_finish);
 	#3.校验发布包和原包差异
-	checkDiff($k,$subject,$content,$is_finish);
+	checkDiff($k,"灰度发布-滚动发布(3)",$content,$is_finish);
 	#4.开始发布
 	startDeplopy($k,"灰度发布-滚动发布(4)",$content,$is_finish);
 	#5.校验url
-	checkURL($k,$subject,$content,$is_finish);
+	checkURL($k,"灰度发布-滚动发布(5)",$content,$is_finish);
 	#6.添加节点并判断节点是否成功摘取
-	addLoad($k,$subject,$content,$is_finish);
+	addLoad($k,"灰度发布-滚动发布(6)",$content,$is_finish);
 };
 
 
 #6.添加节点并判断节点是否成功摘取
 sub addLoad{
 	my ($k,$subject,$content,$is_finish) = @_;
-	my $subject = "灰度发布-滚动发布(6)";
 	my $weigts;
 	eval {
 		run_task "loadService:main:update",params => { k => $k,w => 10};
@@ -223,7 +265,6 @@ sub addLoad{
 #5.校验url
 sub checkURL{
 	my ($k,$subject,$content,$is_finish) = @_;
-	my $subject = "灰度发布-滚动发布(5)";
 	eval {
 		Rex::Logger::info("($k) 校验url 应用启动初始化中...等待$checkurl_init_time秒");
 		select(undef, undef, undef, $checkurl_init_time);
@@ -311,7 +352,7 @@ sub startDeplopy{
 	    my $errDeploylength = @errDeploy;
 	    if ( $errDeploylength ne 0 ) {
 	    	my $errDeployContent = join(",",@errDeploy);
-			Rex::Logger::info("($k) 发布失败.\n$errDeployContent");
+			Rex::Logger::info("($k) 发布失败.\n$errDeployContent","error");
 			sendMsg($subject,"($k) 发布失败\n$errDeployContent",$is_finish);
 			exit;
 	    }
@@ -355,7 +396,6 @@ sub readFile{
 #3.校验发布包和原包差异
 sub checkDiff{
 	my ($k,$subject,$content,$is_finish) = @_;
-	my $subject = "灰度发布-滚动发布(3)";
 	eval {
 		# do something risky...
 		my $errData = run_task "Deploy:Core:diff",params => { k => $k };
@@ -382,7 +422,6 @@ sub checkDiff{
 #2.下载远程文件并同步更新目录到待发布目录
 sub downloadSync(){
 	my ($k,$subject,$content,$is_finish) = @_;
-	my $subject = "灰度发布-滚动发布(2)";
 	eval {
 		run_task "Enter:route:download",params => { k => $k};
 		my $errData = run_task "Deploy:Core:syncpro",params => { k => $k,update => 1};
@@ -417,7 +456,6 @@ sub downloadSync(){
 sub pickLoad{
 	my ($k,$subject,$content,$is_finish) = @_;
 	my $weigts;
-	my $subject = "灰度发布-滚动发布(1)";
 	eval {
 		run_task "loadService:main:update",params => { k => $k,w => 0};
 		run_task "loadService:main:queryk",params => { k => $k};

@@ -320,3 +320,17 @@ task "deploy",sub{
     Rex::Logger::info("");
     return $deployInfo;
 };
+
+desc "根据识别名称直接发布: rex release --k='server' \n";
+task "release",sub{
+    my $self = shift;
+    my $k=$self->{k};
+
+    if ( "$k"  eq  "") {
+      Rex::Logger::info("识别名称--k不能为空","error");
+      exit;
+    }
+    my $deployInfo=Enter::deploy::release($k);
+    Rex::Logger::info("");
+    return $deployInfo;
+};
