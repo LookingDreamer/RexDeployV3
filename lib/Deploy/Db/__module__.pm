@@ -16,6 +16,7 @@ my $external_deploy_config_table;
 my $table_load_key;
 Rex::Config->register_config_handler("env", sub {
 		my ($param) = @_;
+		
 		$env = $param->{key} ;
 		});
 Rex::Config->register_config_handler("$env", sub {
