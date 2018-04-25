@@ -894,6 +894,29 @@ task query_name_keys=>sub {
 	return \@data;
 };
 
+desc "查询local_name服务器信息";
+task query_local_name=>sub {
+	my @data = db select => {
+		fields => "local_name",
+		       from  => $table,
+		         where => "local_name !='' group by local_name ",
+	};
+	my $count = @data;
+	my @local_name_array;
+	for my $singe (@data) {
+		my $local_name = $singe->{"local_name"};
+		push @local_name_array,$local_name;
+	}
+	my $local_name_string = join(" ",@local_name_array);
+	if ( $count == 0 ) {
+		Rex::Logger::info("查询服务器信息完成,返回记录数:$count","warn");
+	}else{
+		Rex::Logger::info("查询服务器信息完成,返回记录数:$count");		
+	}
+
+	return $local_name_string;
+};
+
 
 1;
 

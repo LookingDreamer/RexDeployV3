@@ -301,9 +301,12 @@ task "run",sub{
 
 desc "获取关键词列表: rex list \n";
 task "list",sub{
-   my $keys=Deploy::Db::getlistkey();
+   my $keys = Deploy::Db::getlistkey();
+   my $local_names = Deploy::Db::query_local_name();
+   # my $local_names = join();
    Rex::Logger::info("");
-   Rex::Logger::info("获取关键词如下: \n $keys");
+   Rex::Logger::info("应用系统: $local_names");
+   Rex::Logger::info("全部关键词: $keys");
 };
 
 
