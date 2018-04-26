@@ -128,23 +128,24 @@ task getdepoloy=>sub {
 
 desc "直接发布 rex Enter:deploy:release --k='server'";
 task release => sub {
-    my ($k) = @_;
+    my ($k,$w) = @_;
 	my $datetime = strftime("%Y-%m-%d %H:%M:%S", localtime(time));
 	my $subject = "自动发布";
 	my $content = "开始时间: $datetime 发布系统: $k";
 	my $is_finish = 0;
+	my %res ;
 	if ( "$k" eq "" ) {
 		Rex::Logger::info("关键字(--k='')不能为空","error");
-	    exit;	
+		$res{"code"} = 0;
+		$res{"msg"} = "--k='' is null ";
+		return \%res;	
 	}
-
-	my %res ;
 	my $deploy = Deploy::Db::query_name_keys($k);
 	my @deploy = @$deploy;
 	my $deploylength = @deploy;
 	if ( $deploylength == 0 ) {
 		$res{"code"} = 0;
-		$res{"msg"} = "根据识别名称查询到关键词为空,请确认是否已经录入数据";
+		$res{"msg"} = "when k in ( $k ), local_name is null";
 		Rex::Logger::info("($k) 根据识别名称local_name查询到关键词为空,请确认是否已经录入数据","error");
 		return \%res;
 	}
@@ -160,24 +161,27 @@ task release => sub {
 	eval {
 		Rex::Logger::info("$app_keys_string  开始自动发布...");
 		#1.下载远程文件并同步更新目录到待发布目录
-		downloadSync($app_keys_string,$subject,$content,$is_finish);
+		downloadSync($app_keys_string,$subject,$content,$is_finish,$w);
 		#2.校验发布包和原包差异
-		checkDiff($app_keys_string,$subject,$content,$is_finish);
+		checkDiff($app_keys_string,$subject,$content,$is_finish,$w);
 		#3.开始发布		
-		startDeplopy($app_keys_string,$subject,$content,$is_finish);
+		startDeplopy($app_keys_string,$subject,$content,$is_finish,$w);
 		Rex::Logger::info("$app_keys_string  结束自动发布.");
 	};
 	if ($@) {
 		Rex::Logger::info("($app_keys_string ) 执行自动发布异常:$@","error");
 		sendMsg($subject,"($app_keys_string ) 执行自动发布异常:$@",$is_finish);
-		exit;
+		$res{"code"} = 0;
+		$res{"msg"} = "run deploy error: $@";
+		return \%res;		
 	}
 
 	$is_finish = 1;
 	$res{"code"} = 0;
-	$res{"msg"} = "$k 全部自动发布完成";
+	$res{"msg"} = "$k have finshed release";
 	my $endtime = strftime("%Y-%m-%d %H:%M:%S", localtime(time));
 	sendMsg($subject,"当前时间: $endtime  ($k) 全部自动发布完成",$is_finish);
+	$res{"take"} = $endtime;
 	return \%res;
 
 
@@ -300,7 +304,7 @@ sub checkURL{
 
 #4.开始发布
 sub startDeplopy{
-	my ($k,$subject,$content,$is_finish) = @_;
+	my ($k,$subject,$content,$is_finish,$w) = @_;
 	# my $subject = "灰度发布-滚动发布(4)";
 	eval {
 	    if (is_file($deploy_finish_file)) {
@@ -327,6 +331,7 @@ sub startDeplopy{
 	    if ( $deployInfolength  ==  0 ) {
 			Rex::Logger::info("($k) 发布失败,查询到发布信息为空,请查看日志","error");
 			sendMsg($subject,"($k) 发布失败,查询到发布信息为空,请查看日志",$is_finish);
+			Common::Use::json($w,-1,"失败",[{msg=>"deploy faild,query deploy info is null",code=>-1}]);
 			exit;
 	    }
 	    
@@ -354,6 +359,7 @@ sub startDeplopy{
 	    	my $errDeployContent = join(",",@errDeploy);
 			Rex::Logger::info("($k) 发布失败.\n$errDeployContent","error");
 			sendMsg($subject,"($k) 发布失败\n$errDeployContent",$is_finish);
+			Common::Use::json($w,-1,"失败",[{msg=>"deploy faild:$errDeployContent",code=>-1}]);
 			exit;
 	    }
 
@@ -366,6 +372,7 @@ sub startDeplopy{
 	if ($@) {
 		Rex::Logger::info("($k)  发布异常:$@","error");
 		sendMsg($subject,"($k)  发布异常:$@",$is_finish);
+		Common::Use::json($w,-1,"失败",[{msg=>"deploy error: $@",code=>-1}]);
 		exit;
 	}
 
@@ -395,7 +402,7 @@ sub readFile{
 
 #3.校验发布包和原包差异
 sub checkDiff{
-	my ($k,$subject,$content,$is_finish) = @_;
+	my ($k,$subject,$content,$is_finish,$w) = @_;
 	eval {
 		# do something risky...
 		my $errData = run_task "Deploy:Core:diff",params => { k => $k };
@@ -403,6 +410,7 @@ sub checkDiff{
 			my $allContent = "下载目录: ".$errData->{"errDownloadpro"}." ". $errData->{"errDownloadconf"}." 发布目录: ".$errData->{"errpro"}." ".$errData->{"errconf"};
 			Rex::Logger::info("($k)  校验发布包和原包差异失败,目录不存在-> $allContent","error");
 			sendMsg($subject,"($k)  校验发布包和原包差异失败，目录不存在-> $allContent",$is_finish);
+			Common::Use::json($w,-1,"失败",[{msg=>"diff src and deploy file faild,dir is not exist: $allContent",code=>-1}]);
 			exit;
 		}
 		my $changeContent =$errData->{"proChange"}."====>".$errData->{"confChange"} ;
@@ -412,6 +420,7 @@ sub checkDiff{
 	if ($@) {
 		Rex::Logger::info("($k) 校验发布包和原包差异:$@","error");
 		sendMsg($subject,"($k) 校验发布包和原包差异:$@",$is_finish);
+		Common::Use::json($w,-1,"失败",[{msg=>"download file error: $@",code=>-1}]);
 		exit;
 	}
 
@@ -421,7 +430,7 @@ sub checkDiff{
 
 #2.下载远程文件并同步更新目录到待发布目录
 sub downloadSync(){
-	my ($k,$subject,$content,$is_finish) = @_;
+	my ($k,$subject,$content,$is_finish,$w) = @_;
 	eval {
 		run_task "Enter:route:download",params => { k => $k};
 		my $errData = run_task "Deploy:Core:syncpro",params => { k => $k,update => 1};
@@ -436,6 +445,7 @@ sub downloadSync(){
 			$errDir = $errData[1];
 		}
 		if ( "$errCode" eq "0") {
+			Common::Use::json($w,-1,"失败",[{msg=>"$errDir is not exist",code=>-1}]);
 			Rex::Logger::info("($k)  同步更新目录到待发布目录失败,更新目录($errDir)不存在","error");
 			sendMsg($subject,"($k)  同步更新目录到待发布目录失败,更新目录($errDir)不存在",$is_finish);
 			exit;
@@ -445,6 +455,7 @@ sub downloadSync(){
 	if ($@) {
 		Rex::Logger::info("($k) 下载远程文件并同步更新目录到待发布目录:$@","error");
 		sendMsg($subject,"($k) 下载远程文件并同步更新目录到待发布目录:$@",$is_finish);
+		Common::Use::json($w,-1,"失败",[{msg=>"download file error: $@",code=>-1}]);
 		exit;
 	}
 

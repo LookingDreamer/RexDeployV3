@@ -21,6 +21,7 @@ use loadService::main;
 use Enter::deploy;
 use JSON::XS;
 use Encode;
+use IPC::Shareable;
 
 #自定义config配置
 my $env;
@@ -161,6 +162,7 @@ task "run",sub{
    my $k=$self->{k};
    my $w=$self->{w};
    my $data = [];
+   my @shared;
    my $username=$user;
    if( $k eq ""  ){
      Rex::Logger::info("关键字(--k='')不能为空");
@@ -177,7 +179,13 @@ task "run",sub{
      json($w,"","用户名(--u='')不能为空",$data);
      exit;
    }
-
+   my $ipch = tie @shared,   'IPC::Shareable',
+                           "foco",
+                           {  create    => 1,
+                              exclusive => 'no',
+                              mode      => 0666,
+                              size      => 1024*512
+                           };
    
    Rex::Logger::info("Starting ...... 操作人: $username");
 
@@ -215,6 +223,10 @@ task "run",sub{
             Rex::Logger::info("执行命令模板完成.");
             my $take_time = time - $start;
             Rex::Logger::info("总共花费时间:$take_time秒.");
+            json($w,"0","成功",\@shared);
+            (tied @shared)->remove;
+            IPC::Shareable->clean_up;
+            IPC::Shareable->clean_up_all;
             exit; #全部结束
           }
           select(undef, undef, undef, 0.25);
@@ -232,8 +244,10 @@ task "run",sub{
                 Rex::Logger::info("##############($kv)###############");
                 my $config=Deploy::Core::init("$kv");
                 my $runres = run_task "Common:Use:run",on=>$config->{'network_ip'},params=>{ cmd=>"$cmd",w=>"$w" };
-                say Dumper($runres);
-                push $data,"11111";
+                $runres->{"app_key"} = $kv;
+                $ipch->shlock;
+                push @shared, $runres;
+                $ipch->shunlock;
             }
             exit 0;             # child is done 
 
@@ -277,8 +291,10 @@ task "run",sub{
             Rex::Logger::info("执行命令模板完成.");
             my $take_time = time - $start;
             Rex::Logger::info("总共花费时间:$take_time秒.");
-            say Dumper($data);
-            json($w,"0","成功",$data);
+            json($w,"0","成功",\@shared);
+            (tied @shared)->remove;
+            IPC::Shareable->clean_up;
+            IPC::Shareable->clean_up_all;
             exit; #全部结束
           }
           select(undef, undef, undef, 0.25);
@@ -296,8 +312,11 @@ task "run",sub{
                 Rex::Logger::info("##############($kv)###############");
                 my $config=Deploy::Core::init("$kv");
                 my $runres = run_task "Common:Use:run",on=>$config->{'network_ip'},params=>{ cmd=>"$cmd" ,w=>"$w"};
-                push $data,$runres;
-                say Dumper($runres);
+                $runres->{"app_key"} = $kv;
+                $ipch->shlock;
+                push @shared, $runres;
+                $ipch->shunlock;
+
               }else{
               Rex::Logger::info("关键字($kv)不存在","error");
               }
@@ -322,12 +341,18 @@ task "run",sub{
 
 desc "获取关键词列表: rex list \n";
 task "list",sub{
+   my $self = shift;
+   my $w =$self->{w};
+   my @data;
    my $keys = Deploy::Db::getlistkey();
    my $local_names = Deploy::Db::query_local_name();
    # my $local_names = join();
    Rex::Logger::info("");
    Rex::Logger::info("应用系统: $local_names");
    Rex::Logger::info("全部关键词: $keys");
+   push @data,"$local_names";
+   push @data,"$keys";
+   json($w,"0","成功",\@data);
 };
 
 
@@ -349,13 +374,12 @@ desc "根据识别名称直接发布: rex release --k='server' \n";
 task "release",sub{
     my $self = shift;
     my $k=$self->{k};
-
-    if ( "$k"  eq  "") {
-      Rex::Logger::info("识别名称--k不能为空","error");
-      exit;
-    }
-    my $deployInfo=Enter::deploy::release($k);
+    my $w =$self->{w};
+    my @data;
+    my $deployInfo=Enter::deploy::release($k,$w);
+    push @data,$deployInfo;
     Rex::Logger::info("");
+    json($w,"0","成功",\@data);
     return $deployInfo;
 };
 
@@ -367,10 +391,12 @@ task json =>,sub {
     my $j;
     my $output;
     use utf8;
+    use Encode;
     binmode(STDIN, ':encoding(utf8)');
     binmode(STDOUT, ':encoding(utf8)');
     binmode(STDERR, ':encoding(utf8)');
     $msg = decode("utf8",$msg);
+    my @data = @$data;
     if ( "$msg" eq "" ){
         $msg = "未知消息";
     }
