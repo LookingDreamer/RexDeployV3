@@ -3,7 +3,7 @@
 ##qq: 530035210
 ##blog: http://my.oschina.net/pwd/blog
 ##date: 2018-04-05
-##des:生产动态发布
+##des:基于名字服务的自动化平台
 
 #开启相关模块支持
 use Rex::Commands::Rsync;
@@ -19,6 +19,8 @@ use logCenter::main;
 use User::main;
 use loadService::main;
 use Enter::deploy;
+use JSON::XS;
+use Encode;
 
 #自定义config配置
 my $env;
@@ -91,19 +93,23 @@ desc "检查服务器信息: rex check   --k='server1 server2 ../all'";
 task "check",sub{
    my $self = shift;
    my $k=$self->{k};
+   my $w=$self->{w};
    my $username=$user;
    my $passwod=$self->{p};
    my $keys=Deploy::Db::getallkey();
    my @keys=split(/,/, $keys);
    my %vars = map { $_ => 1 } @keys; 
    my $lastnum=$keys[-1] - 1;
+   my $data = [];
    if( $k eq ""  ){
-   Rex::Logger::info("关键字(--k='')不能为空");
-   exit;	
+     Rex::Logger::info("关键字(--k='')不能为空");
+     json($w,"","关键字(--k='')不能为空",""); 
+     exit;	
    }
 
    if( $username eq ""  ){
    Rex::Logger::info("用户名(--u='')不能为空");
+   json($w,"","用户名(--u='')不能为空","");
    exit;
    }
 
@@ -120,7 +126,8 @@ task "check",sub{
    my $config=Deploy::Core::init("$keys[$num]");
    #say $keys[$num];     
    #第一次连接获取远程服务器信息
-   my $FistSerInfo=Deploy::Core::prepare($keys[$num],$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
+   my $FistSerInfo=Deploy::Core::prepare($keys[$num],$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'},$w);
+   push $data, $FistSerInfo;
    }
    Rex::Logger::info("检查 发布系统 服务器以及数据库配置完成---$keys[-1] 个.");
    }else{   
@@ -135,11 +142,13 @@ task "check",sub{
    my $config=Deploy::Core::init("$kv");
    #第一次连接获取远程服务器信息
    my $FistSerInfo=Deploy::Core::prepare($kv,$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});  
+   push $data, $FistSerInfo;
    }else{
    Rex::Logger::info("关键字($kv)不存在","error");
    }
    }}
    Rex::Logger::info("检查 发布系统 服务器以及数据库配置完成.");
+   json($w,"0","成功",$data);
    }
 };
 
@@ -150,17 +159,22 @@ task "run",sub{
    my $self = shift;
    my $cmd = $self->{cmd};
    my $k=$self->{k};
+   my $w=$self->{w};
+   my $data = [];
    my $username=$user;
    if( $k eq ""  ){
      Rex::Logger::info("关键字(--k='')不能为空");
+     json($w,"","关键字(--k='')不能为空",$data);
      exit;
    }
    if ( $cmd eq "" ){
      Rex::Logger::info("cmd命令不能为空.");
+     json($w,"","cmd命令不能为空.",$data);
      exit;
    }
    if( $username eq ""  ){
      Rex::Logger::info("用户名(--u='')不能为空");
+     json($w,"","用户名(--u='')不能为空",$data);
      exit;
    }
 
@@ -217,7 +231,9 @@ task "run",sub{
                 Rex::Logger::info("");
                 Rex::Logger::info("##############($kv)###############");
                 my $config=Deploy::Core::init("$kv");
-                run_task "Common:Use:run",on=>$config->{'network_ip'},params=>{ cmd=>"$cmd" }
+                my $runres = run_task "Common:Use:run",on=>$config->{'network_ip'},params=>{ cmd=>"$cmd",w=>"$w" };
+                say Dumper($runres);
+                push $data,"11111";
             }
             exit 0;             # child is done 
 
@@ -261,6 +277,8 @@ task "run",sub{
             Rex::Logger::info("执行命令模板完成.");
             my $take_time = time - $start;
             Rex::Logger::info("总共花费时间:$take_time秒.");
+            say Dumper($data);
+            json($w,"0","成功",$data);
             exit; #全部结束
           }
           select(undef, undef, undef, 0.25);
@@ -277,7 +295,9 @@ task "run",sub{
                 Rex::Logger::info("");
                 Rex::Logger::info("##############($kv)###############");
                 my $config=Deploy::Core::init("$kv");
-                run_task "Common:Use:run",on=>$config->{'network_ip'},params=>{ cmd=>"$cmd" }
+                my $runres = run_task "Common:Use:run",on=>$config->{'network_ip'},params=>{ cmd=>"$cmd" ,w=>"$w"};
+                push $data,$runres;
+                say Dumper($runres);
               }else{
               Rex::Logger::info("关键字($kv)不存在","error");
               }
@@ -297,6 +317,7 @@ task "run",sub{
 
 
    }
+
 };
 
 desc "获取关键词列表: rex list \n";
@@ -336,4 +357,49 @@ task "release",sub{
     my $deployInfo=Enter::deploy::release($k);
     Rex::Logger::info("");
     return $deployInfo;
+};
+
+
+
+desc "print JSON";
+task json =>,sub {
+    my ($w,$code,$msg,$data) = @_;
+    my $j;
+    my $output;
+    use utf8;
+    binmode(STDIN, ':encoding(utf8)');
+    binmode(STDOUT, ':encoding(utf8)');
+    binmode(STDERR, ':encoding(utf8)');
+    $msg = decode("utf8",$msg);
+    if ( "$msg" eq "" ){
+        $msg = "未知消息";
+    }
+    if ( "$code" eq "" ){
+        $code = 1;
+    }
+    if ( "$data" eq ""){
+       $data = [] ;
+    }
+  # push $maps, { id => 1, blah => 2 };
+  eval {
+     $j = JSON::XS->new->utf8->pretty(1);
+     $output = $j->encode({
+        code => $code,
+        data => $data,
+        msg =>$msg
+    });
+  };
+  if ($@) {
+     $j = JSON::XS->new->utf8->pretty(1);
+     $output = $j->encode({
+        code => 2,
+        data => ["$@"],
+        msg =>"解析JSON异常"
+    });
+  }
+  if ( "$w" eq "1" ) {
+    $output = decode("utf-8", $output);
+    print "$output";
+  }
+  
 };

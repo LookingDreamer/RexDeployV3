@@ -59,17 +59,11 @@ sub index {
 #执行命令模块
 sub runcmd {
     my ($self) = @_;
-    my $cmd ;
-    my $result;
-    my %result;
-    my $pwd;
-    my $rex;
-    my $cmd ;
-    my $precmd;
+    my ($pwd,$rex,$cmd,$precmd,$requestCmd,$yaml,$stdout,$respon,$result,%result,@cmdArray);
     $pwd = $self->param('pwd');
     $rex = $self->param('rex');
     $precmd = $self->param('precmd');
-    $cmd = $self->param('cmd');
+    $requestCmd = $self->param('cmd');
     my $start = time();
     if (defined $pwd && defined $rex) {
         $log->info("传参 pwd:" . $pwd . " rex:".$rex);
@@ -79,37 +73,38 @@ sub runcmd {
     }
     if ( ! defined $precmd ){
         $precmd = " -q ";
+    }else{
+        $precmd =~ s/,/ /i; 
+        $precmd = " -q ".$precmd;
     }
-    if ( ! defined $cmd || "$cmd" eq "" ){
+    if ( ! defined $requestCmd || "$requestCmd" eq "" ){
         $result{"code"} = 3 ;
         $result{"msg"} = "cmd参数没有传递" ;
         $log->error("cmd参数没有传递");
-        return $self->render(json => $result);
-        # return %result;
+    }else{
+        @cmdArray = split(",",$requestCmd);
+        $cmd = join(" ",@cmdArray);
+        $cmd = $rex." ".$precmd." ".$cmd;
+        eval {
+            $respon = run($cmd,$pwd);
+        };
+        if ($@) {
+            $result{"code"} = 2 ;
+            $result{"msg"} = "执行异常: $@" ;
+            $log->error("执行异常: $@");
+        }   
+        $log->info("返回结果:".Dumper($respon));
+        # $stdout = $respon->{"stdout"};
+        # $yaml = Load($stdout);  
+        # $result{"data"} = $yaml;   
+        $result{"respon"} = $respon;   
     }
 
-    my @cmdArray = split(",",$cmd);
-    $cmd = join(" ",@cmdArray);
-    $cmd = $rex." ".$precmd." ".$cmd;
-    
-    eval {
-        $result = run($cmd,$pwd);
-    };
-    if ($@) {
-        $result{"code"} = 2 ;
-        $result{"msg"} = "执行异常: $@" ;
-        $log->error("执行异常: $@");
-        $self->render(json => $result);
-    }
     my $end = time();
     my $take = $end - $start;
-    $log->info("返回结果:".Dumper($result));
-    my $stdout = $result->{"stdout"};
-    my $yaml = Load($stdout);
-    $result->{"data"} = $yaml;
-    # say Dumper($yaml);
-    $result->{"take"} = $take;
-    $self->render(json => $result);
+    # say Dumper(ref $result);
+    $result{"take"} = $take;
+    $self->render(json => \%result);
 }
 
 
