@@ -919,6 +919,51 @@ task query_local_name=>sub {
 };
 
 
+desc "查询更新的pro目录";
+task query_prodir_key=>sub {
+	my $app_key = @_[0];
+	my @app_keys_array = split(" ",$app_key);
+	my $app_keys = join(" ",@app_keys_array);
+    $app_keys =~ s/ /','/g;
+    $app_keys = "'".$app_keys."'";
+	my @data = db select => {
+		fields => "*",
+		       from  => $table,
+		        where => "app_key in ($app_keys) group by local_name",
+	};
+	my $count = @data;
+
+	if ( $count == 0 ) {
+		Rex::Logger::info("查询($app_key)更新的pro目录,返回记录数:$count","error");
+	}else{
+		Rex::Logger::info("查询($app_key)更新的pro目录,返回记录数:$count");
+	}
+	
+	return \@data;
+};
+
+desc "查询local_name更新的pro目录";
+task query_local_prodir_key=>sub {
+	my $app_key = @_[0];
+	my @app_keys_array = split(" ",$app_key);
+	my $app_keys = join(" ",@app_keys_array);
+    $app_keys =~ s/ /','/g;
+    $app_keys = "'".$app_keys."'";
+	my @data = db select => {
+		fields => "*",
+		       from  => $table,
+		        where => "local_name in ($app_keys) group by local_name",
+	};
+	my $count = @data;
+
+
+	Rex::Logger::info("查询(local_name in $app_key)更新的pro目录,返回记录数:$count");
+	
+	
+	return \@data;
+};
+
+
 1;
 
 =pod

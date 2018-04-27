@@ -79,9 +79,12 @@ task "download",sub{
           mkdir("$update_local_confdir");
       }
    }
+   my $query_prodir_key = Deploy::Db::query_prodir_key($k);
 
    Rex::Logger::info("Starting ...... 操作人: $username");
    if ( $k eq "all" ){
+       my $query_key_string = join(" ",@keys);
+       $query_prodir_key = Deploy::Db::query_prodir_key($query_key_string);
        Rex::Logger::info("");
        Rex::Logger::info("开始下载远程服务器数据到本地---$keys[-1] 个.");
        for my $num (0..$lastnum) {
@@ -89,16 +92,25 @@ task "download",sub{
            Rex::Logger::info("##############($keys[$num])###############");
            my $config=Deploy::Core::init("$keys[$num]");
            my $FistSerInfo=Deploy::Core::prepare($keys[$num],$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
-           Deploy::Core::downloading($keys[$num],$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config,$update);	
+           Deploy::Core::downloading($keys[$num],$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config,$update,$config->{'local_name'},$query_prodir_key);	
        }
        Rex::Logger::info("下载远程服务器数据到本地完成---$keys[-1] 个.");
    }else{
    Rex::Logger::info("");
    Rex::Logger::info("开始下载远程服务器数据到本地.");
-  
+
+   my $query_local_prodir_key = Deploy::Db::query_local_prodir_key($k);
+   my @query_local_prodir_key = @$query_local_prodir_key ;
+   my @local_name_array;
+   for my $prolocal (@query_local_prodir_key){
+        my $localname_key = $prolocal->{"local_name"};
+        push @local_name_array,$localname_key;
+   }
+
    #根据分组来下载应用
-   for my $kv (@ks) {
+   for my $kv (@local_name_array) {
        if ( $kv ne "" ){
+           $query_prodir_key = Deploy::Db::query_local_prodir_key($kv); 
            if (exists($localvars{$kv})){
                Rex::Logger::info("");
                Rex::Logger::info("##############【全部分区($kv)】###############");
@@ -112,11 +124,24 @@ task "download",sub{
                    Rex::Logger::info("##############($apps[$num1])###############");
                    my $config=Deploy::Core::init("$apps[$num1]");
                    my $FistSerInfo=Deploy::Core::prepare($apps[$num1],$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
-                   Deploy::Core::downloading($apps[$num1],$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config,$update); 
+                   Deploy::Core::downloading($apps[$num1],$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config,$update,$config->{'local_name'},$query_prodir_key); 
                } 
            }
        }
    }  
+
+
+
+   my @ksv ;
+   for my $ksv (@ks ){
+      if( ! grep /^$ksv$/, @local_name_array ){  
+         push @ksv,$ksv ;
+      }    
+   }
+
+
+  @ks = @ksv ;
+  $max = @ks;
    
    #根据的传值key来下载应用
 	for(my $g=0; $g < $max ;){
@@ -159,7 +184,7 @@ task "download",sub{
 		       Rex::Logger::info("##############($kv)###############");
 		       my $config=Deploy::Core::init("$kv");
 		       my $FistSerInfo=Deploy::Core::prepare($kv,$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
-		       Deploy::Core::downloading($kv,$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config,$update);	
+		       Deploy::Core::downloading($kv,$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config,$update,$config->{'local_name'},$query_prodir_key);	
 		       }else{
 		       Rex::Logger::info("关键字($kv)不存在","error");
 		       }

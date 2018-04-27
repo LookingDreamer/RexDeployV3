@@ -415,7 +415,16 @@ task downloading => sub {
     my $remote_confir_dir = $_[4];
     my $config            = $_[5];
     my $update            = $_[6];
+    my $relocal_name            = $_[7];
+    my $query_prodir_key            = $_[8];
     my $datetime          = run "date '+%Y%m%d_%H%M%S'";
+    my @query_prodir_key = @$query_prodir_key  ;
+    my @pro_key_array;
+    for my $pro (@query_prodir_key){
+        my $proapp_key = $pro->{"app_key"};
+        push @pro_key_array,$proapp_key;
+    }
+
     if ( $remotedir =~ m/\/$/ ) {
         $remotedir = "${remotedir}";
     }
@@ -501,8 +510,19 @@ task downloading => sub {
         #     mkdir("$update_local_confdir");
         # }
         eval {
-            cp("$localdir_remote", "$update_local_prodir");
+
+            if(grep /^$local_name$/, @pro_key_array ){  
+                my $update_pro_dir = $update_local_prodir."/".$relocal_name ;
+                if ( is_dir("$update_pro_dir") ) {
+                    rmdir("$update_pro_dir");
+                    Rex::Logger::info("删除更新程序目录完成: rmdir $update_pro_dir.");
+                }
+                cp("$localdir_remote", "$update_pro_dir");         
+                Rex::Logger::info("($k)--拷贝本地程序到更新目录完成  $localdir_remote => $update_pro_dir.");             
+            }
+          
             cp("$local_config_dir_remote", "$update_local_confdir");
+            Rex::Logger::info("($k)--拷贝本地配置到更新目录完成  $local_config_dir_remote => $update_local_confdir.");
         };
         if ($@) {
         Rex::Logger::info("($k)--拷贝本地程序和配置目录到本地更新目录异常:$@","error");
@@ -990,6 +1010,7 @@ task "syncpro", sub {
             }
         }
     }
+    my $query_prodir_key = Deploy::Db::query_prodir_key($k);
     for my $item (@base) {
         my @list       = split( / /, $item );
         my $local_name = $list[0];
