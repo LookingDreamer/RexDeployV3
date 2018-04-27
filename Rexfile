@@ -388,44 +388,5 @@ task "release",sub{
 desc "print JSON";
 task json =>,sub {
     my ($w,$code,$msg,$data) = @_;
-    my $j;
-    my $output;
-    use utf8;
-    use Encode;
-    binmode(STDIN, ':encoding(utf8)');
-    binmode(STDOUT, ':encoding(utf8)');
-    binmode(STDERR, ':encoding(utf8)');
-    $msg = decode("utf8",$msg);
-    my @data = @$data;
-    if ( "$msg" eq "" ){
-        $msg = "未知消息";
-    }
-    if ( "$code" eq "" ){
-        $code = 1;
-    }
-    if ( "$data" eq ""){
-       $data = [] ;
-    }
-  # push $maps, { id => 1, blah => 2 };
-  eval {
-     $j = JSON::XS->new->utf8->pretty(1);
-     $output = $j->encode({
-        code => $code,
-        data => $data,
-        msg =>$msg
-    });
-  };
-  if ($@) {
-     $j = JSON::XS->new->utf8->pretty(1);
-     $output = $j->encode({
-        code => 2,
-        data => ["$@"],
-        msg =>"解析JSON异常"
-    });
-  }
-  if ( "$w" eq "1" ) {
-    $output = decode("utf-8", $output);
-    print "$output";
-  }
-  
+    Common::Use::json($w,$code,$msg,$data);
 };

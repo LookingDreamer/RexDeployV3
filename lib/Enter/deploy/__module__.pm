@@ -22,6 +22,7 @@ my $checkurl_init_time;
 my $deploy_finish_file;
 my $deploy_max_count;
 my $deploy_interval_time;
+my $max_weight_count;
 Rex::Config->register_config_handler(
     "env",
     sub {
@@ -46,6 +47,7 @@ Rex::Config->register_config_handler(
         $deploy_finish_file = $param->{deploy_finish_file};
         $deploy_max_count = $param->{deploy_max_count};
         $deploy_interval_time = $param->{deploy_interval_time};
+        $max_weight_count = $param->{max_weight_count};
     }
 );
 
@@ -134,6 +136,7 @@ task release => sub {
 	my $content = "开始时间: $datetime 发布系统: $k";
 	my $is_finish = 0;
 	my %res ;
+	my $deployRes ;
 	if ( "$k" eq "" ) {
 		Rex::Logger::info("关键字(--k='')不能为空","error");
 		$res{"code"} = 0;
@@ -165,7 +168,7 @@ task release => sub {
 		#2.校验发布包和原包差异
 		checkDiff($app_keys_string,$subject,$content,$is_finish,$w);
 		#3.开始发布		
-		startDeplopy($app_keys_string,$subject,$content,$is_finish,$w);
+		$deployRes = startDeplopy($app_keys_string,$subject,$content,$is_finish,$w);
 		Rex::Logger::info("$app_keys_string  结束自动发布.");
 	};
 	if ($@) {
@@ -181,7 +184,9 @@ task release => sub {
 	$res{"msg"} = "$k have finshed release";
 	my $endtime = strftime("%Y-%m-%d %H:%M:%S", localtime(time));
 	sendMsg($subject,"当前时间: $endtime  ($k) 全部自动发布完成",$is_finish);
-	$res{"take"} = $endtime;
+	$res{"datetime"} = $datetime;
+	$res{"endtime"} = $endtime;
+	$res{"data"} = $deployRes;
 	return \%res;
 
 
@@ -210,7 +215,7 @@ task main => sub {
 	#1.摘取节点并判断节点是否成功摘取
 	pickLoad($k,"灰度发布-滚动发布(1)",$content,$is_finish);
 	if ( "$max_sleep_time" != 0 ) {
-		my $subject = "灰度发布-滚动发布(1-2)";
+		my $subject = "灰度发布-滚动发布(2)";
 		Rex::Logger::info("($k) 已配置超时时间,开始等待超时时间$max_sleep_time秒");
 		sendMsg($subject,"($k) 已配置超时时间,开始等待超时时间$max_sleep_time秒",$is_finish);
 		select(undef, undef, undef, $max_sleep_time);
@@ -233,27 +238,53 @@ sub addLoad{
 	my ($k,$subject,$content,$is_finish) = @_;
 	my $weigts;
 	eval {
-		run_task "loadService:main:update",params => { k => $k,w => 10};
-		run_task "loadService:main:queryk",params => { k => $k};
-		$weigts = run_task "Deploy:Db:query_weight",params => { app_key => $k};
-		for my $weight (@$weigts) {
-			my $realWeigts = $weight->{"weight"};
-			my $realServer_name = $weight->{"server_name"};
-			my $realNetwork_ip = $weight->{"network_ip"};
-			my @realWeigtsArray = split(",",$realWeigts);
-			for my $realWeigt (@realWeigtsArray){
-				if ( "$realWeigt" eq "NULL") {
-					Rex::Logger::info("($realServer_name) 修改权重失败,没有获取负载对应的节点IP","error");
-					sendMsg($subject,"($realServer_name) 修改权重失败,没有获取负载对应的节点IP",$is_finish);
-					exit;
-				}
-				if ( "$realWeigt" ne "10") {
-					Rex::Logger::info("($realServer_name):$realWeigts 修改权重失败","error");
-					sendMsg($subject,"($realServer_name):$realWeigts 修改权重失败",$is_finish);
-					exit;
+
+        for (my $var = 1; $var <= $max_weight_count; $var++) {
+            Rex::Logger::info("($k) 开始修改权重($var)");
+            my $f = 0;
+            my @faild;
+			run_task "loadService:main:update",params => { k => $k,w => 10};
+			run_task "loadService:main:queryk",params => { k => $k};
+			$weigts = run_task "Deploy:Db:query_weight",params => { app_key => $k};
+			for my $weight (@$weigts) {
+				my $realWeigts = $weight->{"weight"};
+				my $realServer_name = $weight->{"server_name"};
+				my $realNetwork_ip = $weight->{"network_ip"};
+				my @realWeigtsArray = split(",",$realWeigts);
+				for my $realWeigt (@realWeigtsArray){
+					if ( "$realWeigt" eq "NULL") {
+						$f = $f + 1;
+						Rex::Logger::info("($realServer_name) 修改权重失败,没有获取负载对应的节点IP","error");
+						# sendMsg($subject,"($realServer_name) 修改权重失败,没有获取负载对应的节点IP",$is_finish);
+						# exit;
+						push @faild,"($realServer_name) 修改权重失败,没有获取负载对应的节点IP";
+
+					}
+					if ( "$realWeigt" ne "10") {
+						$f = $f + 1;
+						Rex::Logger::info("($realServer_name):$realWeigts 修改权重失败","error");
+						# sendMsg($subject,"($realServer_name):$realWeigts 修改权重失败",$is_finish);
+						# exit;
+						push @faild,"($realServer_name):$realWeigts 修改权重失败";
+					}
 				}
 			}
-		}
+
+            if( $f == 0 ){
+                Rex::Logger::info("($k) 权重全部修改成功 权重值:10");
+                last;
+            }
+            if ( $f != 0 && $var  == $max_weight_count ) {
+                my $faildString = join(",",@faild);
+                Rex::Logger::info("连续 $var 次修改权重失败: $faildString ","error");
+                sendMsg($subject,"连续 $var 次修改权重失败: $faildString ",$is_finish);
+                exit;
+            }
+            select(undef, undef, undef, 3);
+
+        }
+
+
 		my $endtime = strftime("%Y-%m-%d %H:%M:%S", localtime(time));
 		Rex::Logger::info("结束时间:$endtime ($k) 添加节点成功,结束本次节点发布");
 		sendMsg($subject,"结束时间:$endtime ($k) 添加节点成功,结束本次节点发布",$is_finish);
@@ -305,7 +336,7 @@ sub checkURL{
 #4.开始发布
 sub startDeplopy{
 	my ($k,$subject,$content,$is_finish,$w) = @_;
-	# my $subject = "灰度发布-滚动发布(4)";
+	my @deploy ;
 	eval {
 	    if (is_file($deploy_finish_file)) {
 	        unlink($deploy_finish_file);
@@ -336,6 +367,7 @@ sub startDeplopy{
 	    }
 	    
 	    my @errDeploy ;
+	    my @errDeployJson ;
 	    for my $deployLine (@deployInfo){
 	    	my $deploy_take = $deployLine->{"deploy_take"};
 	    	my $deploy_key = $deployLine->{"deploy_key"};
@@ -343,10 +375,31 @@ sub startDeplopy{
 	    	my $deploy_ip = $deployLine->{"deploy_ip"};
 	    	my $processNumber = $deployLine->{"processNumber"};
 	    	# sendMsg($subject,"($deploy_key-$deploy_ip) 发布后目录:$deloy_size 发布后进程数: $processNumber 发布时间花费:$deploy_take",$is_finish);
+	    	push @deploy,{
+	    		deploy_key=>"$deploy_key",
+	    		deploy_ip=>"$deploy_ip",
+	    		deloy_size=>"$deloy_size",
+	    		processNumber=>"$processNumber",
+	    		deploy_take=>"$deploy_take",
+	    		deloy_prodir_before=>$deployLine->{"deloy_prodir_before"},
+	    		deloy_configdir_before=>$deployLine->{"deloy_configdir_before"},
+	    		deloy_prodir_after=>$deployLine->{"deloy_prodir_after"},
+	    		deloy_configdir_after=>$deployLine->{"deloy_configdir_after"},
+	    		start_time=>$deployLine->{"start_time"},
+	    		rsync_war_time=>$deployLine->{"rsync_war_time"},
+	    		start_app_time=>$deployLine->{"start_app_time"},
+	    		end_time=>$deployLine->{"end_time"},
+	    		randomStr=>$deployLine->{"randomStr"},
+	    		rollRecord=>$deployLine->{"rollRecord"},
+	    		rollStatus=>$deployLine->{"rollStatus"},
+	    		rollbackNumber=>$deployLine->{"rollbackNumber"},
+	    		deloy_prodir_real_before=>$deployLine->{"deloy_prodir_real_before"}
+	    	};
 	    	if ( "$deloy_size" ne ""  &&  "$processNumber" ne "" && "$processNumber" ne "0" && "$deploy_take" ne "") {
 	    		Rex::Logger::info("($deploy_key-$deploy_ip) 发布后目录:$deloy_size 发布后进程数: $processNumber 发布时间花费:$deploy_take");
 	    	}else{
 	    		push @errDeploy,"($deploy_key-$deploy_ip) 目录:$deloy_size 进程数: $processNumber 时间花费:$deploy_take";
+	    		push @errDeployJson,"($deploy_key-$deploy_ip) dir:$deloy_size processNumber: $processNumber take:$deploy_take";
 	    		Rex::Logger::info("($deploy_key-$deploy_ip) 发布后目录:$deloy_size 发布后进程数: $processNumber 发布时间花费:$deploy_take","error");
 	    	}
 	    	
@@ -357,15 +410,15 @@ sub startDeplopy{
 	    my $errDeploylength = @errDeploy;
 	    if ( $errDeploylength ne 0 ) {
 	    	my $errDeployContent = join(",",@errDeploy);
+	    	my $errDeployContentJson = join(",",@errDeployJson);
 			Rex::Logger::info("($k) 发布失败.\n$errDeployContent","error");
 			sendMsg($subject,"($k) 发布失败\n$errDeployContent",$is_finish);
-			Common::Use::json($w,-1,"失败",[{msg=>"deploy faild:$errDeployContent",code=>-1}]);
+			Common::Use::json($w,-1,"失败",[{msg=>"deploy faild:$errDeployContentJson",code=>-1}]);
 			exit;
 	    }
 
 		Rex::Logger::info("($k) 发布完成");
-		sendMsg($subject,"($k) 发布完成",$is_finish);
-
+		sendMsg($subject,"($k) 发布完成",$is_finish);		
 
 
 	};
@@ -375,7 +428,7 @@ sub startDeplopy{
 		Common::Use::json($w,-1,"失败",[{msg=>"deploy error: $@",code=>-1}]);
 		exit;
 	}
-
+	return \@deploy;
 
 
 }
@@ -420,7 +473,7 @@ sub checkDiff{
 	if ($@) {
 		Rex::Logger::info("($k) 校验发布包和原包差异:$@","error");
 		sendMsg($subject,"($k) 校验发布包和原包差异:$@",$is_finish);
-		Common::Use::json($w,-1,"失败",[{msg=>"download file error: $@",code=>-1}]);
+		Common::Use::json($w,-1,"失败",[{msg=>"diff src and deploy file  file error: $@",code=>-1}]);
 		exit;
 	}
 
@@ -468,27 +521,50 @@ sub pickLoad{
 	my ($k,$subject,$content,$is_finish) = @_;
 	my $weigts;
 	eval {
-		run_task "loadService:main:update",params => { k => $k,w => 0};
-		run_task "loadService:main:queryk",params => { k => $k};
-		$weigts = run_task "Deploy:Db:query_weight",params => { app_key => $k};
-		for my $weight (@$weigts) {
-			my $realWeigts = $weight->{"weight"};
-			my $realServer_name = $weight->{"server_name"};
-			my $realNetwork_ip = $weight->{"network_ip"};
-			my @realWeigtsArray = split(",",$realWeigts);
-			for my $realWeigt (@realWeigtsArray){
-				if ( "$realWeigt" eq "NULL") {
-					Rex::Logger::info("($realServer_name) 修改权重失败,没有获取负载对应的节点IP","error");
-					sendMsg($subject,"($realServer_name) 修改权重失败,没有获取负载对应的节点IP",$is_finish);
-					exit;
-				}
-				if ( "$realWeigt" ne "0") {
-					Rex::Logger::info("($realServer_name):$realWeigts 修改权重失败","error");
-					sendMsg($subject,"($realServer_name):$realWeigts 修改权重失败",$is_finish);
-					exit;
+
+		for (my $var = 1; $var <= $max_weight_count; $var++) {
+			Rex::Logger::info("($k) 开始修改权重($var)");
+			run_task "loadService:main:update",params => { k => $k,w => 0};
+			run_task "loadService:main:queryk",params => { k => $k};
+			$weigts = run_task "Deploy:Db:query_weight",params => { app_key => $k};
+			my $f = 0;
+			my @faild;
+			for my $weight (@$weigts) {
+				my $realWeigts = $weight->{"weight"};
+				my $realServer_name = $weight->{"server_name"};
+				my $realNetwork_ip = $weight->{"network_ip"};
+				my @realWeigtsArray = split(",",$realWeigts);
+				for my $realWeigt (@realWeigtsArray){
+
+					if ( "$realWeigt" eq "NULL") {
+						$f = $f + 1;
+						Rex::Logger::info("($realServer_name) 第($var)次 修改权重失败,没有获取负载对应的节点IP","error");
+						# sendMsg($subject,"($realServer_name) 修改权重失败,没有获取负载对应的节点IP",$is_finish);
+						# exit;
+						push @faild,"($realServer_name) 修改权重失败,没有获取负载对应的节点IP";
+					}
+					if ( "$realWeigt" ne "0") {
+						$f = $f + 1;
+						Rex::Logger::info("($realServer_name):$realWeigts 第($var)次 修改权重失败","error");
+						# sendMsg($subject,"($realServer_name):$realWeigts 修改权重失败",$is_finish);
+						# exit;
+						push @faild,"($realServer_name):$realWeigts 修改权重失败";
+					}
 				}
 			}
+			if( $f == 0 ){
+				Rex::Logger::info("($k) 权重全部修改成功 权重值:0");
+				last;
+			}
+			if ( $f != 0 && $var  == $max_weight_count ) {
+				my $faildString = join(",",@faild);
+				Rex::Logger::info("连续 $var 次修改权重失败: $faildString ","error");
+				sendMsg($subject,"连续 $var 次修改权重失败: $faildString ",$is_finish);
+				exit;
+			}
+			select(undef, undef, undef, 3);
 		}
+
 		Rex::Logger::info("($k) 摘取节点成功");
 		sendMsg($subject,"($k) 摘取节点成功",$is_finish);
 	};

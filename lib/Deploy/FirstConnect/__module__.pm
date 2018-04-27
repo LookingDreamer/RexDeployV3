@@ -41,10 +41,10 @@ task getserinfo => sub {
     $myserinfo{config_dir}=0;
     }
     
-    $myserinfo{pro_key}=$pro_key;
-    $myserinfo{pro_init}=$pro_init;
-    $myserinfo{pro_dir}=$pro_dir;
-    $myserinfo{config_dir}=$config_dir;
+    $myserinfo{app_pro_key}=$pro_key;
+    $myserinfo{app_pro_init}=$pro_init;
+    $myserinfo{app_pro_dir}=$pro_dir;
+    $myserinfo{app_config_dir}=$config_dir;
 
     return \%myserinfo;
 };

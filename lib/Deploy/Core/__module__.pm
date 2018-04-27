@@ -1020,9 +1020,9 @@ task "syncpro", sub {
                         "删除发布程序目录完成: rmdir $deploy_prodir."
                     );
                 }
-                mv( $down_prodir, $deploy_prodir );
+                cp( $down_prodir, $deploy_prodir );         
                 Rex::Logger::info(
-                    "mv程序目录完成: mv($down_prodir,$deploy_prodir).");
+                    "cp程序目录完成: cp($down_prodir,$deploy_prodir).");
             }
             else {
                 $errData[0] = 0;
@@ -1044,9 +1044,11 @@ task "syncpro", sub {
                 }
                 my $configure_group_result = run_task "Deploy:Db:configure_group", params => { app_key => "$app_key" };
                 if ( $configure_group_result eq '0' ) {
-                    mv( $down_confdir, $deploy_confdir );
+                    cp( $down_confdir, $deploy_confdir ); 
+
+                    
                     Rex::Logger::info(
-                        "mv配置目录完成: mv($down_confdir,$deploy_confdir).");
+                        "cp配置目录完成: cp($down_confdir,$deploy_confdir).");
                 }else{
                     my @configure_group_list = split( /,/, $configure_group_result );
                     foreach my $file (@configure_group_list) {
