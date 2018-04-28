@@ -79,10 +79,11 @@ task "download",sub{
           mkdir("$update_local_confdir");
       }
    }
-   my $query_prodir_key = Deploy::Db::query_prodir_key($k);
+   my $query_prodir_key ;
 
    Rex::Logger::info("Starting ...... 操作人: $username");
    if ( $k eq "all" ){
+       Rex::Logger::info("----------全部下载模式---------");
        my $query_key_string = join(" ",@keys);
        $query_prodir_key = Deploy::Db::query_prodir_key($query_key_string);
        Rex::Logger::info("");
@@ -113,6 +114,7 @@ task "download",sub{
            $query_prodir_key = Deploy::Db::query_local_prodir_key($kv); 
            if (exists($localvars{$kv})){
                Rex::Logger::info("");
+               Rex::Logger::info("----------分组下载模式---------");
                Rex::Logger::info("##############【全部分区($kv)】###############");
                
                my $apps=Deploy::Db::localname_appkey($kv);
@@ -142,6 +144,11 @@ task "download",sub{
 
   @ks = @ksv ;
   $max = @ks;
+  my $kstring = join(" ",@ks); 
+  if ( $max > 0  ) {
+    Rex::Logger::info("----------多线程名字下载模式---------");
+    $query_prodir_key = Deploy::Db::query_prodir_key($kstring);
+  }
    
    #根据的传值key来下载应用
 	for(my $g=0; $g < $max ;){

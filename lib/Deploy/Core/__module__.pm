@@ -1010,7 +1010,6 @@ task "syncpro", sub {
             }
         }
     }
-    my $query_prodir_key = Deploy::Db::query_prodir_key($k);
     for my $item (@base) {
         my @list       = split( / /, $item );
         my $local_name = $list[0];
@@ -1022,6 +1021,9 @@ task "syncpro", sub {
             my $deploy_confdir = "$configuredir/$local_name/$app_key";
             my $down_prodir    = "$local_prodir/$app_key";
             my $down_confdir   = "$local_confdir/$app_key";
+            if ( "$update" eq "1") {
+                $down_prodir = "$local_prodir/$local_name";
+            }
 
     # say "mv $down_prodir --> $deploy_prodir ;mv $down_confdir $deploy_confdir";
     # exit;
@@ -1111,6 +1113,9 @@ task "syncpro", sub {
             my $down_prodir    = "$local_prodir/$app_key";
             my $down_confdir   = "$local_confdir/$app_key";
 
+            if ( "$update" eq "1") {
+                $down_prodir = "$local_prodir/$local_name";
+            }
     #say "mv $down_prodir --> $deploy_prodir ;mv $down_confdir $deploy_confdir";
     #处理程序目录
             if ( is_dir($down_prodir) ) {
