@@ -56,7 +56,7 @@ Rex::Config->register_config_handler(
 
 desc "查询滚动更新关键词";
 task getdepoloy=>sub {
-	my ($k) = @_;
+	my ($k,$w,$senv) = @_;
 	my $is_finish = 0;
 	my $datetime = strftime("%Y-%m-%d %H:%M:%S", localtime(time));
 	my $subject = "灰度发布-滚动发布(0000)";	
@@ -130,7 +130,7 @@ task getdepoloy=>sub {
 
 desc "直接发布 rex Enter:deploy:release --k='server'";
 task release => sub {
-    my ($k,$w) = @_;
+    my ($k,$w,$senv) = @_;
 	my $datetime = strftime("%Y-%m-%d %H:%M:%S", localtime(time));
 	my $subject = "自动发布";
 	my $content = "开始时间: $datetime 发布系统: $k";
@@ -164,7 +164,7 @@ task release => sub {
 	eval {
 		Rex::Logger::info("$app_keys_string  开始自动发布...");
 		#1.下载远程文件并同步更新目录到待发布目录
-		downloadSync($app_keys_string,$subject,$content,$is_finish,$w);
+		downloadSync($app_keys_string,$subject,$content,$is_finish,$w,$senv);
 		#2.校验发布包和原包差异
 		checkDiff($app_keys_string,$subject,$content,$is_finish,$w);
 		#3.开始发布		
@@ -483,9 +483,12 @@ sub checkDiff{
 
 #2.下载远程文件并同步更新目录到待发布目录
 sub downloadSync(){
-	my ($k,$subject,$content,$is_finish,$w) = @_;
+	my ($k,$subject,$content,$is_finish,$w,$senv) = @_;
 	eval {
 		run_task "Enter:route:download",params => { k => $k};
+		if ( "$senv" ne "" ) {
+			run_task "Enter:route:download",params => { k => $k,senv=>$senv,update=>1};
+		}
 		my $errData = run_task "Deploy:Core:syncpro",params => { k => $k,update => 1};
 		my @errData = @$errData;
 		my $errDatalen =@errData ;

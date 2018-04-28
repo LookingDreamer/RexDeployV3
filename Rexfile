@@ -357,27 +357,29 @@ task "list",sub{
 };
 
 
-desc "根据识别名称滚动发布: rex deploy --k='server' \n";
+desc "根据识别名称滚动发布: rex deploy --k='server' [--senv='uat']\n";
 task "deploy",sub{
     my $self = shift;
     my $k=$self->{k};
-
+    my $w =$self->{w};
+    my $senv =$self->{senv};
     if ( "$k"  eq  "") {
       Rex::Logger::info("识别名称--k不能为空","error");
       exit;
     }
-    my $deployInfo=Enter::deploy::getdepoloy($k);
+    my $deployInfo=Enter::deploy::getdepoloy($k,$w,$senv);
     Rex::Logger::info("");
     return $deployInfo;
 };
 
-desc "根据识别名称直接发布: rex release --k='server' \n";
+desc "根据识别名称直接发布: rex release --k='server' [--senv='uat']\n";
 task "release",sub{
     my $self = shift;
     my $k=$self->{k};
     my $w =$self->{w};
+    my $senv =$self->{senv};
     my @data;
-    my $deployInfo=Enter::deploy::release($k,$w);
+    my $deployInfo=Enter::deploy::release($k,$w,$senv);
     push @data,$deployInfo;
     Rex::Logger::info("");
     json($w,"0","成功",\@data);
