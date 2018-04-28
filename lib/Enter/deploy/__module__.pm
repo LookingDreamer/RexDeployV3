@@ -105,9 +105,9 @@ task getdepoloy=>sub {
 				return \%res;
 			}else{
 				eval {
-					Rex::Logger::info("local_name->($app_keys) 开始灰度发布...");
+					Rex::Logger::info("app_key->($app_keys) 开始灰度发布...");
 					run_task "Enter:deploy:main",params => { k => $app_keys};
-					Rex::Logger::info("local_name->($app_keys) 结束灰度发布.");
+					Rex::Logger::info("app_key->($app_keys) 结束灰度发布.");
 				};
 				if ($@) {
 					Rex::Logger::info("($app_keys) 执行灰度发布异常:$@","error");
