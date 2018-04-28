@@ -34,10 +34,12 @@ Rex::Config->register_config_handler("$env", sub {
      $process_temp_dir  = $param->{process_temp_dir};
  });
 
-desc "应用下载模块: rex  Enter:route:download   --k='server1 server2 ../groupname/all' [--update='1']";
+desc "应用下载模块: rex  Enter:route:download   --k='server1 server2 ../groupname/all' [--update='1'] [--senv='uat'] [--type='pro/conf/all']";
 task "download",sub{
    my $self = shift;
    my $k=$self->{k};
+   my $senv=$self->{senv};
+   my $type=$self->{type};
    my $update=$self->{update};
    my $username=$user;
    my $keys=Deploy::Db::getallkey();
@@ -190,8 +192,26 @@ task "download",sub{
 		       Rex::Logger::info("");
 		       Rex::Logger::info("##############($kv)###############");
 		       my $config=Deploy::Core::init("$kv");
+           if ( "$senv"  ne "" ) {
+               my $localName = $config->{'local_name'};
+               my $envConfig = Common::mysql::getEnvConfig($localName,$senv) ;
+               if ($envConfig  == 1 ) {
+                  Rex::Logger::info("$senv环境,查询$localName应用数据为空,退出","error");
+                  exit;
+               }
+               if ($envConfig  == 2 ) {
+                  Rex::Logger::info("$senv环境,查询$localName应用数据返回多条记录,退出","error");
+                  exit;
+               }
+               if ( $envConfig->{"code"} != undef &&  $envConfig->{"code"} > 0  ) {
+                  Rex::Logger::info("$senv环境校验参数失败,退出","error");
+                  exit;
+               }
+               Rex::Logger::info("开始同步$senv环境$localName的数据到本地......");
+               $config=$envConfig ;
+           }
 		       my $FistSerInfo=Deploy::Core::prepare($kv,$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
-		       Deploy::Core::downloading($kv,$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config,$update,$config->{'local_name'},$query_prodir_key);	
+		       Deploy::Core::downloading($kv,$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config,$update,$config->{'local_name'},$query_prodir_key,$senv,$type);	
 		       }else{
 		       Rex::Logger::info("关键字($kv)不存在","error");
 		       }

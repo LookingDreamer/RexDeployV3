@@ -22,6 +22,7 @@ use Enter::deploy;
 use JSON::XS;
 use Encode;
 use IPC::Shareable;
+use Common::mysql;
 
 #自定义config配置
 my $env;
