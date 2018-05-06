@@ -10,6 +10,7 @@ cd /data/RexDeployV3
 /bin/bash install/dockerinit.sh setConfig
 mysql -uroot -p'root'  -e "use autotask ; ALTER TABLE pre_server_detail ADD COLUMN logfile  varchar(255) NULL COMMENT '日志文件' AFTER configure_file_status;"
 mysql -uroot -p'root'  -e "use autotask ; update pre_server_detail set logfile='catalina.#%Y-%m-%d.log' ;"
+mysql -uroot -p'root' --default-character-set=utf8 autotask < /tmp/update_2018_0503.sql
 mysqladmin -uroot -p'root' shutdown
 adduser autotask -g wheel
 echo "autotask" |passwd --stdin  autotask
