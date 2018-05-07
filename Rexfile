@@ -24,6 +24,7 @@ use Encode;
 use IPC::Shareable;
 use Common::mysql;
 use Common::Rexfile;
+use Common::Process;
 
 #自定义config配置
 my $env;

@@ -422,6 +422,8 @@ task downloading => sub {
     my $datetime          = run "date '+%Y%m%d_%H%M%S'";
     my @query_prodir_key = @$query_prodir_key  ;
     my @pro_key_array;
+    my $start_time ;
+    my $end_time ;
     for my $pro (@query_prodir_key){
         my $proapp_key = $pro->{"app_key"};
         push @pro_key_array,$proapp_key;
@@ -484,6 +486,7 @@ task downloading => sub {
     }    #download_all-end
 
     Rex::Logger::info("($k)--开始传输程序和配置目录到本地.");
+    $start_time = time();
 
 # run_task "Deploy:Core:download",on=>"$network_ip",params => {dir2=>"$localdir",dir1=>"$remotedir",dir4=>"$local_config_dir",dir3=>"$remote_confir_dir",k=>"$k"};
     if ( "$senv" ne "") {
@@ -564,12 +567,13 @@ task downloading => sub {
         Rex::Logger::info("($k)--拷贝本地程序和配置目录到本地更新目录完成"); 
 
     }
-
+    $end_time = time();
+    my $take = $end_time - $start_time;
     my $standtime = run "date '+%Y-%m-%d %H:%M:%S'";
     run
-"echo '['$standtime'] 下载$k: $remotedir => $localdir $size1' >> $download_record_log";
+"echo '['$standtime'] 下载$k: $remotedir => $localdir $size1  花费时间:$take秒' >> $download_record_log";
     run
-"echo '['$standtime'] 下载$k: $remote_confir_dir => $local_config_dir $size2' >> $download_record_log";
+"echo '['$standtime'] 下载$k: $remote_confir_dir => $local_config_dir $size2 花费时间:$take秒' >> $download_record_log";
     Rex::Logger::info(
         "($k)--更新下载记录到日志:$download_record_log完成.");
 };
