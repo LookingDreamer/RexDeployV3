@@ -964,6 +964,27 @@ task query_local_prodir_key=>sub {
 };
 
 
+desc "查询local_name/app_key返回的app_key";
+task query_local_app_key=>sub {
+	my $app_key = @_[0];
+	my @app_keys_array = split(" ",$app_key);
+	my $app_keys = join(" ",@app_keys_array);
+    $app_keys =~ s/ /','/g;
+    $app_keys = "'".$app_keys."'";
+	my @data = db select => {
+		fields => "*",
+		       from  => $table,
+		        where => "local_name in ($app_keys) or app_key in ($app_keys)",
+	};
+	my $count = @data;
+
+
+	Rex::Logger::info("查询(local_name in $app_key) or (app_key in $app_key)的app_key,返回记录数:$count");
+	
+	
+	return \@data;
+};
+
 1;
 
 =pod

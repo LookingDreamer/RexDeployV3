@@ -28,9 +28,9 @@ desc "多进程执行模块";
 task main => sub {
     my $w = 0 ;
     my $params = { cmd=>"uptime" ,w=>$w};
-    #my $result = moreProcess("server1 server2 server1 server2 server1 server2 server1 server2 server1 server2 server1 server2",$w,"批量命令模块","Common:Use:run",$params) ;
-    my $result = moreProcess("all",$w,"批量命令模块","Common:Use:run",$params) ;
-
+    #my $result = moreProcess("server1 server2",$w,"批量命令模块","Common:Use:run",$params) ;
+    # my $result = moreProcess("all",$w,"批量命令模块","Common:Use:run",$params) ;
+    # my $result = moreProcess("server flow",$w,"批量命令模块","Common:Use:run",$params) ;
     say Dumper($result);
 };
 
@@ -38,16 +38,42 @@ task main => sub {
 #多线程通用模块
 sub moreProcess{
    my ($k,$w,$desc,$module,$params) = @_;
-
+   my $data ;
    if ( $k eq "all" ){
       my $keys=Deploy::Db::getallkey();
       my @keysArray=split(/,/, $keys);
       pop @keysArray;
       my $k = join(" ",@keysArray);
-      appProcess($k,$w,$desc,$module,$params);  
+      $data = appProcess($k,$w,$desc,$module,$params);  
    }else{
-      appProcess($k,$w,$desc,$module,$params);  
+      my $query_local_prodir_key = Deploy::Db::query_local_app_key($k);
+      my @query_local_prodir_key = @$query_local_prodir_key ;
+      my @app_key_array;
+      for my $prolocal (@query_local_prodir_key){
+          my $app_key = $prolocal->{"app_key"};
+          push @app_key_array,$app_key;
+      }
+      my $app_key_count = @app_key_array;
+      my $app_key_str = join(" ",@app_key_array);
+      if ( $app_key_count > 0 ) {
+        Rex::Logger::info("开始多进程操作:  $app_key_str 名字数量: $app_key_count");
+        eval {
+          $data = appProcess($app_key_str,$w,$desc,$module,$params); 
+        };
+        if ($@) {
+          Rex::Logger::info("执行多进程异常: $@","error");
+          Common::Use::json($w,"","执行多进程异常: $@",[]);
+          exit;
+        }
+        
+      }else{
+        Rex::Logger::info("查询到数据为空，请确认是否正确的录入数据: $k","error");
+        Common::Use::json($w,"","查询到数据为空，请确认是否正确的录入数据: $k",[]);
+        exit;
+      }
+ 
    }
+   return $data;
 
 };
 
@@ -80,6 +106,7 @@ sub appProcess{
 
      Rex::Logger::info("");
      Rex::Logger::info("开始执行".$desc);
+     Rex::Logger::info("并发数量: $parallelism");
      my $maxchild = $parallelism ;
      my $max = @ks;
      my $s;
@@ -87,13 +114,15 @@ sub appProcess{
      for(my $g=0; $g < $max ;){
        $g = $g+$maxchild;
        $s = $g-$maxchild ;
+       my $currentMax = $g;
        if( $g > $max ){
+         my $currentMax = $max;
          Rex::Logger::info("并发控制:($s - $max)");
        }else{
          Rex::Logger::info("并发控制:($s - $g)");
        }
-
-       for($i=$g-$maxchild;$i<$g;$i++){
+       
+       for($i=$g-$maxchild;$i<$currentMax;$i++){
           select(undef, undef, undef, 0.25);
           my $kv = $ks[$i];
           my $child=fork(); #派生一个子进程
