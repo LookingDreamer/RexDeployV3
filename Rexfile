@@ -155,3 +155,16 @@ task "release",sub{
     Common::Use::json($w,"0","成功",\@data);
     return $deployInfo;
 };
+
+desc "服务控制: rex service  --k='server1 server2 ..' --a='start/stop/restart' [--f='' --key='' --j='']";
+task "service",sub{
+   my $self = shift;
+   my $k=$self->{k};
+   my $a=$self->{a};
+   my $f=$self->{f};
+   my $key=$self->{key};
+   my $j=$self->{j};
+   my $w=$self->{w};
+   Common::Rexfile::batchservice($k,$w,$a,$f,$key,$j);
+};
+
