@@ -30,7 +30,7 @@ task main => sub {
     my $params = { cmd=>"uptime" ,w=>$w};
     #my $result = moreProcess("server1 server2",$w,"批量命令模块","Common:Use:run",$params) ;
     # my $result = moreProcess("all",$w,"批量命令模块","Common:Use:run",$params) ;
-    # my $result = moreProcess("server flow",$w,"批量命令模块","Common:Use:run",$params) ;
+    my $result = moreProcess("server flow",$w,"批量命令模块","Common:Use:run",$params) ;
     say Dumper($result);
 };
 
@@ -114,47 +114,83 @@ sub appProcess{
      for(my $g=0; $g < $max ;){
        $g = $g+$maxchild;
        $s = $g-$maxchild ;
-       my $currentMax = $g;
        if( $g > $max ){
-         my $currentMax = $max;
          Rex::Logger::info("并发控制:($s - $max)");
+
+         for($i=0;$i<$max;$i++){
+              select(undef, undef, undef, 0.25);
+              my $kv = $ks[$i];
+              my $child=fork(); #派生一个子进程
+              if($child){   # child >; 0, so we're the parent 
+                  $hash_pids{$child} = $child;  
+                  Rex::Logger::info("父进程PID:$$ 子进程PID:$child");
+              }else{ 
+                # 在子进程中执行相关动作
+                Rex::Logger::info("执行子进程,进程序号:$i");
+                if ( $kv ne "" ){
+                  if (exists($vars{$kv})){
+                    Rex::Logger::info("");
+                    Rex::Logger::info("##############($kv)###############");
+                    my $config=Deploy::Core::init("$kv");
+                    my $runres = run_task "$module",on=>$config->{'network_ip'},params=>$params;
+                    if ( ref $runres eq "HASH"  ) {
+                        $runres->{"app_key"} = $kv;
+                    }elsif( ref $runres eq "ARRAY"  ){
+                        push   $runres,$kv;   
+                    }                
+                    $ipch->shlock;
+                    push @shared, $runres;
+                    $ipch->shunlock;
+
+                  }else{
+                  Rex::Logger::info("关键字($kv)不存在","error");
+                  }
+                }
+                exit 0;             # child is done 
+
+             } 
+          }
+
        }else{
          Rex::Logger::info("并发控制:($s - $g)");
-       }
-       
-       for($i=$g-$maxchild;$i<$currentMax;$i++){
-          select(undef, undef, undef, 0.25);
-          my $kv = $ks[$i];
-          my $child=fork(); #派生一个子进程
-          if($child){   # child >; 0, so we're the parent 
-              $hash_pids{$child} = $child;  
-              Rex::Logger::info("父进程PID:$$ 子进程PID:$child");
-          }else{ 
-            # 在子进程中执行相关动作
-            Rex::Logger::info("执行子进程,进程序号:$i");
-            if ( $kv ne "" ){
-              if (exists($vars{$kv})){
-                Rex::Logger::info("");
-                Rex::Logger::info("##############($kv)###############");
-                my $config=Deploy::Core::init("$kv");
-                my $runres = run_task "$module",on=>$config->{'network_ip'},params=>$params;
-                if ( ref $runres eq "HASH"  ) {
-                    $runres->{"app_key"} = $kv;
-                }elsif( ref $runres eq "ARRAY"  ){
-                    push   $runres,$kv;   
-                }                
-                $ipch->shlock;
-                push @shared, $runres;
-                $ipch->shunlock;
 
-              }else{
-              Rex::Logger::info("关键字($kv)不存在","error");
+         for($i=$g-$maxchild;$i<$g;$i++){
+            select(undef, undef, undef, 0.25);
+            my $kv = $ks[$i];
+            my $child=fork(); #派生一个子进程
+            if($child){   # child >; 0, so we're the parent 
+                $hash_pids{$child} = $child;  
+                Rex::Logger::info("父进程PID:$$ 子进程PID:$child");
+            }else{ 
+              # 在子进程中执行相关动作
+              Rex::Logger::info("执行子进程,进程序号:$i");
+              if ( $kv ne "" ){
+                if (exists($vars{$kv})){
+                  Rex::Logger::info("");
+                  Rex::Logger::info("##############($kv)###############");
+                  my $config=Deploy::Core::init("$kv");
+                  my $runres = run_task "$module",on=>$config->{'network_ip'},params=>$params;
+                  if ( ref $runres eq "HASH"  ) {
+                      $runres->{"app_key"} = $kv;
+                  }elsif( ref $runres eq "ARRAY"  ){
+                      push   $runres,$kv;   
+                  }                
+                  $ipch->shlock;
+                  push @shared, $runres;
+                  $ipch->shunlock;
+
+                }else{
+                Rex::Logger::info("关键字($kv)不存在","error");
+                }
               }
-            }
-            exit 0;             # child is done 
+              exit 0;             # child is done 
 
-         } 
+           } 
         }
+
+      }
+       
+
         #收割并等待子进程完成
         while (scalar keys %hash_pids) { #一直判断hash中是否含有pid值,直到退出.
           my $kid = waitpid(-1, WNOHANG); #无阻塞模式收割
@@ -174,7 +210,6 @@ sub appProcess{
     Rex::Logger::info("执行".$desc."完成.");
     my $take_time = time - $start;
     Rex::Logger::info("总共花费时间:$take_time秒.");
-    Common::Use::json($w,"0","成功",\@shared);
     my $sharedCount = @shared;
     my %result = (
        msg => "success",
