@@ -64,6 +64,8 @@ task "services"=>sub{
     my $key=$config->{"key"};
     my $env;
     my $service_start_retry;
+    my %hash;
+    $hash{config} = $config;
     Rex::Config->register_config_handler("env", sub {
        my ($param) = @_;
        $env = $param->{key} ;
@@ -72,7 +74,7 @@ task "services"=>sub{
        my ($param) = @_;
        $service_start_retry = $param->{service_start_retry} ;
        });
-
+    $hash{service_start_retry} = $service_start_retry;
     if($services_file ne ""){
        $pro_init = $services_file;
     }    
@@ -82,51 +84,78 @@ task "services"=>sub{
     if($services_file ne ""){
        if($key eq ""){
         Rex::Logger::info("($k) 自定义启动文件时,关键词不能为空:--key=''","error");
-        return;
+        $hash{code} = -1;
+        $hash{msg} = "($k) services_file is defined ,key must be null:--key=''";
+        return \%hash;
     }
     }
     $pro_init =~s/^ +//;
     $pro_init =~s/ +$//;
     if(!is_file($pro_init)){
         Rex::Logger::info("($k) 启动文件不存在:--f='$pro_init'","error");
-        return;
+        $hash{code} = -1;
+        $hash{msg} = "($k) pro_init is not exist:--f='$pro_init'";
+        return \%hash;
     }
     if($action eq ""){
         Rex::Logger::info("($k) 启动方法为空:--a=''","error");
-        return;
+        $hash{code} = -1;
+        $hash{msg} = "($k) action is null --a=''";
+        return \%hash;
     }
     if($pro_key eq ""){
         Rex::Logger::info("($k) 进程关键词为空:--key=''","error");
-        return;
+        $hash{code} = -1;
+        $hash{msg} = "($k) pro_key is null :--key=''";
+        return \%hash;
     }
 
     my $processNumber=run "ps aux |grep '$pro_key' |grep -v 'Enter:route:service' |grep -v grep |grep -v sudo |wc -l";
+    $hash{before} = {"processNumber"=> $processNumber};
     if($action eq 'start'){
         if($processNumber == 0 ){
             my $result_start = start($pro_init,$pro_key,$service_start_retry);
+            $hash{after} = {"result_code"=> $result_start};
             if($result_start eq '1'){
+                $hash{status} = 1;
                 Rex::Logger::info("($k) 应用启动成功.");
+                $hash{msg} = "($k) start success.";
             }elsif($result_start eq  '2'){
+                $hash{status} = -1;
                 Rex::Logger::info("($k) 应用启动失败.","error");
+                $hash{msg} = "($k) start faild.";
             }elsif($result_start eq  '0'){
+                $hash{status} = 0;
                 Rex::Logger::info("($k) 进程已经处于启动的状态.","warn");
+                $hash{msg} = "($k) process is started.";
             }
         }else{
+            $hash{msg} = "($k) process is started.";
+            $hash{status} = 0;
             Rex::Logger::info("($k) 进程已经处于启动的状态.","warn");
         }
     }
     if($action eq 'stop'){
         if($processNumber != 0 ){
             my $result_stop = stop($pro_init,$pro_key,$service_start_retry);
+            $hash{after} = {"result_code"=> $result_stop};
             if($result_stop eq '1'){
+                $hash{status} = -1;
                 Rex::Logger::info("($k) 应用关闭失败.","error");
+                $hash{msg} = "($k) stop faild.";
             }elsif($result_stop eq  '2'){
+                $hash{status} = 1;
                 Rex::Logger::info("($k) 应用关闭成功.");
+                $hash{msg} = "($k) stop success.";
             }elsif($result_stop eq  '0'){
+                $hash{status} = 0;
                 Rex::Logger::info("($k) 进程已经处于关闭的状态.","warn");
+                $hash{msg} = "($k) process is stoped.";
             }
         }else{
+            $hash{status} = 0;
             Rex::Logger::info("($k) 进程已经处于关闭的状态.","warn");
+            $hash{msg} = "($k) process is stoped.";
         }
     }
     if($action eq 'restart'){
@@ -145,18 +174,30 @@ task "services"=>sub{
         my $processNumber=run "ps aux |grep '$pro_key' |grep -v 'Enter:route:service' |grep -v grep |grep -v sudo |wc -l";
         if($processNumber == 0 ){
             my $result_start = start($pro_init,$pro_key,$service_start_retry);
+            $hash{after} = {"result_code"=> $result_start};
             if($result_start eq '1'){
+                $hash{status} = 1;
                 Rex::Logger::info("($k) 应用启动成功.");
+                $hash{msg} = "($k) restart success.";
             }elsif($result_start eq  '2'){
+                $hash{status} = -1;
                 Rex::Logger::info("($k) 应用启动失败.","error");
+                $hash{msg} = "($k) restart faild.";
             }elsif($result_start eq  '0'){
+                $hash{status} = -1;
                 Rex::Logger::info("($k) 进程已经处于启动的状态.","warn");
+                $hash{msg} = "($k) process is started.";
             }
         }else{
+            $hash{status} = -1;
+            $hash{msg} = "($k)  process stop faild,skip start.";
             Rex::Logger::info("($k) 进程关闭失败,跳过启动.","error");
         } 
 
     }
+
+    return \%hash;
+
     sub start{
        my ($pro_init,$pro_key,$service_start_retry) = @_;
        foreach my $i(1..$service_start_retry){
