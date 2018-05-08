@@ -156,7 +156,7 @@ task "release",sub{
     return $deployInfo;
 };
 
-desc "服务控制: rex service  --k='server1 server2 ..' --a='start/stop/restart' [--f='' --key='' --j='']";
+desc "服务控制: rex service --k='server1 server2 ..' --a='start/stop/restart' [--f='' --key='' --j='']";
 task "service",sub{
    my $self = shift;
    my $k=$self->{k};
@@ -168,3 +168,24 @@ task "service",sub{
    Common::Rexfile::batchservice($k,$w,$a,$f,$key,$j);
 };
 
+desc "批量文件下载 远程->本地:rex download --k='server1 server2 ..' --dir1='/tmp/1.txt' --dir2='/tmp/' [--ipsep='1']";
+task "download",sub{
+   my $self = shift;
+   my $k=$self->{k};
+   my $w=$self->{w};
+   my $dir1=$self->{dir1};
+   my $dir2=$self->{dir2};
+   my $ipsep=$self->{ipsep};
+   Common::Rexfile::batchdownload($k,$w,$dir1,$dir2,$ipsep);
+};
+
+desc "批量文件上传 远程->本地:rex upload --k='server1 server2 ..' --dir1='/tmp/1.txt' --dir2='/tmp/' [--ipsep='1']";
+task "upload",sub{
+   my $self = shift;
+   my $k=$self->{k};
+   my $w=$self->{w};
+   my $dir1=$self->{dir1};
+   my $dir2=$self->{dir2};
+   my $ipsep=$self->{ipsep};
+   Common::Rexfile::batchupload($k,$w,$dir1,$dir2,$ipsep);
+};

@@ -137,6 +137,7 @@ sub appProcess{
                     $config->{'services_file'} = $params->{f} ;
                     $config->{'key'} = $params->{key} ;
                     $params->{config} = $config;
+                    $params->{app_key} = $config->{'app_key'};
                     my $runres = run_task "$module",on=>$config->{'network_ip'},params=>$params;
                     if ( ref $runres eq "HASH"  ) {
                         $runres->{"app_key"} = $kv;

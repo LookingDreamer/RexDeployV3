@@ -82,6 +82,20 @@ sub batchservice{
    Common::Use::json($w,"0","成功",[$result]);
 };
 
+sub batchdownload{
+   my ($k,$w,$dir1,$dir2,$ipsep)= @_;
+   my $params = { dir1=>"$dir1" ,dir2=>$dir2,ipsep=>$ipsep};
+   my $result = Common::Process::moreProcess($k,$w,"批量文件下载","Common:Use:download",$params) ;
+   Common::Use::json($w,"0","成功",[$result]);
+};
+
+sub batchupload{
+   my ($k,$w,$dir1,$dir2,$ipsep)= @_;
+   my $params = { dir1=>"$dir1" ,dir2=>$dir2,ipsep=>$ipsep};
+   my $result = Common::Process::moreProcess($k,$w,"批量文件上传","Common:Use:upload",$params) ;
+   Common::Use::json($w,"0","成功",[$result]);
+};
+
 1;
 
 =pod
