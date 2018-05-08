@@ -882,7 +882,7 @@ task query_name_keys=>sub {
 	my @data = db select => {
 		fields => "*",
 		       from  => $table,
-		         where => "local_name in ($local_name)",
+		         where => "local_name in ($local_name) or app_key in ($local_name) ",
 	};
 	unshift(@data);
 	my $count = @data;

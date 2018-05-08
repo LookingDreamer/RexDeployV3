@@ -66,7 +66,7 @@ sub check{
 
 }
 
-#desc "批量执行命令行: rex run  --k='server1 server2 ../all' --cmd='ls'";
+
 sub batchrun{
    my ($k,$w,$cmd,$username) = @_;
    my $params = { cmd=>"$cmd" ,w=>$w};
