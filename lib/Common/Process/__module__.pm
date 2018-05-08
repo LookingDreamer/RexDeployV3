@@ -132,6 +132,11 @@ sub appProcess{
                     Rex::Logger::info("");
                     Rex::Logger::info("##############($kv)###############");
                     my $config=Deploy::Core::init("$kv");
+                    $config->{'action'} = $params->{a};
+                    $config->{'jsonfile'} = $params->{j} ;
+                    $config->{'services_file'} = $params->{f} ;
+                    $config->{'key'} = $params->{key} ;
+                    $params->{config} = $config;
                     my $runres = run_task "$module",on=>$config->{'network_ip'},params=>$params;
                     if ( ref $runres eq "HASH"  ) {
                         $runres->{"app_key"} = $kv;
@@ -168,12 +173,18 @@ sub appProcess{
                 if (exists($vars{$kv})){
                   Rex::Logger::info("");
                   Rex::Logger::info("##############($kv)###############");
-                  my $config=Deploy::Core::init("$kv");
+                  my $config=Deploy::Core::init("$kv");                  
+                  $config->{'action'} = $params->{a};
+                  $config->{'jsonfile'} = $params->{j} ;
+                  $config->{'services_file'} = $params->{f} ;
+                  $config->{'key'} = $params->{key} ;
+                  $params->{config} = $config;
                   my $runres = run_task "$module",on=>$config->{'network_ip'},params=>$params;
                   if ( ref $runres eq "HASH"  ) {
                       $runres->{"app_key"} = $kv;
                   }elsif( ref $runres eq "ARRAY"  ){
                       push   $runres,$kv;   
+
                   }                
                   $ipch->shlock;
                   push @shared, $runres;

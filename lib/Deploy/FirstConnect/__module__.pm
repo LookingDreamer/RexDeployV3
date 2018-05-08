@@ -81,22 +81,22 @@ task "services"=>sub{
     }
     if($services_file ne ""){
        if($key eq ""){
-        Rex::Logger::info("自定义启动文件时,关键词不能为空:--key=''","error");
+        Rex::Logger::info("($k) 自定义启动文件时,关键词不能为空:--key=''","error");
         return;
     }
     }
     $pro_init =~s/^ +//;
     $pro_init =~s/ +$//;
     if(!is_file($pro_init)){
-        Rex::Logger::info("启动文件不存在:--f='$pro_init'","error");
+        Rex::Logger::info("($k) 启动文件不存在:--f='$pro_init'","error");
         return;
     }
     if($action eq ""){
-        Rex::Logger::info("启动方法为空:--a=''","error");
+        Rex::Logger::info("($k) 启动方法为空:--a=''","error");
         return;
     }
     if($pro_key eq ""){
-        Rex::Logger::info("进程关键词为空:--key=''","error");
+        Rex::Logger::info("($k) 进程关键词为空:--key=''","error");
         return;
     }
 
@@ -105,55 +105,55 @@ task "services"=>sub{
         if($processNumber == 0 ){
             my $result_start = start($pro_init,$pro_key,$service_start_retry);
             if($result_start eq '1'){
-                Rex::Logger::info("应用启动成功.");
+                Rex::Logger::info("($k) 应用启动成功.");
             }elsif($result_start eq  '2'){
-                Rex::Logger::info("应用启动失败.","error");
+                Rex::Logger::info("($k) 应用启动失败.","error");
             }elsif($result_start eq  '0'){
-                Rex::Logger::info("进程已经处于启动的状态.","warn");
+                Rex::Logger::info("($k) 进程已经处于启动的状态.","warn");
             }
         }else{
-            Rex::Logger::info("进程已经处于启动的状态.","warn");
+            Rex::Logger::info("($k) 进程已经处于启动的状态.","warn");
         }
     }
     if($action eq 'stop'){
         if($processNumber != 0 ){
             my $result_stop = stop($pro_init,$pro_key,$service_start_retry);
             if($result_stop eq '1'){
-                Rex::Logger::info("应用关闭失败.","error");
+                Rex::Logger::info("($k) 应用关闭失败.","error");
             }elsif($result_stop eq  '2'){
-                Rex::Logger::info("应用关闭成功.");
+                Rex::Logger::info("($k) 应用关闭成功.");
             }elsif($result_stop eq  '0'){
-                Rex::Logger::info("进程已经处于关闭的状态.","warn");
+                Rex::Logger::info("($k) 进程已经处于关闭的状态.","warn");
             }
         }else{
-            Rex::Logger::info("进程已经处于关闭的状态.","warn");
+            Rex::Logger::info("($k) 进程已经处于关闭的状态.","warn");
         }
     }
     if($action eq 'restart'){
        if($processNumber != 0 ){
             my $result_stop = stop($pro_init,$pro_key,$service_start_retry);
             if($result_stop eq '1'){
-                Rex::Logger::info("应用关闭失败.","error");
+                Rex::Logger::info("($k) 应用关闭失败.","error");
             }elsif($result_stop eq  '2'){
-                Rex::Logger::info("应用关闭成功.");
+                Rex::Logger::info("($k) 应用关闭成功.");
             }elsif($result_stop eq  '0'){
-                Rex::Logger::info("进程已经处于关闭的状态.","warn");
+                Rex::Logger::info("($k) 进程已经处于关闭的状态.","warn");
             }
         }else{
-            Rex::Logger::info("进程已经处于关闭的状态.","warn");
+            Rex::Logger::info("($k) 进程已经处于关闭的状态.","warn");
         }
         my $processNumber=run "ps aux |grep '$pro_key' |grep -v 'Enter:route:service' |grep -v grep |grep -v sudo |wc -l";
         if($processNumber == 0 ){
             my $result_start = start($pro_init,$pro_key,$service_start_retry);
             if($result_start eq '1'){
-                Rex::Logger::info("应用启动成功.");
+                Rex::Logger::info("($k) 应用启动成功.");
             }elsif($result_start eq  '2'){
-                Rex::Logger::info("应用启动失败.","error");
+                Rex::Logger::info("($k) 应用启动失败.","error");
             }elsif($result_start eq  '0'){
-                Rex::Logger::info("进程已经处于启动的状态.","warn");
+                Rex::Logger::info("($k) 进程已经处于启动的状态.","warn");
             }
         }else{
-            Rex::Logger::info("进程关闭失败,跳过启动.","error");
+            Rex::Logger::info("($k) 进程关闭失败,跳过启动.","error");
         } 
 
     }

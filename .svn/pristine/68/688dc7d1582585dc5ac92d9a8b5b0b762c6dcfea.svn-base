@@ -1,0 +1,4 @@
+[rex]
+name=Fedora $releasever - $basearch - Rex Repository
+baseurl=http://rex.linux-files.org/CentOS/$releasever/rex/$basearch/
+gpgcheck=0

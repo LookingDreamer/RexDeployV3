@@ -77,12 +77,10 @@ sub batchrun{
 
 sub batchservice{
    my ($k,$w,$a,$f,$key,$j) = @_;
-   my $params = { k=>"$k",a=>"$a" ,f=>"$f",key=>"$key",j=>"$j"};
-   my $result = Common::Process::moreProcess($k,$w,"服务控制模块","Enter:route:service",$params) ;
+   my $params = { a=>"$a" ,f=>"$f",key=>"$key",j=>"$j"};
+   my $result = Common::Process::moreProcess($k,$w,"服务控制模块","Deploy:FirstConnect:services",$params) ;
    Common::Use::json($w,"0","成功",[$result]);
-
 };
-
 
 1;
 
