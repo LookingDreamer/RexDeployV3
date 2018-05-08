@@ -85,6 +85,7 @@ task getconfig => sub {
 		$config{params}=$list->{'params'};
 		$config{require}=$list->{'require'};
 		$config{requirecode}=$list->{'requirecode'};
+		$config{access_log}=$list->{'access_log'};
 
 		$config{config_dir}=~ s/ //g;
 		$config{pro_dir}=~ s/ //g;

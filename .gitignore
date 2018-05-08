@@ -1,3 +1,7 @@
 RexDeployV3.sublime-project
 RexDeployV3.sublime-workspace
-.svn/*
+svn/*
+softdir/* 
+configuredir/* 
+remotecomdir/* 
+updatedir/*

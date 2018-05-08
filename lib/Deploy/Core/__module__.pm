@@ -15,6 +15,8 @@ use Deploy::other;
 use Rex::Misc::ShellBlock;
 use Common::Use;
 use Rex::Commands::Fs;
+use Predeploy::Judge;
+use Cos::Upload;
 
 my $env;
 my $table_string;
@@ -557,7 +559,10 @@ task downloading => sub {
                 cp("$localdir_remote", "$update_pro_dir");         
                 Rex::Logger::info("($k)--拷贝本地程序到更新目录完成  $localdir_remote => $update_pro_dir.");             
             }
-          
+            my $update_local_confdir = $update_local_confdir."/".$relocal_name;
+            if ( ! is_dir( $update_local_confdir) ) {
+                mkdir($update_local_confdir);
+            }
             cp("$local_config_dir_remote", "$update_local_confdir");
             Rex::Logger::info("($k)--拷贝本地配置到更新目录完成  $local_config_dir_remote => $update_local_confdir.");
         };
@@ -1093,6 +1098,10 @@ task "syncpro", sub {
             }
 
             #处理配置目录
+            if ( "$update" eq "1") {
+                $down_confdir = $local_confdir."/".$local_name."/".$app_key;
+            }
+
             if ( is_dir($down_confdir) ) {
                 if ( is_dir($deploy_confdir) ) {
                     rmdir($deploy_confdir);
@@ -1132,7 +1141,7 @@ task "syncpro", sub {
                 $errData[0] = 0;
                 push @errconf,$down_confdir;
                 Rex::Logger::info(
-                    "待上传配置目录不存在:  $down_confdir.", "warn" );
+                    "待上传配置目录不存在:  $down_confdir.", "error" );
             }
             Rex::Logger::info(
                 "同步($app_key)目录到待发布目录完成.");
@@ -1151,9 +1160,7 @@ task "syncpro", sub {
             my $down_prodir    = "$local_prodir/$app_key";
             my $down_confdir   = "$local_confdir/$app_key";
 
-            if ( "$update" eq "1") {
-                $down_prodir = "$local_prodir/$local_name";
-            }
+
     #say "mv $down_prodir --> $deploy_prodir ;mv $down_confdir $deploy_confdir";
     #处理程序目录
             if ( is_dir($down_prodir) ) {
@@ -1175,6 +1182,10 @@ task "syncpro", sub {
             }
 
             #处理配置目录
+            if ( "$update" eq "1") {
+                $down_confdir = $local_confdir."/".$local_name."/".$app_key;
+            }
+
             if ( is_dir($down_confdir) ) {
                 if ( is_dir($deploy_confdir) ) {
                     rmdir($deploy_confdir);
@@ -1216,7 +1227,7 @@ task "syncpro", sub {
                 $errData[0] = 0;
                 push @errconf,$down_confdir;
                 Rex::Logger::info(
-                    "待上传配置目录不存在:  $down_confdir.", "warn" );
+                    "待上传配置目录不存在:  $down_confdir.", "error" );
             }
 
         }
