@@ -1,8 +1,0 @@
-[2018-05-07 15:08:08] 下载flow1: /data/www/flow1/ => remotecomdir/softdir/flow1/ 32M  花费时间:13秒
-[2018-05-07 15:08:08] 下载flow1: /data/www/flow1/WEB-INF/classes/ => remotecomdir/configuredir/flow1/ 180K 花费时间:13秒
-[2018-05-07 15:08:23] 下载flow2: /data/www/flow2/ => remotecomdir/softdir/flow2/ 32M  花费时间:14秒
-[2018-05-07 15:08:23] 下载flow2: /data/www/flow2/WEB-INF/classes/ => remotecomdir/configuredir/flow2/ 180K 花费时间:14秒
-[2018-05-07 15:08:37] 下载server1: /data/www/html1/ => remotecomdir/softdir/server1/ 32M  花费时间:13秒
-[2018-05-07 15:08:37] 下载server1: /data/www/config1/ => remotecomdir/configuredir/server1/ 20K 花费时间:13秒
-[2018-05-07 15:08:51] 下载server2: /data/www/html2/ => remotecomdir/softdir/server2/ 32M  花费时间:13秒
-[2018-05-07 15:08:51] 下载server2: /data/www/config2/ => remotecomdir/configuredir/server2/ 20K 花费时间:13秒
