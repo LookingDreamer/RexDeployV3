@@ -187,5 +187,6 @@ task "upload",sub{
    my $dir1=$self->{dir1};
    my $dir2=$self->{dir2};
    my $ipsep=$self->{ipsep};
-   Common::Rexfile::batchupload($k,$w,$dir1,$dir2,$ipsep);
+   my $http=$self->{http};
+   Common::Rexfile::batchupload($k,$w,$dir1,$dir2,$ipsep,$http);
 };
