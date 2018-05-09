@@ -1,8 +1,0 @@
-@echo off
-set cur_dir=%CD%
-cd %cur_dir%
-set my_python_lib=%cur_dir%\dep\lib
-set PYTHONPATH=%my_python_lib%;%PYTHONPATH%
-
-D:\Python27\python2 src/cos_sync.py
-pause>nul
