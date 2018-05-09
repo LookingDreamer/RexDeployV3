@@ -705,6 +705,7 @@ task linkrestart => sub {
         );
         # run "nohup /bin/bash $pro_init stop > /dev/null & ";
         service "newservice",
+           before_action=> "source /etc/profile",
            ensure  => "stopped",
            start   => "$pro_init start",
            stop    => "$pro_init stop",

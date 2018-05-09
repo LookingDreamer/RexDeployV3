@@ -211,12 +211,13 @@ task "services"=>sub{
                 Rex::Logger::info("service($i): 开始启动应用....");
                 #run "source /etc/profile ;  /bin/bash $pro_init start ";
                 service "newservice",
+                   before_action=> "source /etc/profile",
                    ensure  => "started",
                    start   => "$pro_init start",
-                   stop    => "killall $pro_key",
+                   stop    => "$pro_init stop",
                    status  => "ps -efww | grep $pro_key",
-                   restart => "killall $pro_key && $pro_init start",
-                   reload  => "killall $pro_key && $pro_init start";
+                   restart => "$pro_init stop && $pro_init start",
+                   reload  => "$pro_init stop && $pro_init start";
            }
            select(undef, undef, undef, 0.25);
            my $resultProcessNumber=run "ps aux |grep $pro_key |grep -v 'Enter:route:service'|grep -v grep |grep -v sudo |wc -l";

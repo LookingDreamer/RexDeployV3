@@ -75,6 +75,7 @@ task linkrestart => sub {
            Rex::Logger::info("($k)--进程数为$ps_num,开始关闭应用->更改程序配置软链接->启动.");
            # run "/bin/bash $pro_init stop;sleep 2";   
            service "newservice",
+             before_action=> "source /etc/profile",
              ensure  => "stopped",
              start   => "$pro_init start",
              stop    => "$pro_init stop",
@@ -186,12 +187,13 @@ task linkrestart => sub {
    # run "nohup /bin/bash $pro_init start > /dev/null & ";
 
    service "newservice",
+     before_action=> "source /etc/profile",
      ensure  => "started",
      start   => "$pro_init start",
-     stop    => "killall $pro_key",
+     stop    => "$pro_init stop",
      status  => "ps -efww | grep $pro_key",
-     restart => "killall $pro_key && $pro_init start",
-     reload  => "killall $pro_key && $pro_init start";
+     restart => "$pro_init stop && $pro_init start",
+     reload  => "$pro_init stop && $pro_init start";
    run "sleep 2"; 
    #run "source /etc/profile ;/bin/bash $pro_init start";
    my $ps_start_num = run "ps aux |grep -v grep |grep -v sudo |grep '$pro_key' |wc -l";
