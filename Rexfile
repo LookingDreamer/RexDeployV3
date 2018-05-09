@@ -176,7 +176,8 @@ task "download",sub{
    my $dir1=$self->{dir1};
    my $dir2=$self->{dir2};
    my $ipsep=$self->{ipsep};
-   Common::Rexfile::batchdownload($k,$w,$dir1,$dir2,$ipsep);
+   my $http=$self->{http};
+   Common::Rexfile::batchdownload($k,$w,$dir1,$dir2,$ipsep,$http);
 };
 
 desc "批量文件上传 远程->本地:rex upload --k='server1 server2 ..' --dir1='/tmp/1.txt' --dir2='/tmp/' [--ipsep='1']";
@@ -187,6 +188,5 @@ task "upload",sub{
    my $dir1=$self->{dir1};
    my $dir2=$self->{dir2};
    my $ipsep=$self->{ipsep};
-   my $http=$self->{http};
-   Common::Rexfile::batchupload($k,$w,$dir1,$dir2,$ipsep,$http);
+   Common::Rexfile::batchupload($k,$w,$dir1,$dir2,$ipsep);
 };
