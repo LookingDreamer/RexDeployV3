@@ -106,7 +106,7 @@ task getdepoloy=>sub {
 			}else{
 				eval {
 					Rex::Logger::info("app_key->($app_keys) 开始灰度发布...");
-					run_task "Enter:deploy:main",params => { k => $app_keys};
+					run_task "Enter:deploy:main",params => { k => $app_keys,w=>$w,senv=>$senv};
 					Rex::Logger::info("app_key->($app_keys) 结束灰度发布.");
 				};
 				if ($@) {
@@ -198,6 +198,8 @@ desc "灰度发布 rex Enter:deploy:main --k='server1'";
 task main => sub {
     my $self = shift;
     my $k=$self->{k};
+    my $w=$self->{w};
+    my $senv=$self->{senv};
 	my $is_finish = 0;
 	my $weigts;
 	my $datetime = strftime("%Y-%m-%d %H:%M:%S", localtime(time));
@@ -221,7 +223,7 @@ task main => sub {
 		select(undef, undef, undef, $max_sleep_time);
 	}
 	#2.下载远程文件并同步更新目录到待发布目录
-	downloadSync($k,"灰度发布-滚动发布(2)",$content,$is_finish);
+	downloadSync($k,"灰度发布-滚动发布(2)",$content,$is_finish,$w,$senv);
 	#3.校验发布包和原包差异
 	checkDiff($k,"灰度发布-滚动发布(3)",$content,$is_finish);
 	#4.开始发布
