@@ -2,7 +2,7 @@ package Cos::Upload;
 
 use Rex -base;
 
-desc "腾讯云cos \n1.上传cos  rex  Cos:Upload:txy --option='upload' --env='app fm' --pkgpath='/tmp/zhangZhongBao-1525341589008-201805031800-uat.zip' \n2.增加cos上传管理文件  rex  Cos:Upload:txy --option='add_cos' --env='app fm'";
+desc "腾讯云cos \n1.上传cos  rex  Cos:Upload:txy --option='upload' --env='app' --pkgpath='/tmp/zhangZhongBao-1525341589008-201805031800-uat.zip' \n2.增加cos上传管理文件  rex  Cos:Upload:txy --option='add_cos' --env='app fm'";
 
 
 task txy => sub {
