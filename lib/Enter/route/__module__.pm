@@ -584,7 +584,16 @@ sub saveFile{
   $data[1] = "写入文件:$file $content 成功";
   return \@data;
 
-}
+};
+
+
+
+desc "程序包Http下载合并";
+task "downloadCombile",sub{
+   my $self = shift;
+   my $app_key=$self->{app_key};
+   
+};
 
 1;
 
