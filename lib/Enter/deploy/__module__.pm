@@ -166,7 +166,7 @@ task release => sub {
 		#1.下载远程文件并同步更新目录到待发布目录
 		downloadSync($app_keys_string,$subject,$content,$is_finish,$w,$senv);
 		#2.校验发布包和原包差异
-		checkDiff($app_keys_string,$subject,$content,$is_finish,$w);
+		checkDiff($app_keys_string,$subject,$content,$is_finish,$w,$senv);
 		#3.开始发布		
 		$deployRes = startDeplopy($app_keys_string,$subject,$content,$is_finish,$w);
 		Rex::Logger::info("$app_keys_string  结束自动发布.");
@@ -226,9 +226,9 @@ task main => sub {
 	#2.下载远程文件并同步更新目录到待发布目录
 	downloadSync($k,"灰度发布-滚动发布(2)",$content,$is_finish,$w,$senv);
 	#3.校验发布包和原包差异
-	checkDiff($k,"灰度发布-滚动发布(3)",$content,$is_finish);
+	checkDiff($k,"灰度发布-滚动发布(3)",$content,$is_finish,$w,$senv);
 	#4.开始发布
-	startDeplopy($k,"灰度发布-滚动发布(4)",$content,$is_finish);
+	startDeplopy($k,"灰度发布-滚动发布(4)",$content,$is_finish,$w);
 	#5.校验url
 	checkURL($k,"灰度发布-滚动发布(5)",$content,$is_finish);
 	#6.添加节点并判断节点是否成功摘取
@@ -458,9 +458,11 @@ sub readFile{
 
 #3.校验发布包和原包差异
 sub checkDiff{
-	my ($k,$subject,$content,$is_finish,$w) = @_;
+	my ($k,$subject,$content,$is_finish,$w,$senv) = @_;
 	eval {
-		# do something risky...
+		if ( "$senv" ne "" ) {
+			run_task "Enter:route:download",params => { k => $k,senv=>$senv};
+		}
 		my $errData = run_task "Deploy:Core:diff",params => { k => $k };
 		if ( $errData->{"code"} eq "0") {
 			my $allContent = "下载目录: ".$errData->{"errDownloadpro"}." ". $errData->{"errDownloadconf"}." 发布目录: ".$errData->{"errpro"}." ".$errData->{"errconf"};
