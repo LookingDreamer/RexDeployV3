@@ -449,12 +449,21 @@ task downloading => sub {
 
 #say $remotedir . " || $localdir". " || $remote_confir_dir" . " || $local_config_dir"  ;
 #exit
+    if (  is_dir("$localdir") ) {
+        Rex::Logger::info("($k)--删除原有本地程序目录: $localdir");
+        rmdir("$localdir");
+    }
+    if (  is_dir("$local_config_dir") ) {
+        Rex::Logger::info("($k)--删除原有本地配置目录: $local_config_dir");
+        rmdir("$local_config_dir");
+    }
+
     if ( !is_dir($localdir) ) {
         run "mkdir -p $localdir";
     }
     if ( !is_dir($local_config_dir) ) {
         run "mkdir -p $local_config_dir";
-    }
+    } 
 
     if ( $download_all eq "true" ) {
 
@@ -1246,6 +1255,7 @@ desc
 task "diff", sub {
     my $self       = shift;
     my $k          = $self->{k};
+    my $w          = $self->{w};
     my $localnames = run_task "Deploy:Db:getlocalname";
     my @base       = split( /,/, $localnames );
     my @keys;
@@ -1255,7 +1265,10 @@ task "diff", sub {
     my @errpro;
     my @errconf;
     my @proChange;
+    my @enproChange;
     my @confChange;
+    my @enconfChange;
+    my @differcountArray;
     $hash{"code"} = 1;
     # $softdir =~ s/\/$//;
     # $configuredir =~ s/\/$//;
@@ -1374,6 +1387,7 @@ task "diff", sub {
             #push @proChange,"$app_key程序 校验统计 合计:$i 变化:$c 删除:$d 新增:$a";
             # push @proChange,"[$app_key程序 合计:$i {c:$c,d:$d,a:$a}]";
             push @proChange,"[$app_key程序:$i]";
+            push @enproChange,"[$app_key pro:$i]";
 
             #处理配置目录
             if ( is_dir($down_confdir) ) {
@@ -1420,6 +1434,7 @@ task "diff", sub {
                     # push @confChange,"$app_key配置 校验统计 合计:$i 变化:$c 删除:$d 新增:$a";
                     # push @confChange,"[$app_key配置 合计:$i {c:$c d:$d a:$a}]";
                     push @confChange,"[$app_key配置:$i]";
+                    push @enconfChange,"[$app_key conf:$i]";
 
                 }else{
                     my @configure_group_list = split( /,/, $configure_group_result );
@@ -1469,6 +1484,7 @@ task "diff", sub {
                     # push @confChange,"$app_key配置 校验统计 合计:$i 变化:$c 删除:$d 新增:$a";
                     # push @confChange,"[$app_key配置 合计:$i {c:$c d:$d a:$a}]";
                     push @confChange,"[$app_key配置:$i]";
+                    push @enconfChange,"[$app_key conf:$i]";
 
                 }
      
@@ -1481,8 +1497,9 @@ task "diff", sub {
                     "下载配置目录不存在:  $down_confdir.", "error" );
                      next;
             }
-            my $differcount = "{\"prodiffercount\":\"$prodiffercount\",\"confdiffercount\":\"$confdiffercount\"}";
+            my $differcount = "{\"app_key\":\"$app_key\",\"prodiffercount\":\"$prodiffercount\",\"confdiffercount\":\"$confdiffercount\"}";
             run_task "Deploy:Db:update_differcount", params => { app_key => "$app_key" ,differcount=>"$differcount"};
+            push @differcountArray,$differcount;
             Rex::Logger::info(
                 "校验对比($app_key)下载目录到待发布目录差异完成.");
             Rex::Logger::info("");
@@ -1498,9 +1515,15 @@ task "diff", sub {
     $hash{"errpro"} = $errproStr;
     $hash{"errconf"} = $errconfStr;
     my $confChangeStr = join(",",@confChange);
+    my $enconfChangeStr = join(",",@enconfChange);
     my $proChangeStr = join(",",@proChange);
+    my $enproChangeStr = join(",",@enproChange);
     $hash{"confChange"} = $confChangeStr;
+    $hash{"enconfChange"} = $enconfChangeStr;
     $hash{"proChange"} = $proChangeStr;
+    $hash{"enproChange"} = $enproChangeStr;
+    $hash{"differcount"} = [\@differcountArray];
+    Common::Use::json($w,"0","成功",[\%hash]);
     return \%hash;
 
 };

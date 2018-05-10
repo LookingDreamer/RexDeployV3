@@ -206,6 +206,7 @@ task main => sub {
 	my $subject = "灰度发布-滚动发布(0)";
 	my $content = "开始时间: $datetime 发布系统: $k";
 	if ( "$k" eq "" ) {
+		Common::Use::json($w,"","关键字(--k='')不能为空",,"");
 		Rex::Logger::info("关键字(--k='')不能为空","error");
 	    exit;	
 	}

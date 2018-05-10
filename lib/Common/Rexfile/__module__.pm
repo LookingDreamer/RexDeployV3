@@ -69,7 +69,7 @@ sub check{
 
 sub batchrun{
    my ($k,$w,$cmd,$username) = @_;
-   my $params = { cmd=>"$cmd" ,w=>$w};
+   my $params = { cmd=>"$cmd" ,wb=>1,w=>$w};
    my $result = Common::Process::moreProcess($k,$w,"批量命令模块","Common:Use:run",$params) ;
    Common::Use::json($w,"0","成功",[$result]);
 

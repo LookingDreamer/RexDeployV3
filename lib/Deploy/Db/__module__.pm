@@ -585,14 +585,15 @@ task "getLastDeloy",sub {
 
 desc "初始化发布状态";
 task initdb=>sub {
-
+   my $self = shift;
+   my $w =$self->{w};
 	my @data = db update => "$deploy_status_table", {
 		set => {
 			status => 0,
 		},
 		    where => "status = 1",
 	};
-
+	Common::Use::json($w,"0","成功",\@data);
 	Rex::Logger::info("初始化发布状态完成.");
 };
 
