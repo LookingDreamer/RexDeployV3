@@ -421,6 +421,7 @@ task downloading => sub {
     my $query_prodir_key            = $_[8];
     my $senv            = $_[9];
     my $type            = $_[10];
+    my $usetype            = $_[11];
     my $datetime          = run "date '+%Y%m%d_%H%M%S'";
     my @query_prodir_key = @$query_prodir_key  ;
     my @pro_key_array;
@@ -449,14 +450,34 @@ task downloading => sub {
 
 #say $remotedir . " || $localdir". " || $remote_confir_dir" . " || $local_config_dir"  ;
 #exit
-    if (  is_dir("$localdir") ) {
-        Rex::Logger::info("($k)--删除原有本地程序目录: $localdir");
-        rmdir("$localdir");
+
+    if ( "$usetype" eq "pro" ) {
+        if (  is_dir("$localdir") ) {
+            Rex::Logger::info("($k)--删除原有本地程序目录: $localdir");
+            rmdir("$localdir");
+        }
+    }elsif( "$usetype" eq "conf" ){
+        if (  is_dir("$local_config_dir") ) {
+            Rex::Logger::info("($k)--删除原有本地配置目录: $local_config_dir");
+            rmdir("$local_config_dir");
+        }
+    }else{
+
+        if (  is_dir("$localdir") ) {
+            Rex::Logger::info("($k)--删除原有本地程序目录: $localdir");
+            rmdir("$localdir");
+        }
+        if ( "$senv" eq "" ) {
+            if (  is_dir("$local_config_dir") ) {
+                Rex::Logger::info("($k)--删除原有本地配置目录: $local_config_dir");
+                rmdir("$local_config_dir");
+            }
+        }    
+
     }
-    if (  is_dir("$local_config_dir") ) {
-        Rex::Logger::info("($k)--删除原有本地配置目录: $local_config_dir");
-        rmdir("$local_config_dir");
-    }
+
+
+
 
     if ( !is_dir($localdir) ) {
         run "mkdir -p $localdir";
@@ -528,12 +549,35 @@ task downloading => sub {
 
 
     }else{
-        run_task "Common:Use:download",
+   
+
+        if ( $usetype eq "pro"  ) {
+            run_task "Common:Use:download",
+                  on     => "$network_ip",
+                  params => { dir2 => "$localdir", dir1 => "$remotedir" };
+        }elsif($usetype  eq "conf" ){
+            run_task "Common:Use:download",
               on     => "$network_ip",
-              params => { dir2 => "$localdir", dir1 => "$remotedir" };
-        run_task "Common:Use:download",
-          on     => "$network_ip",
-          params => { dir2 => "$local_config_dir", dir1 => "$remote_confir_dir" };        
+              params => { dir2 => "$local_config_dir", dir1 => "$remote_confir_dir" };   
+        }elsif($usetype  eq "all"){
+            run_task "Common:Use:download",
+                  on     => "$network_ip",
+                  params => { dir2 => "$localdir", dir1 => "$remotedir" };
+            run_task "Common:Use:download",
+              on     => "$network_ip",
+              params => { dir2 => "$local_config_dir", dir1 => "$remote_confir_dir" }; 
+        }else{
+            run_task "Common:Use:download",
+                  on     => "$network_ip",
+                  params => { dir2 => "$localdir", dir1 => "$remotedir" };
+            run_task "Common:Use:download",
+              on     => "$network_ip",
+              params => { dir2 => "$local_config_dir", dir1 => "$remote_confir_dir" };  
+        }
+
+
+
+
     }
 
 

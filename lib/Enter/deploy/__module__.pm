@@ -490,9 +490,14 @@ sub checkDiff{
 sub downloadSync(){
 	my ($k,$subject,$content,$is_finish,$w,$senv) = @_;
 	eval {
-		run_task "Enter:route:download",params => { k => $k};
 		if ( "$senv" ne "" ) {
-			run_task "Enter:route:download",params => { k => $k,senv=>$senv,update=>1};
+			run_task "Enter:route:download",params => { k => $k,usetype=>"conf"};
+		}else{
+			run_task "Enter:route:download",params => { k => $k};
+		}
+		
+		if ( "$senv" ne "" ) {
+			run_task "Enter:route:download",params => { k => $k,senv=>$senv,update => 1};
 		}
 		my $errData = run_task "Deploy:Core:syncpro",params => { k => $k,update => 1};
 		my @errData = @$errData;
