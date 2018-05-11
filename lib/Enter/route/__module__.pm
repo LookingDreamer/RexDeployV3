@@ -20,6 +20,7 @@ my $update_local_confdir;
 my $random_temp_file;
 my $deploy_finish_file;
 my $process_temp_dir;
+my $parallelism;
 Rex::Config->register_config_handler("env", sub {
  my ($param) = @_;
  $env = $param->{key} ;
@@ -32,6 +33,7 @@ Rex::Config->register_config_handler("$env", sub {
      $random_temp_file  = $param->{random_temp_file};
      $deploy_finish_file  = $param->{deploy_finish_file};
      $process_temp_dir  = $param->{process_temp_dir};
+     $parallelism  = $param->{parallelism};
  });
 
 desc "应用下载模块: rex  Enter:route:download   --k='server1 server2 ../groupname/all' [--update='1'] [--senv='uat'] [--type='pro/conf/all']";
@@ -42,6 +44,7 @@ task "download",sub{
    my $type=$self->{type};
    my $update=$self->{update};
    my $usetype=$self->{usetype};
+   my $w=$self->{w};
    my $username=$user;
    my $keys=Deploy::Db::getallkey();
    my @keys=split(/,/, $keys);
@@ -53,17 +56,22 @@ task "download",sub{
    my $lastnum=$locals[-1] - 1;
    my $start = time;
    my @ks = split(/ /, $k);
-   # my $maxchild = 5 ;
+   my $maxchild = $parallelism ;
    my $max = @ks;
+   my %reshash;
+   my @data ;
+   $reshash{"params"} = {k=>"$k",senv=>"$senv",type=>"$type",update=>"$update",usetype=>"$usetype",w=>"$w"};
     
 
    if( $k eq ""  ){
        Rex::Logger::info("关键字(--k='')不能为空");
-   exit;
+       Common::Use::json($w,"","关键字(--k='')不能为空","");
+       exit;
    }
    if( $username eq ""  ){
        Rex::Logger::info("用户名(--u='')不能为空");
-   exit;
+       Common::Use::json($w,"","用户名(--u='')不能为空","");
+       exit;
    }
 
    #如果是上传到更新目录，先清空更新目录
@@ -83,40 +91,45 @@ task "download",sub{
       }
    }
    my $query_prodir_key ;
-
+   my $start = time();
    Rex::Logger::info("Starting ...... 操作人: $username");
    if ( $k eq "all" ){
-       Rex::Logger::info("----------全部下载模式---------");
-       my $query_key_string = join(" ",@keys);
-       $query_prodir_key = Deploy::Db::query_prodir_key($query_key_string);
-       Rex::Logger::info("");
-       Rex::Logger::info("开始下载远程服务器数据到本地---$keys[-1] 个.");
-       for my $num (0..$lastnum) {
-           Rex::Logger::info("");
-           Rex::Logger::info("##############($keys[$num])###############");
-           my $config=Deploy::Core::init("$keys[$num]");
-           if ( "$senv"  ne "" ) {
-               my $localName = $config->{'local_name'};
-               my $envConfig = Common::mysql::getEnvConfig($localName,$senv) ;
-               if ($envConfig  == 1 ) {
-                  Rex::Logger::info("$senv环境,查询$localName应用数据为空,退出","error");
-                  exit;
-               }
-               if ($envConfig  == 2 ) {
-                  Rex::Logger::info("$senv环境,查询$localName应用数据返回多条记录,退出","error");
-                  exit;
-               }
-               if ( $envConfig->{"code"} != undef &&  $envConfig->{"code"} > 0  ) {
-                  Rex::Logger::info("$senv环境校验参数失败,退出","error");
-                  exit;
-               }
-               Rex::Logger::info("开始同步$senv环境$localName的数据到本地......");
-               $config=$envConfig ;
-           }
-           my $FistSerInfo=Deploy::Core::prepare($keys[$num],$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
-           Deploy::Core::downloading($keys[$num],$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config,$update,$config->{'local_name'},$query_prodir_key,$senv,$type,$usetype);	
-       }
-       Rex::Logger::info("下载远程服务器数据到本地完成---$keys[-1] 个.");
+      my $keys=Deploy::Db::getallkey();
+      my @keysArray=split(/,/, $keys);
+      pop @keysArray;
+      $k = join(" ",@keysArray);
+       # Rex::Logger::info("----------全部下载模式---------");
+       # my $query_key_string = join(" ",@keys);
+       # $query_prodir_key = Deploy::Db::query_prodir_key($query_key_string);
+       # Rex::Logger::info("");
+       # Rex::Logger::info("开始下载远程服务器数据到本地---$keys[-1] 个.");
+       # for my $num (0..$lastnum) {
+       #     Rex::Logger::info("");
+       #     Rex::Logger::info("##############($keys[$num])###############");
+       #     my $config=Deploy::Core::init("$keys[$num]");
+       #     if ( "$senv"  ne "" ) {
+       #         my $localName = $config->{'local_name'};
+       #         my $envConfig = Common::mysql::getEnvConfig($localName,$senv) ;
+       #         if ($envConfig  == 1 ) {
+       #            Rex::Logger::info("$senv环境,查询$localName应用数据为空,退出","error");
+       #            exit;
+       #         }
+       #         if ($envConfig  == 2 ) {
+       #            Rex::Logger::info("$senv环境,查询$localName应用数据返回多条记录,退出","error");
+       #            exit;
+       #         }
+       #         if ( $envConfig->{"code"} != undef &&  $envConfig->{"code"} > 0  ) {
+       #            Rex::Logger::info("$senv环境校验参数失败,退出","error");
+       #            exit;
+       #         }
+       #         Rex::Logger::info("开始同步$senv环境$localName的数据到本地......");
+       #         $config=$envConfig ;
+       #     }
+       #     my $FistSerInfo=Deploy::Core::prepare($keys[$num],$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
+       #     Deploy::Core::downloading($keys[$num],$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config,$update,$config->{'local_name'},$query_prodir_key,$senv,$type,$usetype);	
+       # }
+       # Rex::Logger::info("下载远程服务器数据到本地完成---$keys[-1] 个.");
+
    }else{
    Rex::Logger::info("");
    Rex::Logger::info("开始下载远程服务器数据到本地.");
@@ -129,47 +142,61 @@ task "download",sub{
         push @local_name_array,$localname_key;
    }
 
+
+  my $query_local_prodir_key = Deploy::Db::query_local_app_key($k);
+  my @query_local_prodir_key = @$query_local_prodir_key ;
+  my @app_key_array;
+  for my $prolocal (@query_local_prodir_key){
+      my $app_key = $prolocal->{"app_key"};
+      push @app_key_array,$app_key;
+  }
+  my $app_key_count = @app_key_array;
+  my $app_key_str = join(" ",@app_key_array);
+  $k = $app_key_str;
+  # say Dumper($app_key_str);
+  # exit; 
+
    #根据分组来下载应用
-   for my $kv (@local_name_array) {
-       if ( $kv ne "" ){
-           $query_prodir_key = Deploy::Db::query_local_prodir_key($kv); 
-           if (exists($localvars{$kv})){
-               Rex::Logger::info("");
-               Rex::Logger::info("----------分组下载模式---------");
-               Rex::Logger::info("##############【全部分区($kv)】###############");
+   # for my $kv (@local_name_array) {
+   #     if ( $kv ne "" ){
+   #         $query_prodir_key = Deploy::Db::query_local_prodir_key($kv); 
+   #         if (exists($localvars{$kv})){
+   #             Rex::Logger::info("");
+   #             Rex::Logger::info("----------分组下载模式---------");
+   #             Rex::Logger::info("##############【全部分区($kv)】###############");
                
-               my $apps=Deploy::Db::localname_appkey($kv);
-               my @apps=split(/,/, $apps);
-               my %appvars = map { $_ => 1 } @apps;
-               my $lastnums=$apps[-1] - 1;
-               for my $num1 (0..$lastnums) {
-                   Rex::Logger::info("");
-                   Rex::Logger::info("##############($apps[$num1])###############");
-                   my $config=Deploy::Core::init("$apps[$num1]");
-                   if ( "$senv"  ne "" ) {
-                       my $localName = $config->{'local_name'};
-                       my $envConfig = Common::mysql::getEnvConfig($localName,$senv) ;
-                       if ($envConfig  == 1 ) {
-                          Rex::Logger::info("$senv环境,查询$localName应用数据为空,退出","error");
-                          exit;
-                       }
-                       if ($envConfig  == 2 ) {
-                          Rex::Logger::info("$senv环境,查询$localName应用数据返回多条记录,退出","error");
-                          exit;
-                       }
-                       if ( $envConfig->{"code"} != undef &&  $envConfig->{"code"} > 0  ) {
-                          Rex::Logger::info("$senv环境校验参数失败,退出","error");
-                          exit;
-                       }
-                       Rex::Logger::info("开始同步$senv环境$localName的数据到本地......");
-                       $config=$envConfig ;
-                   }                  
-                   my $FistSerInfo=Deploy::Core::prepare($apps[$num1],$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
-                   Deploy::Core::downloading($apps[$num1],$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config,$update,$config->{'local_name'},$query_prodir_key,$senv,$type,$usetype); 
-               } 
-           }
-       }
-   }  
+   #             my $apps=Deploy::Db::localname_appkey($kv);
+   #             my @apps=split(/,/, $apps);
+   #             my %appvars = map { $_ => 1 } @apps;
+   #             my $lastnums=$apps[-1] - 1;
+   #             for my $num1 (0..$lastnums) {
+   #                 Rex::Logger::info("");
+   #                 Rex::Logger::info("##############($apps[$num1])###############");
+   #                 my $config=Deploy::Core::init("$apps[$num1]");
+   #                 if ( "$senv"  ne "" ) {
+   #                     my $localName = $config->{'local_name'};
+   #                     my $envConfig = Common::mysql::getEnvConfig($localName,$senv) ;
+   #                     if ($envConfig  == 1 ) {
+   #                        Rex::Logger::info("$senv环境,查询$localName应用数据为空,退出","error");
+   #                        exit;
+   #                     }
+   #                     if ($envConfig  == 2 ) {
+   #                        Rex::Logger::info("$senv环境,查询$localName应用数据返回多条记录,退出","error");
+   #                        exit;
+   #                     }
+   #                     if ( $envConfig->{"code"} != undef &&  $envConfig->{"code"} > 0  ) {
+   #                        Rex::Logger::info("$senv环境校验参数失败,退出","error");
+   #                        exit;
+   #                     }
+   #                     Rex::Logger::info("开始同步$senv环境$localName的数据到本地......");
+   #                     $config=$envConfig ;
+   #                 }                  
+   #                 my $FistSerInfo=Deploy::Core::prepare($apps[$num1],$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
+   #                 Deploy::Core::downloading($apps[$num1],$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config,$update,$config->{'local_name'},$query_prodir_key,$senv,$type,$usetype); 
+   #             } 
+   #         }
+   #     }
+   # }  
 
 
 
@@ -247,7 +274,7 @@ task "download",sub{
                Rex::Logger::info("开始同步$senv环境$localName的数据到本地......");
                $config=$envConfig ;
            }
-		       my $FistSerInfo=Deploy::Core::prepare($kv,$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
+		       # my $FistSerInfo=Deploy::Core::prepare($kv,$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
 		       Deploy::Core::downloading($kv,$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config,$update,$config->{'local_name'},$query_prodir_key,$senv,$type,$usetype);	
 		       }else{
 		       Rex::Logger::info("关键字($kv)不存在","error");
@@ -269,8 +296,16 @@ task "download",sub{
    Rex::Logger::info("");
    Rex::Logger::info("下载远程服务器数据到本地完成.");
    }
+
+   my $end = time();
+   my $take = $end - $start ;
+   $reshash{"take"} = $take ;
+   Common::Use::json($w,"0","成功",[\%reshash]);
    return ;
 };
+
+
+
 
 
 desc "应用发布模块: rex  Enter:route:deploy --k='server1 server2 ..' \n";
