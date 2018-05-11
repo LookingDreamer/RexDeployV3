@@ -23,6 +23,7 @@ my $deploy_finish_file;
 my $deploy_max_count;
 my $deploy_interval_time;
 my $max_weight_count;
+my $envDesc;
 Rex::Config->register_config_handler(
     "env",
     sub {
@@ -48,6 +49,7 @@ Rex::Config->register_config_handler(
         $deploy_max_count = $param->{deploy_max_count};
         $deploy_interval_time = $param->{deploy_interval_time};
         $max_weight_count = $param->{max_weight_count};
+        $envDesc = $param->{envDesc};
     }
 );
 
@@ -90,6 +92,7 @@ task getdepoloy=>sub {
 
 	}
 	Rex::Logger::info("($k) 校验关键词完成");
+	my @deployArray ;
 	for my $info (@deploy){
 		my $local_name = $info->{"local_name"};			
 		my $app_key_sort = $info->{"app_key_sort"};
@@ -106,7 +109,8 @@ task getdepoloy=>sub {
 			}else{
 				eval {
 					Rex::Logger::info("app_key->($app_keys) 开始灰度发布...");
-					run_task "Enter:deploy:main",params => { k => $app_keys,w=>$w,senv=>$senv};
+					my $deployTask = run_task "Enter:deploy:main",params => { k => $app_keys,w=>$w,senv=>$senv};
+					push @deployArray,$deployTask;
 					Rex::Logger::info("app_key->($app_keys) 结束灰度发布.");
 				};
 				if ($@) {
@@ -121,8 +125,10 @@ task getdepoloy=>sub {
 	}
 	$is_finish = 1;
 	$res{"code"} = 0;
-	$res{"msg"} = "$k 全部灰度发布完成";
+	$res{"msg"} = "$k have deploy finshed";
 	sendMsg($subject,"($k) 全部灰度发布完成",$is_finish);
+	push @deployArray,\%res;
+	Common::Use::json($w,"0","$k 全部灰度发布完成",\@deployArray);
 	return \%res;
 	
 
@@ -139,7 +145,7 @@ task release => sub {
 	my $deployRes ;
 	if ( "$k" eq "" ) {
 		Rex::Logger::info("关键字(--k='')不能为空","error");
-		$res{"code"} = 0;
+		$res{"code"} = -1;
 		$res{"msg"} = "--k='' is null ";
 		return \%res;	
 	}
@@ -147,7 +153,7 @@ task release => sub {
 	my @deploy = @$deploy;
 	my $deploylength = @deploy;
 	if ( $deploylength == 0 ) {
-		$res{"code"} = 0;
+		$res{"code"} = -1;
 		$res{"msg"} = "when k in ( $k ), local_name is null";
 		Rex::Logger::info("($k) 根据识别名称local_name查询到关键词为空,请确认是否已经录入数据","error");
 		return \%res;
@@ -174,7 +180,7 @@ task release => sub {
 	if ($@) {
 		Rex::Logger::info("($app_keys_string ) 执行自动发布异常:$@","error");
 		sendMsg($subject,"($app_keys_string ) 执行自动发布异常:$@",$is_finish);
-		$res{"code"} = 0;
+		$res{"code"} = -1;
 		$res{"msg"} = "run deploy error: $@";
 		return \%res;		
 	}
@@ -184,7 +190,7 @@ task release => sub {
 	$res{"msg"} = "$k have finshed release";
 	my $endtime = strftime("%Y-%m-%d %H:%M:%S", localtime(time));
 	sendMsg($subject,"当前时间: $endtime  ($k) 全部自动发布完成",$is_finish);
-	$res{"datetime"} = $datetime;
+	$res{"starttime"} = $datetime;
 	$res{"endtime"} = $endtime;
 	$res{"data"} = $deployRes;
 	return \%res;
@@ -202,13 +208,15 @@ task main => sub {
     my $senv=$self->{senv};
 	my $is_finish = 0;
 	my $weigts;
+	my %res ;
+	my $deployRes ;	
 	my $datetime = strftime("%Y-%m-%d %H:%M:%S", localtime(time));
 	my $subject = "灰度发布-滚动发布(0)";
 	my $content = "开始时间: $datetime 发布系统: $k";
 	if ( "$k" eq "" ) {
 		Common::Use::json($w,"","关键字(--k='')不能为空",,"");
 		Rex::Logger::info("关键字(--k='')不能为空","error");
-	    exit;	
+		exit;
 	}
 
 
@@ -216,7 +224,7 @@ task main => sub {
 	#0.初始化灰度发布
 	Deploy::Db::update_deploy_status($k);
 	#1.摘取节点并判断节点是否成功摘取
-	pickLoad($k,"灰度发布-滚动发布(1)",$content,$is_finish);
+	pickLoad($k,"灰度发布-滚动发布(1)",$content,$is_finish,$w);
 	if ( "$max_sleep_time" != 0 ) {
 		my $subject = "灰度发布-滚动发布(2)";
 		Rex::Logger::info("($k) 已配置超时时间,开始等待超时时间$max_sleep_time秒");
@@ -228,17 +236,27 @@ task main => sub {
 	#3.校验发布包和原包差异
 	checkDiff($k,"灰度发布-滚动发布(3)",$content,$is_finish,$w,$senv);
 	#4.开始发布
-	startDeplopy($k,"灰度发布-滚动发布(4)",$content,$is_finish,$w);
+	$deployRes = startDeplopy($k,"灰度发布-滚动发布(4)",$content,$is_finish,$w);
 	#5.校验url
-	checkURL($k,"灰度发布-滚动发布(5)",$content,$is_finish);
+	checkURL($k,"灰度发布-滚动发布(5)",$content,$is_finish,$w);
 	#6.添加节点并判断节点是否成功摘取
-	addLoad($k,"灰度发布-滚动发布(6)",$content,$is_finish);
+	addLoad($k,"灰度发布-滚动发布(6)",$content,$is_finish,$w);
+
+	$res{"code"} = 0;
+	$res{"msg"} = "$k have finshed deploy";
+	my $endtime = strftime("%Y-%m-%d %H:%M:%S", localtime(time));
+	$res{"starttime"} = $datetime;
+	$res{"endtime"} = $endtime;
+	$res{"data"} = $deployRes;
+	return \%res;
+
+
 };
 
 
 #6.添加节点并判断节点是否成功摘取
 sub addLoad{
-	my ($k,$subject,$content,$is_finish) = @_;
+	my ($k,$subject,$content,$is_finish,$w) = @_;
 	my $weigts;
 	eval {
 
@@ -281,6 +299,7 @@ sub addLoad{
                 my $faildString = join(",",@faild);
                 Rex::Logger::info("连续 $var 次修改权重失败: $faildString ","error");
                 sendMsg($subject,"连续 $var 次修改权重失败: $faildString ",$is_finish);
+                Common::Use::json($w,-1,"连续 $var 次修改权重失败: $faildString ","");
                 exit;
             }
             select(undef, undef, undef, 3);
@@ -295,6 +314,7 @@ sub addLoad{
 	if ($@) {
 		Rex::Logger::info("($k) 添加并保存权重数据异常:$@","error");
 		sendMsg($subject,"($k) 添加并保存权重数据异常:$@",$is_finish);
+		Common::Use::json($w,-1,"($k) 添加并保存权重数据异常:$@","");
 		exit;
 	}
 
@@ -302,7 +322,7 @@ sub addLoad{
 
 #5.校验url
 sub checkURL{
-	my ($k,$subject,$content,$is_finish) = @_;
+	my ($k,$subject,$content,$is_finish,$w) = @_;
 	eval {
 		Rex::Logger::info("($k) 校验url 应用启动初始化中...等待$checkurl_init_time秒");
 		select(undef, undef, undef, $checkurl_init_time);
@@ -316,6 +336,7 @@ sub checkURL{
 				if ( $var == $checkurl_max_count) {
 					Rex::Logger::info("校验次url失败: $errContent 校验次数:$checkurl_max_count 校验时间间隔:$checkurl_interval_time秒","error");
 					sendMsg($subject,"校验次url失败: $errContent 校验次数:$checkurl_max_count 校验时间间隔:$checkurl_interval_time秒",$is_finish);
+					Common::Use::json($w,-1,"校验次url失败: $errContent 校验次数:$checkurl_max_count 校验时间间隔:$checkurl_interval_time秒","");
 					exit;
 				}
 				
@@ -331,6 +352,7 @@ sub checkURL{
 	if ($@) {
 		Rex::Logger::info("($k) 校验url异常:$@","error");
 		sendMsg($subject,"($k)  校验url异常:$@",$is_finish);
+		Common::Use::json($w,-1,"($k)  校验url异常:$@","");
 		exit;
 	}
 
@@ -519,8 +541,8 @@ sub downloadSync(){
 
 	};
 	if ($@) {
-		Rex::Logger::info("($k) 下载远程文件并同步更新目录到待发布目录:$@","error");
-		sendMsg($subject,"($k) 下载远程文件并同步更新目录到待发布目录:$@",$is_finish);
+		Rex::Logger::info("($k) 下载远程文件并同步更新目录到待发布目录异常:$@","error");
+		sendMsg($subject,"($k) 下载远程文件并同步更新目录到待发布目录异常:$@",$is_finish);
 		Common::Use::json($w,-1,"失败",[{msg=>"download file error: $@",code=>-1}]);
 		exit;
 	}
@@ -531,7 +553,7 @@ sub downloadSync(){
 
 #1.摘取节点并判断节点是否成功摘取
 sub pickLoad{
-	my ($k,$subject,$content,$is_finish) = @_;
+	my ($k,$subject,$content,$is_finish,$w) = @_;
 	my $weigts;
 	eval {
 
@@ -573,6 +595,7 @@ sub pickLoad{
 				my $faildString = join(",",@faild);
 				Rex::Logger::info("连续 $var 次修改权重失败: $faildString ","error");
 				sendMsg($subject,"连续 $var 次修改权重失败: $faildString ",$is_finish);
+				Common::Use::json($w,-1,"连续 $var 次修改权重失败: $faildString ","");
 				exit;
 			}
 			select(undef, undef, undef, 3);
@@ -584,6 +607,7 @@ sub pickLoad{
 	if ($@) {
 		Rex::Logger::info("($k) 摘取并保存权重数据异常:$@","error");
 		sendMsg($subject,"($k) 摘取并保存权重数据异常:$@",$is_finish);
+		Common::Use::json($w,-1,"($k) 摘取并保存权重数据异常:$@","");
 		exit;
 	}
 
@@ -591,6 +615,7 @@ sub pickLoad{
 
 sub sendMsg{
 	my ($subject,$content,$is_finish) = @_;
+	my $content = "(".$envDesc.") ".$content;
 	sendWeixin($is_weixin,$weixin_config,$subject,$content);
 	sendQQ($is_qq,$qq_config,$finish_qq_config,$content,$is_finish);	
 }
