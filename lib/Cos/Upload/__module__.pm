@@ -33,13 +33,13 @@ task txy => sub {
      Rex::Logger::info("关键字(--env='')不能为空","error");
      exit;
    }
-   if ( ! is_file($pkg) ) {
-     Rex::Logger::info("$pkg文件不存在","error");
-     exit;
-   }
+
    if ( $func ne "upload" &&  $func ne "add_cos" ) {
      Rex::Logger::info("option参数不正确,仅支持upload、add_cos","error");
      exit;
+   }
+   if( ! is_dir("/data/scripts") ){
+      mkdir("/data/scripts");
    }
 
    my @ks = split(/ /, $k);
