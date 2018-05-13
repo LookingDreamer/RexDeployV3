@@ -10,6 +10,7 @@ use Common::Use;
 use Deploy::rollBack;
 use Rex::Group::Lookup::INI;
 use POSIX;
+use IPC::Shareable;
 my $maxchild = 5 ;
 my $s;
 my $i;
@@ -60,9 +61,10 @@ task "download",sub{
    my $max = @ks;
    my %reshash;
    my @data ;
+   my $srck = $k ;
+   my @sharedown;
    $reshash{"params"} = {k=>"$k",senv=>"$senv",type=>"$type",update=>"$update",usetype=>"$usetype",w=>"$w"};
     
-
    if( $k eq ""  ){
        Rex::Logger::info("关键字(--k='')不能为空");
        Common::Use::json($w,"","关键字(--k='')不能为空","");
@@ -98,164 +100,80 @@ task "download",sub{
       my @keysArray=split(/,/, $keys);
       pop @keysArray;
       $k = join(" ",@keysArray);
-       # Rex::Logger::info("----------全部下载模式---------");
-       # my $query_key_string = join(" ",@keys);
-       # $query_prodir_key = Deploy::Db::query_prodir_key($query_key_string);
-       # Rex::Logger::info("");
-       # Rex::Logger::info("开始下载远程服务器数据到本地---$keys[-1] 个.");
-       # for my $num (0..$lastnum) {
-       #     Rex::Logger::info("");
-       #     Rex::Logger::info("##############($keys[$num])###############");
-       #     my $config=Deploy::Core::init("$keys[$num]");
-       #     if ( "$senv"  ne "" ) {
-       #         my $localName = $config->{'local_name'};
-       #         my $envConfig = Common::mysql::getEnvConfig($localName,$senv) ;
-       #         if ($envConfig  == 1 ) {
-       #            Rex::Logger::info("$senv环境,查询$localName应用数据为空,退出","error");
-       #            exit;
-       #         }
-       #         if ($envConfig  == 2 ) {
-       #            Rex::Logger::info("$senv环境,查询$localName应用数据返回多条记录,退出","error");
-       #            exit;
-       #         }
-       #         if ( $envConfig->{"code"} != undef &&  $envConfig->{"code"} > 0  ) {
-       #            Rex::Logger::info("$senv环境校验参数失败,退出","error");
-       #            exit;
-       #         }
-       #         Rex::Logger::info("开始同步$senv环境$localName的数据到本地......");
-       #         $config=$envConfig ;
-       #     }
-       #     my $FistSerInfo=Deploy::Core::prepare($keys[$num],$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
-       #     Deploy::Core::downloading($keys[$num],$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config,$update,$config->{'local_name'},$query_prodir_key,$senv,$type,$usetype);	
-       # }
-       # Rex::Logger::info("下载远程服务器数据到本地完成---$keys[-1] 个.");
-
    }else{
+      my $query_local_prodir_key = Deploy::Db::query_local_app_key($k);
+      my @query_local_prodir_key = @$query_local_prodir_key ;
+      my @app_key_array;
+      for my $prolocal (@query_local_prodir_key){
+          my $app_key = $prolocal->{"app_key"};
+          push @app_key_array,$app_key;
+      }
+      my $app_key_count = @app_key_array;
+      my $app_key_str = join(" ",@app_key_array);
+      $k = $app_key_str;    
+   }
+
+
+  @ks = split(/ /, $k);;
+  $max = @ks;
+  my $kstring = join(" ",@ks); 
+  $reshash{"k"} = $kstring ;
+  $reshash{"parallelism"} = $maxchild ;
+  if ( $max > 0  ) {
+    Rex::Logger::info("----------多线程名字下载模式---------");
+    Rex::Logger::info("----------$kstring---------");
+    $query_prodir_key = Deploy::Db::query_prodir_key($kstring);
+  }else{
+    Common::Use::json($w,"","没有匹配到数据，请确认传参 k=$k 是否正确","");
+    Rex::Logger::info("没有匹配到数据，请确认传参 k=$srck  是否正确","error"); 
+    exit;
+  }
+
    Rex::Logger::info("");
    Rex::Logger::info("开始下载远程服务器数据到本地.");
 
-   my $query_local_prodir_key = Deploy::Db::query_local_prodir_key($k);
-   my @query_local_prodir_key = @$query_local_prodir_key ;
-   my @local_name_array;
-   for my $prolocal (@query_local_prodir_key){
-        my $localname_key = $prolocal->{"local_name"};
-        push @local_name_array,$localname_key;
-   }
 
+  my $ipch = tie @sharedown,   'IPC::Shareable',
+                         "foco",
+                         {  create    => 1,
+                            exclusive => 'no',
+                            mode      => 0666,
+                            size      => 1024*512
+                         };
 
-  my $query_local_prodir_key = Deploy::Db::query_local_app_key($k);
-  my @query_local_prodir_key = @$query_local_prodir_key ;
-  my @app_key_array;
-  for my $prolocal (@query_local_prodir_key){
-      my $app_key = $prolocal->{"app_key"};
-      push @app_key_array,$app_key;
-  }
-  my $app_key_count = @app_key_array;
-  my $app_key_str = join(" ",@app_key_array);
-  $k = $app_key_str;
-  # say Dumper($app_key_str);
-  # exit; 
-
-   #根据分组来下载应用
-   # for my $kv (@local_name_array) {
-   #     if ( $kv ne "" ){
-   #         $query_prodir_key = Deploy::Db::query_local_prodir_key($kv); 
-   #         if (exists($localvars{$kv})){
-   #             Rex::Logger::info("");
-   #             Rex::Logger::info("----------分组下载模式---------");
-   #             Rex::Logger::info("##############【全部分区($kv)】###############");
-               
-   #             my $apps=Deploy::Db::localname_appkey($kv);
-   #             my @apps=split(/,/, $apps);
-   #             my %appvars = map { $_ => 1 } @apps;
-   #             my $lastnums=$apps[-1] - 1;
-   #             for my $num1 (0..$lastnums) {
-   #                 Rex::Logger::info("");
-   #                 Rex::Logger::info("##############($apps[$num1])###############");
-   #                 my $config=Deploy::Core::init("$apps[$num1]");
-   #                 if ( "$senv"  ne "" ) {
-   #                     my $localName = $config->{'local_name'};
-   #                     my $envConfig = Common::mysql::getEnvConfig($localName,$senv) ;
-   #                     if ($envConfig  == 1 ) {
-   #                        Rex::Logger::info("$senv环境,查询$localName应用数据为空,退出","error");
-   #                        exit;
-   #                     }
-   #                     if ($envConfig  == 2 ) {
-   #                        Rex::Logger::info("$senv环境,查询$localName应用数据返回多条记录,退出","error");
-   #                        exit;
-   #                     }
-   #                     if ( $envConfig->{"code"} != undef &&  $envConfig->{"code"} > 0  ) {
-   #                        Rex::Logger::info("$senv环境校验参数失败,退出","error");
-   #                        exit;
-   #                     }
-   #                     Rex::Logger::info("开始同步$senv环境$localName的数据到本地......");
-   #                     $config=$envConfig ;
-   #                 }                  
-   #                 my $FistSerInfo=Deploy::Core::prepare($apps[$num1],$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
-   #                 Deploy::Core::downloading($apps[$num1],$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config,$update,$config->{'local_name'},$query_prodir_key,$senv,$type,$usetype); 
-   #             } 
-   #         }
-   #     }
-   # }  
-
-
-
-   my @ksv ;
-   for my $ksv (@ks ){
-      if( ! grep /^$ksv$/, @local_name_array ){  
-         push @ksv,$ksv ;
-      }    
-   }
-
-
-  @ks = @ksv ;
-  $max = @ks;
-  my $kstring = join(" ",@ks); 
-  if ( $max > 0  ) {
-    Rex::Logger::info("----------多线程名字下载模式---------");
-    $query_prodir_key = Deploy::Db::query_prodir_key($kstring);
-  }
-   
    #根据的传值key来下载应用
-	for(my $g=0; $g < $max ;){
-		$g = $g+$maxchild;
-		$s = $g-$maxchild ;
-		if( $g > $max ){
-		  Rex::Logger::info("并发控制:($s - $max)");
-		}else{
-		  Rex::Logger::info("并发控制:($s - $g)");
-		}
+  for(my $g=0; $g < $max ;){
+    $g = $g+$maxchild;
+    $s = $g-$maxchild ;
+    my $initNumber;
+    my $maxNumber;
+    if( $g > $max ){
+      $initNumber = 0 ;
+      $maxNumber = $max;
+      Rex::Logger::info("并发控制:($s - $max)");
+    }else{
+      $initNumber = $g-$maxchild ;
+      $maxNumber = $g;
+      Rex::Logger::info("并发控制:($s - $g)");
+    }
 
-		for($i=$g-$maxchild;$i<$g;$i++){
-		  if( $i == $max  ){
-		     #最后一次收割并等待子进程完成
-		     while (scalar keys %hash_pids) { #一直判断hash中是否含有pid值,直到退出.
-		       my $kid = waitpid(-1, WNOHANG); #无阻塞模式收割
-		       if ($kid and exists $hash_pids{$kid}) {
-		         delete $hash_pids{$kid};  #如果回收的子进程存在于hash中,那么删除它.
-		       }
-		     }
-		    Rex::Logger::info("执行下载模板完成.");
-		    my $take_time = time - $start;
-		    Rex::Logger::info("总共花费时间:$take_time秒.");
-        return ;
-		    # exit; 
-		    #全部结束
-		  }
-		  select(undef, undef, undef, 0.25);
-			  my $kv = $ks[$i];
-		    my $child=fork(); #派生一个子进程
-		  if($child){   # child >; 0, so we're the parent 
-		      $hash_pids{$child} = $child;  
-		      Rex::Logger::info("父进程PID:$$ 子进程PID:$child");
-		  }else{ 
-		    #在子进程中执行相关动作开始
-		    Rex::Logger::info("执行子进程,进程序号:$i");
-		    if ( $kv ne "" ){
-		       if (exists($vars{$kv})){
-		       Rex::Logger::info("");
-		       Rex::Logger::info("##############($kv)###############");
-		       my $config=Deploy::Core::init("$kv");
+
+    for($i=$initNumber;$i<$maxNumber;$i++){
+
+      select(undef, undef, undef, 0.25);
+        my $kv = $ks[$i];
+        my $child=fork(); #派生一个子进程
+      if($child){   # child >; 0, so we're the parent 
+          $hash_pids{$child} = $child;  
+          Rex::Logger::info("父进程PID:$$ 子进程PID:$child");
+      }else{ 
+        #在子进程中执行相关动作开始
+        Rex::Logger::info("执行子进程,进程序号:$i");
+        if ( $kv ne "" ){
+           if (exists($vars{$kv})){
+           Rex::Logger::info("");
+           Rex::Logger::info("##############($kv)###############");
+           my $config=Deploy::Core::init("$kv");
            if ( "$senv"  ne "" ) {
                my $localName = $config->{'local_name'};
                my $envConfig = Common::mysql::getEnvConfig($localName,$senv) ;
@@ -274,34 +192,61 @@ task "download",sub{
                Rex::Logger::info("开始同步$senv环境$localName的数据到本地......");
                $config=$envConfig ;
            }
-		       # my $FistSerInfo=Deploy::Core::prepare($kv,$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
-		       Deploy::Core::downloading($kv,$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config,$update,$config->{'local_name'},$query_prodir_key,$senv,$type,$usetype);	
-		       }else{
-		       Rex::Logger::info("关键字($kv)不存在","error");
-		       }
-		   }
-		    exit 0;             # child is done
-		    #在子进程中执行相关动作结束
-		 } 
-		}
-		#收割并等待子进程完成
-		while (scalar keys %hash_pids) { #一直判断hash中是否含有pid值,直到退出.
-		  my $kid = waitpid(-1, WNOHANG); #无阻塞模式收割
-		  if ($kid and exists $hash_pids{$kid}) {
-		    delete $hash_pids{$kid};  #如果回收的子进程存在于hash中,那么删除它.
-		  }
-		}
-	}
+           # my $FistSerInfo=Deploy::Core::prepare($kv,$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
+            my $downloadres = Deploy::Core::downloading($kv,$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config,$update,$config->{'local_name'},$query_prodir_key,$senv,$type,$usetype);               
+            $ipch->shlock;
+            push @sharedown, $downloadres;
+            $ipch->shunlock;          
+
+           }else{
+           Rex::Logger::info("关键字($kv)不存在","error");
+           }
+       }
+        exit 0;             # child is done
+        #在子进程中执行相关动作结束
+     } 
+    }
+    #收割并等待子进程完成
+    while (scalar keys %hash_pids) { #一直判断hash中是否含有pid值,直到退出.
+      my $kid = waitpid(-1, WNOHANG); #无阻塞模式收割
+      if ($kid and exists $hash_pids{$kid}) {
+        delete $hash_pids{$kid};  #如果回收的子进程存在于hash中,那么删除它.
+      }
+    }
+  }
+
+  #最后一次收割并等待子进程完成
+  while (scalar keys %hash_pids) { #一直判断hash中是否含有pid值,直到退出.
+      my $kid = waitpid(-1, WNOHANG); #无阻塞模式收割
+      if ($kid and exists $hash_pids{$kid}) {
+          delete $hash_pids{$kid};  #如果回收的子进程存在于hash中,那么删除它.
+      }
+  }
+  Rex::Logger::info("执行下载模板完成.");
+  my $take_time = time - $start;
+  Rex::Logger::info("总共花费时间:$take_time秒.");
+  # return ;
+  # exit; 
+  #全部结束
 
    Rex::Logger::info("");
    Rex::Logger::info("下载远程服务器数据到本地完成.");
-   }
+   $reshash{"take"} = $take_time ;
+   
+    my $sharedownCount = @sharedown;
+    my %result = (
+       msg => "success",
+       code  => 0,
+       count  => $sharedownCount,
+       data => [@sharedown] ,
+       srcdata => \%reshash
+    );
+    (tied @sharedown)->remove;
+    IPC::Shareable->clean_up;
+    IPC::Shareable->clean_up_all;
+    Common::Use::json($w,"0","成功",[\%result]);
 
-   my $end = time();
-   my $take = $end - $start ;
-   $reshash{"take"} = $take ;
-   Common::Use::json($w,"0","成功",[\%reshash]);
-   return ;
+    return \%result;
 };
 
 

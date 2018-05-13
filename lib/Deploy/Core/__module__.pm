@@ -427,6 +427,22 @@ task downloading => sub {
     my @pro_key_array;
     my $start_time ;
     my $end_time ;
+    my %reshash;
+    $reshash{"params"} = {
+        k=>$k,
+        local_name=>$local_name,
+        remotedir=>$remotedir,
+        network_ip=>$network_ip,
+        remote_confir_dir=>$remote_confir_dir,
+        config=>$config,
+        update=>$update,
+        relocal_name=>$relocal_name,
+        query_prodir_key=>$query_prodir_key,
+        senv=>$senv,
+        type=>$type,
+        usetype=>$usetype,
+    };
+    $reshash{"query_prodir_key"} = \@query_prodir_key;
     for my $pro (@query_prodir_key){
         my $proapp_key = $pro->{"app_key"};
         push @pro_key_array,$proapp_key;
@@ -451,26 +467,35 @@ task downloading => sub {
 #say $remotedir . " || $localdir". " || $remote_confir_dir" . " || $local_config_dir"  ;
 #exit
 
+   $reshash{"localdir"} = $localdir;
+   $reshash{"local_config_dir"} = $local_config_dir;
+   $reshash{"remotedir"} = $remotedir;
+   $reshash{"remote_confir_dir"} = $remote_confir_dir;
+
     if ( "$usetype" eq "pro" ) {
         if (  is_dir("$localdir") ) {
             Rex::Logger::info("($k)--删除原有本地程序目录: $localdir");
             rmdir("$localdir");
+            $reshash{"src_localdir_is_delete"} = 1 ;
         }
     }elsif( "$usetype" eq "conf" ){
         if (  is_dir("$local_config_dir") ) {
             Rex::Logger::info("($k)--删除原有本地配置目录: $local_config_dir");
             rmdir("$local_config_dir");
+            $reshash{"src_local_config_dir_is_delete"} = 1 ;
         }
     }else{
 
         if (  is_dir("$localdir") ) {
             Rex::Logger::info("($k)--删除原有本地程序目录: $localdir");
             rmdir("$localdir");
+            $reshash{"src_localdir_is_delete"} = 1 ;
         }
         if ( "$senv" eq "" ) {
             if (  is_dir("$local_config_dir") ) {
                 Rex::Logger::info("($k)--删除原有本地配置目录: $local_config_dir");
                 rmdir("$local_config_dir");
+                $reshash{"src_local_config_dir_is_delete"} = 1 ;
             }
         }    
 
@@ -485,6 +510,7 @@ task downloading => sub {
     if ( !is_dir($local_config_dir) ) {
         run "mkdir -p $local_config_dir";
     } 
+    $reshash{"download_all"} = $download_all ;
 
     if ( $download_all eq "true" ) {
 
@@ -519,6 +545,7 @@ task downloading => sub {
 
     Rex::Logger::info("($k)--开始传输程序和配置目录到本地.");
     $start_time = time();
+    $reshash{"start_time"} = $start_time ;
 
 # run_task "Deploy:Core:download",on=>"$network_ip",params => {dir2=>"$localdir",dir1=>"$remotedir",dir4=>"$local_config_dir",dir3=>"$remote_confir_dir",k=>"$k"};
     if ( "$senv" ne "") {
@@ -583,6 +610,8 @@ task downloading => sub {
 
     my $size1 = run "du -sh $localdir |awk '{print \$1}'";
     my $size2 = run "du -sh $local_config_dir |awk '{print \$1}'";
+    $reshash{"localdir_size"} = $size1;
+    $reshash{"local_config_dir_size"} = $size2;
     Rex::Logger::info(
 "($k)--传输程序和配置目录到本地完成:$localdir:$size1 || $local_config_dir:$size2"
     );
@@ -627,6 +656,8 @@ task downloading => sub {
     }
     $end_time = time();
     my $take = $end_time - $start_time;
+    $reshash{"end_time"} = $end_time ;
+    $reshash{"take"} = $take ;
     my $standtime = run "date '+%Y-%m-%d %H:%M:%S'";
     run
 "echo '['$standtime'] 下载$k: $remotedir => $localdir $size1  花费时间:$take秒' >> $download_record_log";
@@ -634,6 +665,8 @@ task downloading => sub {
 "echo '['$standtime'] 下载$k: $remote_confir_dir => $local_config_dir $size2 花费时间:$take秒' >> $download_record_log";
     Rex::Logger::info(
         "($k)--更新下载记录到日志:$download_record_log完成.");
+
+    return \%reshash;
 };
 
 desc "更改软链接,重启应用";
