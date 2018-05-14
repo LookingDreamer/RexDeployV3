@@ -78,12 +78,12 @@ task "download",sub{
 
    #如果是上传到更新目录，先清空更新目录
    if ( "$update" eq "1") {
-      if (  is_dir($update_local_prodir)) {
-          rmdir("$update_local_prodir");
-      }
-      if (  is_dir($update_local_confdir)) {
-          rmdir("$update_local_confdir");
-      }
+      # if (  is_dir($update_local_prodir)) {
+      #     rmdir("$update_local_prodir");
+      # }
+      # if (  is_dir($update_local_confdir)) {
+      #     rmdir("$update_local_confdir");
+      # }
 
       if ( ! is_dir($update_local_prodir)) {
           mkdir("$update_local_prodir");

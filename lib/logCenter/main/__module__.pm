@@ -202,31 +202,45 @@ task "listFile",sub{
 	exit;
 };
 
-desc "下载日志模块\n1.rex  logCenter:main:getLog  --search='server1'\n2.rex -H '127.0.0.1' logCenter:main:getLog  --log='/data/log/server1/catalina.out.2017-03-06'";
+desc "下载日志模块\n1.rex  logCenter:main:getLog  --search='server1' [--download_local='1']\n2.rex -H '127.0.0.1' logCenter:main:getLog  --log='/data/log/server1/catalina.out.2017-03-06'";
 task "getLog", sub {
 	my $self = shift;
 	my $log = $self->{log};
 	my $search = $self->{search};
+	my $k = $self->{k};
+	my $w = $self->{w};
 	my $download_local = $self->{download_local};
-
+	my %reshash ; 
+	$reshash{"params"} = {log=>$log,search=>$search,k=>$k,download_local=>$download_local};
+	if ( "$k" ne "") {
+		$search = $k;
+	}
 	if( $log eq "" and $search eq "" ){
 		Rex::Logger::info("日志参数或者搜索关键词不能同时为空","error");
-		exit;			
+		$reshash{"code"} = -1 ;
+		$reshash{"msg"} = "search and log args is null" ;
+		Common::Use::json($w,"","日志参数或者搜索关键词不能同时为空","");
+		return \%reshash; 		
 	}
 	if ( $download_local eq "") {
 		$download_local = '0';
 	}
+	my $downloadRes ;
 	if( $log ne "" and $search eq ""  ){
 		my $server = Rex->get_current_connection()->{'server'};
 		my $names = Deploy::Db::showname($server);
 		if ( ! is_file($log) ) {
 			Rex::Logger::info("\033[0;32m[$server]-[$names] \033[0m $log 远程日志文件不存在.","error");
-			exit;
+			$reshash{"code"} = -1 ;
+			$reshash{"msg"} = "$log is not exist" ;
+			return \%reshash; 
 		}
 		Rex::Logger::info("服务器:[$server]-[$names] 远程日志:$log");
 		my $download = "$download_dir$server/";
 		my $size = run "du -sh $log";
 		Rex::Logger::info("当前日志文件大小:$size");
+		$reshash{"log"} = $log;
+		$reshash{"size"} = $size;
 		if ( $download_local eq '1' ) {
 			LOCAL{
 				if ( ! is_dir($download) ) {
@@ -237,14 +251,17 @@ task "getLog", sub {
 				}
 			};
 			Rex::Logger::info("开始下载远程日志文件");
-			run_task "Common:Use:download",on=>"$server",params => {dir1=>"$log",dir2=>"$download"};
+			$downloadRes = run_task "Common:Use:download",on=>"$server",params => {dir1=>"$log",dir2=>"$download"};
 		}else{
+			$reshash{"rsync"} = 1;
 			Rex::Logger::info("开始上传到存储中心...");
 			my $res = run "echo '$log_rsync_pass' > /tmp/rsync_passwd && chmod 600 /tmp/rsync_passwd &&  rsync -vzrtopg --progress --password-file=/tmp/rsync_passwd $log $log_rsync_user\@$log_rsync_server\:\:$log_rsync_module\/$server/ && result=\$? ;echo status=\$result";
 			Rex::Logger::info("$res");
 			if ( $res =~ /status=0/ ) {
+				$reshash{"rsync_success"} = 1;
 				Rex::Logger::info("上传成功,请到存储中心下载,下载路径:http://下载地址/$server/");
 			}else{
+				$reshash{"rsync_success"} = -1;
 				Rex::Logger::info("上传失败,请联系运维人员处理.");
 			}
 
@@ -260,6 +277,7 @@ task "getLog", sub {
         Rex::Logger::info("服务器内网地址:$network_ip,服务器外网地址:$external_ip");
         Rex::Logger::info("服务器名称:$names,服务器日志:$log");
 		my $download = "$download_dir$network_ip/";
+		$reshash{"log"} = $log;
 		# my $size = run "du -sh $log";
 		# Rex::Logger::info("当前日志文件大小:$size");
 		if ( $download_local eq '1' ) {
@@ -272,15 +290,18 @@ task "getLog", sub {
 				}
 			};
 			Rex::Logger::info("开始下载远程日志文件");
-			run_task "Common:Use:download",on=>"$network_ip",params => {dir1=>"$log",dir2=>"$download"};
+			$downloadRes = run_task "Common:Use:download",on=>"$network_ip",params => {dir1=>"$log",dir2=>"$download"};
 		}else{
+			$reshash{"rsync"} = 1;
 			Rex::Logger::info("开始上传到存储中心...");
 			my $cmd="echo '$log_rsync_pass' > /tmp/rsync_passwd && chmod 600 /tmp/rsync_passwd &&  rsync -vzrtopg --progress --password-file=/tmp/rsync_passwd $log $log_rsync_user\@$log_rsync_server\:\:$log_rsync_module\/$network_ip/ && result=\$? ;echo status=\$result";
 			my $res=run_task "Common:Use:apirun",on=>"$network_ip",params => {cmd=>"$cmd"};			
 			Rex::Logger::info("$res");
 			if ( $res =~ /status=0/ ) {
+				$reshash{"rsync_success"} = 1;
 				Rex::Logger::info("上传成功,请到存储中心下载,下载路径:http://下载地址/$network_ip/");
 			}else{
+				$reshash{"rsync_success"} = -1;
 				Rex::Logger::info("上传失败,请联系运维人员处理.");
 			}
 
@@ -297,6 +318,8 @@ task "getLog", sub {
 		my $download = "$download_dir$server/";
 		my $size = run "du -sh $log";
 		Rex::Logger::info("当前日志文件大小:$size");
+		$reshash{"log"} = $log;
+		$reshash{"size"} = $size;		
 		if ( $download_local eq '1' ) {
 			LOCAL{
 				if ( ! is_dir($download) ) {
@@ -307,20 +330,27 @@ task "getLog", sub {
 				}
 			};
 			Rex::Logger::info("开始下载远程日志文件");
-			run_task "Common:Use:download",on=>"$server",params => {dir1=>"$log",dir2=>"$download"};
+			$downloadRes = run_task "Common:Use:download",on=>"$server",params => {dir1=>"$log",dir2=>"$download"};
 		}else{
+			$reshash{"rsync"} = 1;
 			Rex::Logger::info("开始上传到存储中心...");
 			my $res = run "echo '$log_rsync_pass' > /tmp/rsync_passwd && chmod 600 /tmp/rsync_passwd &&  rsync -vzrtopg --progress --password-file=/tmp/rsync_passwd $log $log_rsync_user\@$log_rsync_server\:\:$log_rsync_module\/$server/ && result=\$? ;echo status=\$result";
 			Rex::Logger::info("$res");
 			if ( $res =~ /status=0/ ) {
+				$reshash{"rsync_success"} = 1;
 				Rex::Logger::info("上传成功,请到存储中心下载,下载路径:http://下载地址/$server/");
 			}else{
+				$reshash{"rsync_success"} = -1;
 				Rex::Logger::info("上传失败,请联系运维人员处理.");
 			}
 
 		}
 
 	}
+
+	$reshash{"download"} = $downloadRes ;
+	Common::Use::json($w,"0","成功",[\%reshash]);
+	return \%reshash;
 
 };
 
@@ -344,14 +374,22 @@ task "grepLog", sub {
 	my $search = $self->{search};
 	my $grep = $self->{grep};
 	my $debug = $self->{debug};
-
+	my $w = $self->{w};
+	my %reshash;
+	$reshash{"params"} = {log=>$log,search=>$search,grep=>$grep,debug=>$debug,w=>$w};
 	if( $log eq "" and $search eq "" ){
 		Rex::Logger::info("日志参数或者搜索关键词不能同时为空","error");
-		exit;			
+		Common::Use::json($w,"","日志参数或者搜索关键词不能同时为空","");
+		$reshash{"code"} = -1 ;
+		$reshash{"msg"} = "log and search is null" ;
+		return \%reshash;		
 	}
 	if( $grep eq ""){
 		Rex::Logger::info("过滤关键词不能为空","error");
-		exit;	
+		Common::Use::json($w,"","过滤关键词不能为空","");
+		$reshash{"code"} = -1 ;
+		$reshash{"msg"} = "grep is null" ;
+		return \%reshash;	
 	}
 	if ( $debug eq "") {
 		$debug = 0 ;
@@ -366,6 +404,7 @@ task "grepLog", sub {
         my $external_ip = $search[0][3];
         Rex::Logger::info("服务器内网地址:$network_ip,服务器外网地址:$external_ip");
         Rex::Logger::info("服务器名称:$names 服务器日志:$log");
+        $reshash{"server_info"} = {network_ip=>$network_ip,external_ip=>$external_ip,names=>$names,log=>$log};	
 
 		my $cmd = "du -sh $log ; grep  '$grep' $log |wc -l ";
 		my $output=run_task "Common:Use:apirun",on=>"$network_ip",params => {cmd=>"$cmd"};
@@ -373,6 +412,10 @@ task "grepLog", sub {
 		$output_list[1] =~ s/\n//;
 		Rex::Logger::info("过滤关键词:$grep ");
 		Rex::Logger::info("日志文件:$log 日志大小:$output_list[0] 过滤后行数:$output_list[1]");
+		
+		$reshash{"logsize"} = $output_list[0];
+		$reshash{"log_grep_line"} = $output_list[1];
+		$reshash{"max_grep_row"} = $max_grep_row;
 		my $output_grep;
 		my $now = strftime("%Y%m%d_%H%M%S", localtime(time));
 		my $grep_log = "$log"."_grep_$now";
@@ -383,21 +426,28 @@ task "grepLog", sub {
 				if ( $resgrep =~ /status=0/ ) {
 					Rex::Logger::info("生成过滤文件成功:$grep_log");
 				}else{
+					$reshash{"resgrep_file_faild"} = 1;
 					Rex::Logger::info("生成过滤文件失败:$grep_log");
-					exit;
-				}				
+					Common::Use::json($w,"","生成过滤文件失败:$grep_log","");
+					$reshash{"code"} = -1 ;
+					$reshash{"msg"} = "create $grep_log faild " ;
+					return \%reshash;
+				}	
+				$reshash{"rsync_grep_file"} = 1;			
 				Rex::Logger::info("保存过滤后日志到文本:$grep_log");
 				Rex::Logger::info("开始上传过滤后文件到存储中心...");
 				my $cmd = "echo '$log_rsync_pass' > /tmp/rsync_passwd && chmod 600 /tmp/rsync_passwd &&  rsync -vzrtopg --progress --password-file=/tmp/rsync_passwd $grep_log $log_rsync_user\@$log_rsync_server\:\:$log_rsync_module\/$network_ip/ && result=\$? ;echo status=\$result";
 				my $res=run_task "Common:Use:apirun",on=>"$network_ip",params => {cmd=>"$cmd"};
 				Rex::Logger::info("$res");
 				if ( $res =~ /status=0/ ) {
+					$reshash{"rsync_grep_file_status"} = 1;
 					Rex::Logger::info("上传成功,请到存储中心下载,下载路径:http://下载地址/$network_ip/");
 				}else{
+					$reshash{"rsync_grep_file_status"} = -1;
 					Rex::Logger::info("上传失败,请联系运维人员处理.");
 				}
 			}else{
-				Rex::Logger::info("过滤后的内容行数大于$max_grep_row,默认只显示后$max_grep_row行,如果想显示更多结果,请添加参数--debug=1 ","warn");
+				Rex::Logger::info("过滤后的内容行数大于$max_grep_row,默认只显示后$max_grep_row行,如果想显示更多结果,请添加参数--debug=1 ","info");
 				my $cmd = "grep   '$grep' $log |tail -n $max_grep_row |grep  --color '$grep' ";
 				$output_grep=run_task "Common:Use:apirun",on=>"$network_ip",params => {cmd=>"$cmd"};
 			}
@@ -407,9 +457,14 @@ task "grepLog", sub {
 		}
 		if ( $output_grep ne "" ) {
 			Rex::Logger::info("过滤内容如下:");
-			print("\n$output_grep\n");
+			if ( "$w" ne "1") {
+				print("\n$output_grep\n");
+			}
+			
 		}
-		exit;
+		$reshash{"output_grep"} = $output_grep;
+		Common::Use::json($w,"0","成功",[\%reshash]);
+		return \%reshash;
 
 
 	}else{
@@ -418,7 +473,9 @@ task "grepLog", sub {
 		my $names = Deploy::Db::showname($server);
 		if ( ! is_file($log) ) {
 			Rex::Logger::info("\033[0;32m[$server]-[$names] \033[0m $log 远程日志文件不存在.","error");
-			exit;
+			$reshash{"code"} = -1 ;
+			$reshash{"msg"} = "$log is not exist" ;
+			return \%reshash;
 		}
 		my $output = run "du -sh $log ; grep  --color '$grep' $log |wc -l ";
 		my @output_list = split(/$log/, $output);
@@ -426,6 +483,12 @@ task "grepLog", sub {
 		Rex::Logger::info("服务器:[$server]-[$names]");
 		Rex::Logger::info("过滤关键词:$grep ");
 		Rex::Logger::info("日志文件:$log 日志大小:$output_list[0] 过滤后行数:$output_list[1]");
+
+		$reshash{"server_info"} = {server=>$server,names=>$names,log=>$log};
+		$reshash{"logsize"} = $output_list[0];
+		$reshash{"log_grep_line"} = $output_list[1];
+		$reshash{"max_grep_row"} = $max_grep_row;
+
 		my $output_grep;
 		my $now = strftime("%Y%m%d_%H%M%S", localtime(time));
 		my $grep_log = "$log"."_grep_$now";
@@ -435,16 +498,23 @@ task "grepLog", sub {
 				if ( is_file($grep_log) ) {
 					Rex::Logger::info("生成过滤文件成功:$grep_log");
 				}else{
-					Rex::Logger::info("生成过滤文件失败:$grep_log");
-					exit;
+					$reshash{"resgrep_file_faild"} = 1;
+					Rex::Logger::info("生成过滤文件失败:$grep_log","error");
+					Common::Use::json($w,"","生成过滤文件失败:$grep_log","");
+					$reshash{"code"} = -1 ;
+					$reshash{"msg"} = "create $grep_log faild " ;
+					return \%reshash;
 				}
+				$reshash{"rsync_grep_file"} = 1;
 				Rex::Logger::info("保存过滤后日志到文本:$grep_log");
 				Rex::Logger::info("开始上传过滤后文件到存储中心...");
 				my $res = run "echo '$log_rsync_pass' > /tmp/rsync_passwd && chmod 600 /tmp/rsync_passwd &&  rsync -vzrtopg --progress --password-file=/tmp/rsync_passwd $grep_log $log_rsync_user\@$log_rsync_server\:\:$log_rsync_module\/$server/ && result=\$? ;echo status=\$result";
 				Rex::Logger::info("$res");
 				if ( $res =~ /status=0/ ) {
+					$reshash{"rsync_grep_file_status"} = 1;
 					Rex::Logger::info("上传成功,请到存储中心下载,下载路径:http://下载地址/$server/");
 				}else{
+					$reshash{"rsync_grep_file_status"} = -1;
 					Rex::Logger::info("上传失败,请联系运维人员处理.");
 				}
 			}else{
@@ -456,9 +526,13 @@ task "grepLog", sub {
 		}
 		if ( $output_grep ne "" ) {
 			Rex::Logger::info("过滤内容如下:");
-			print("\n$output_grep\n");
+			if ( "$w" ne "1") {
+				print("\n$output_grep\n");
+			}
 		}
-		exit;
+		$reshash{"output_grep"} = $output_grep;
+		Common::Use::json($w,"0","成功",[\%reshash]);
+		return \%reshash;
 
 	}
 

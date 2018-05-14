@@ -31,6 +31,7 @@ task query => sub {
    my $w = $self->{w}; 
    if( $loadBalancerId eq ""  ){
      Rex::Logger::info("关键字(--loadBalancerId='')不能为空");
+     Common::Use::json($w,"","关键字(--loadBalancerId='')不能为空","");
      exit;
    }
    Rex::Logger::info("");
@@ -42,6 +43,7 @@ task query => sub {
    #Rex::Logger::info( Dumper($ret)) ;
    if($ret->{"code"} eq "4000"){
         Rex::Logger::info("查询负载均衡失败: ".$ret->{"codeDesc"}."\n".Dumper($ret),"error");
+        Common::Use::json($w,"","查询负载均衡失败: ".$ret->{"codeDesc"}."\n".Dumper($ret),"");
         return undef;
    }
    my @backendSet ;
@@ -51,15 +53,18 @@ task query => sub {
         $backendSetLen = @backendSet;
    };
    if ($@) {
-        Rex::Logger::info("解析子节点异常: $@","error");
+        Rex::Logger::info("解析子节点异常: $@ output:$output","error");
+        Common::Use::json($w,"","解析子节点异常: $@  output:$output","");       
         exit;
    }
 
    # Rex::Logger::info("实例数量: $backendSetLen");
    if( $backendSetLen == 0 ){
         Rex::Logger::info("查询负载均衡失败,返回实例数量为空","error");
+        Common::Use::json($w,"","查询负载均衡失败,返回实例数量为空","");   
         return undef;
    }
+   Common::Use::json($w,"0","成功",[$ret]); 
    return $ret;
 };
 
@@ -72,9 +77,13 @@ task queryk => sub {
    my @keys=split(/,/, $keys);
    my %vars = map { $_ => 1 } @keys;
    my $lastnum=$keys[-1] - 1;
+   my %reshash ;
+   $reshash{"params"} = {k=>$k,file=>$file};
    if( $k eq ""  ){
    Rex::Logger::info("关键字(--k='')不能为空","error");
-   exit;
+   $reshash{"code"} = -1 ;
+   $reshash{"msg"} = "--k is null" ;
+   return \%reshash;
    }
    if ( "$file" ne "" ) {
            my $fh;
@@ -83,7 +92,9 @@ task queryk => sub {
             };
             if ($@) {
                 Rex::Logger::info("写入文件:$file 异常:$@","error");
-                exit;
+                $reshash{"code"} = -1 ;
+                $reshash{"msg"} = "write file:$file error:$@" ;
+                return \%reshash;
             } 
            
            $fh->write("");
@@ -92,29 +103,35 @@ task queryk => sub {
    my @ks = split(/ /, $k);
    Rex::Logger::info("");
    Rex::Logger::info("开始负载均衡查询模块.");
+   my @Data;
    for my $kv (@ks) {
        if ( $kv ne "" ){
            if (exists($vars{$kv})){
            Rex::Logger::info("");
            Rex::Logger::info("##############($kv)-(start)###############");
-
+           my %singleData ;
            my $config=Deploy::Core::init("$kv");
            my $loadBalancerId = $config->{"loadBalancerId"};
            my $network_ip = $config->{"network_ip"};
-           my $network_ip = $config->{"network_ip"};
            Rex::Logger::info("获取到负载均衡ID: $loadBalancerId");
+           $singleData{"loadBalancerId"} = $loadBalancerId;
+           $singleData{"network_ip"} = $network_ip;
+           $singleData{"k"} = $kv;
            #say Dumper($config);
            my @loadBalancerIdArray = split(/,/, $loadBalancerId);
            my $loadBalancerIdLength = @loadBalancerIdArray;
            Rex::Logger::info("该应用绑定了 ".$loadBalancerIdLength." 个负载均衡");
+           $singleData{"loadBalancerIdLength"} = $loadBalancerIdLength;
            my $i = 0 ;
            my @weightArray ;
+           my @loadBalanceArray;
            for my $loadBalance (@loadBalancerIdArray){
              my $loadInfo=run_task "loadService:main:query",params => { loadBalancerId => $loadBalance};
              my @backendSet ;
              my @backendSet = @{ $loadInfo->{'backendSet'} };
              my $backendSetLen = @backendSet;
              Rex::Logger::info("负载ID($loadBalance) 实例数量: $backendSetLen");
+             my @backend;            
              foreach my $back ( @backendSet ) {
                  my $instanceName = $back->{"instanceName"};
                  my @wanIpSet = @{ $back->{"wanIpSet"} };
@@ -142,7 +159,9 @@ task queryk => sub {
                      }
                  }
              }
+             push @loadBalanceArray,{loadInfo=>$loadInfo,loadBalance=>$loadBalance,backendSetLen=>$backendSetLen,backend=>\@backend};
            }
+           $singleData{"loadBalance"} = \@loadBalanceArray;
            my $weightString = join(",",@weightArray);
            if ("$weightString" ne "") {
              run_task "Deploy:Db:update_weight", params => { app_key => "$kv" ,weight=>"$weightString"};
@@ -151,13 +170,19 @@ task queryk => sub {
            Rex::Logger::info("");        
            Rex::Logger::info("##############($kv)-(end)###############");
            Rex::Logger::info("");
+           push @Data,\%singleData;
+
            }else{
             Rex::Logger::info("关键字($kv)不存在","error");
            }
        }
    }
+   $reshash{"code"} = 0 ;
+   $reshash{"msg"} = "success" ;
+   $reshash{"data"} = \@Data ;
    Rex::Logger::info("");
    Rex::Logger::info("负载均衡查询模块完成.");
+   return \%reshash;
 };
 
 
@@ -166,27 +191,38 @@ task update => sub {
    my $self = shift;
    my $k=$self->{k};
    my $w=$self->{w};
+   my $web=$self->{web};
    my $keys=Deploy::Db::getallkey();
    my @keys=split(/,/, $keys);
    my %vars = map { $_ => 1 } @keys;
    my $lastnum=$keys[-1] - 1;
+   my %reshash;
+   $reshash{"params"} = {k=>$k,w=>$w};
    if( $k eq ""  ){
-   Rex::Logger::info("关键字(--k='')不能为空","error");
-   exit;
+     Rex::Logger::info("关键字(--k='')不能为空","error");
+     $reshash{"code"} = -1 ;
+     $reshash{"msg"} = "--k is null" ;
+     Common::Use::json($web,"","关键字(--k='')不能为空","");
+     return \%reshash;
    }
    if( $w eq ""  ){
-   Rex::Logger::info("关键字(--w='')不能为空","error");
-   exit;
+     Rex::Logger::info("关键字(--w='')不能为空","error");
+     $reshash{"code"} = -1 ;
+     $reshash{"msg"} = "--w is null" ;
+     Common::Use::json($web,"","关键字(--w='')不能为空","");
+     return \%reshash;
    } 
    my @ks = split(/ /, $k);
    Rex::Logger::info("");
    Rex::Logger::info("开始负载均衡修改模块.");
+   my @data;
    for my $kv (@ks) {
        if ( $kv ne "" ){
            if (exists($vars{$kv})){
            Rex::Logger::info("");
            Rex::Logger::info("##############($kv)-(start)###############");
 
+           my %singleBalance ;
            my $config=Deploy::Core::init("$kv");
            my $loadBalancerId = $config->{"loadBalancerId"};
            my $network_ip = $config->{"network_ip"};
@@ -195,9 +231,17 @@ task update => sub {
            my @loadBalancerIdArray = split(/,/, $loadBalancerId);
            my $loadBalancerIdLength = @loadBalancerIdArray;
            Rex::Logger::info("该应用绑定了 ".$loadBalancerIdLength." 个负载均衡");
+           $singleBalance{"config"} = $config;
+           $singleBalance{"loadBalancerId"} = $loadBalancerId;
+           $singleBalance{"network_ip"} = $network_ip;
+           $singleBalance{"loadBalancerIdLength"} = $loadBalancerIdLength;
+
+           my @secondArray ; 
            my $i = 0 ;
            for my $loadBalance (@loadBalancerIdArray){
+             my %secondHash ;
              my $loadInfo=run_task "loadService:main:query",params => { loadBalancerId => $loadBalance};
+             $secondHash{"loadInfo"} = $loadInfo;
              my @backendSet ;
              my @backendSet = @{ $loadInfo->{'backendSet'} };
              my $backendSetLen = @backendSet;
@@ -215,10 +259,12 @@ task update => sub {
              if ( "$lanIpLength" eq "1" && "$is_weight_allow" eq "1") {
                  if ( "$lanIpArray[0]" eq "$network_ip" && "$w" eq "0") {
                      Rex::Logger::info("不允许摘掉最后1个节点,否则负载无法正常运转","error");
+                     $secondHash{"is_deny"} = 1;
                      next;
                  }
              }
 
+             my @updateArray ;
              foreach my $back ( @backendSet ) {
                  my $instanceName = $back->{"instanceName"};
                  my @wanIpSet = @{ $back->{"wanIpSet"} };
@@ -230,15 +276,21 @@ task update => sub {
                      Rex::Logger::info("实例名: $instanceName 外网IP: $wanIpSet[0] 内网IP: $lanIp 当前权重: $weight");
                      $i = $i + 1;
                      Rex::Logger::info("第$i个 负载ID($loadBalance) 匹配到内网IP($network_ip) 开始修改权重...");
-                     loadEdit($loadBalance,$instanceId,$w);
+                     my $ediRes = loadEdit($loadBalance,$instanceId,$w);
+                     push @updateArray,{lanIp=>$lanIp,nowWeight=>$weight,loadBalance=>$loadBalance,instanceId=>$instanceId,ediRes=>$ediRes};                     
                  }
              }
+             $secondHash{"updateArray"} = \@updateArray;
 
              select(undef, undef, undef, 0.25);
+             push @secondArray,\%secondHash;
            }
+           $singleBalance{"secondArray"} = \@secondArray;
            Rex::Logger::info("");        
            Rex::Logger::info("##############($kv)-(end)###############");
            Rex::Logger::info("");
+
+           push @data,\%singleBalance;
            }else{
             Rex::Logger::info("关键字($kv)不存在","error");
            }
@@ -246,6 +298,12 @@ task update => sub {
    }
    Rex::Logger::info("");
    Rex::Logger::info("负载均衡修改模块完成.");
+   $reshash{"code"} = 0 ;
+   $reshash{"msg"} = "success" ;
+   $reshash{"data"} = \@data;
+   Common::Use::json($web,"0","成功",[\%reshash]);
+   return \%reshash;
+
 };
 
 

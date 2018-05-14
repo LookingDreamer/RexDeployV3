@@ -37,14 +37,14 @@ task main => sub {
 
 #多线程通用模块
 sub moreProcess{
-   my ($k,$w,$desc,$module,$params) = @_;
+   my ($k,$w,$desc,$module,$params,$local) = @_;
    my $data ;
    if ( $k eq "all" ){
       my $keys=Deploy::Db::getallkey();
       my @keysArray=split(/,/, $keys);
       pop @keysArray;
       my $k = join(" ",@keysArray);
-      $data = appProcess($k,$w,$desc,$module,$params);  
+      $data = appProcess($k,$w,$desc,$module,$params,$local);  
    }else{
       my $query_local_prodir_key = Deploy::Db::query_local_app_key($k);
       my @query_local_prodir_key = @$query_local_prodir_key ;
@@ -58,7 +58,7 @@ sub moreProcess{
       if ( $app_key_count > 0 ) {
         Rex::Logger::info("开始多进程操作:  $app_key_str 名字数量: $app_key_count");
         eval {
-          $data = appProcess($app_key_str,$w,$desc,$module,$params); 
+          $data = appProcess($app_key_str,$w,$desc,$module,$params,$local); 
         };
         if ($@) {
           Rex::Logger::info("执行多进程异常: $@","error");
@@ -79,7 +79,7 @@ sub moreProcess{
 
 #根据app_key执行多线程
 sub appProcess{
-    my ($k,$w,$desc,$module,$params) = @_;
+    my ($k,$w,$desc,$module,$params,$local) = @_;
     my $i;
     my $start = time;
     my $data = [];
@@ -139,13 +139,13 @@ sub appProcess{
                     $params->{config} = $config;
                     $params->{app_key} = $config->{'app_key'};
                     my $runres;
-                    if ( "$module" eq "Enter:route:rollback") {
+
+                    if (  "$local" eq "1") {
                       $params->{k} = $config->{'app_key'}; 
                       $runres = run_task "$module",params=>$params;
                     }else{
                       $runres = run_task "$module",on=>$config->{'network_ip'},params=>$params;
-                    }
-                    
+                    }                  
                     if ( ref $runres eq "HASH"  ) {
                         $runres->{"app_key"} = $kv;
                     }elsif( ref $runres eq "ARRAY"  ){

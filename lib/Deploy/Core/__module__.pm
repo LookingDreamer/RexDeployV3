@@ -639,7 +639,7 @@ task downloading => sub {
                 my $update_pro_dir = $update_local_prodir."/".$relocal_name ;
                 if ( is_dir("$update_pro_dir") ) {
                     rmdir("$update_pro_dir");
-                    Rex::Logger::info("删除更新程序目录完成: rmdir $update_pro_dir.");
+                    Rex::Logger::info("删除原有更新程序目录完成: rmdir $update_pro_dir.");
                 }
                 cp("$localdir_remote", "$update_pro_dir");         
                 Rex::Logger::info("($k)--拷贝本地程序到更新目录完成  $localdir_remote => $update_pro_dir.");             
@@ -648,6 +648,10 @@ task downloading => sub {
             if ( ! is_dir( $update_local_confdir) ) {
                 mkdir($update_local_confdir);
             }
+            if ( is_dir("$update_local_confdir") ) {
+                rmdir("$update_local_confdir");
+                Rex::Logger::info("删除原有更新配置目录完成: rmdir $update_local_confdir.");
+            }            
             cp("$local_config_dir_remote", "$update_local_confdir");
             Rex::Logger::info("($k)--拷贝本地配置到更新目录完成  $local_config_dir_remote => $update_local_confdir.");
         };

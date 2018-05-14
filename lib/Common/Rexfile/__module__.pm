@@ -99,10 +99,37 @@ sub batchupload{
 sub batchrollback{
    my ($k,$w,$rollstatus) = @_;
    my $params = {w=>"$w",rollstatus=>"$rollstatus"};
-   my $result = Common::Process::moreProcess($k,$w,"应用回滚","Enter:route:rollback",$params) ;
+   my $result = Common::Process::moreProcess($k,$w,"应用回滚","Enter:route:rollback",$params,"1") ;
    Common::Use::json($w,"0","成功",[$result]);
 };
 
+sub batchcheckurl{
+   my ($k,$w,$rollstatus) = @_;
+   my $params = {w=>"$w"};
+   my $result = Common::Process::moreProcess($k,$w,"校验url","loadService:main:check",$params,"1") ;
+   Common::Use::json($w,"0","成功",[$result]);
+};
+
+sub batchqueryk{
+   my ($k,$w,$file) = @_;
+   my $params = {file=>"$file"};
+   my $result = Common::Process::moreProcess($k,$w,"负载均衡查询","loadService:main:queryk",$params,"1") ;
+   Common::Use::json($w,"0","成功",[$result]);
+};
+
+sub batchupdatek{
+   my ($k,$w,$weight) = @_;
+   my $params = {w=>"$weight"};
+   my $result = Common::Process::moreProcess($k,$w,"负载均衡修改","loadService:main:update",$params,"1") ;
+   Common::Use::json($w,"0","成功",[$result]);
+};
+
+sub batchgetLog{
+   my ($k,$w,$download_local) = @_;
+   my $params = {download_local=>$download_local};
+   my $result = Common::Process::moreProcess($k,$w,"日志下载","logCenter:main:getLog",$params,"1") ;
+   Common::Use::json($w,"0","成功",[$result]);
+};
 
 1;
 

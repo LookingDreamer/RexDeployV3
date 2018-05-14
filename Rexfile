@@ -201,3 +201,38 @@ task "upload",sub{
    my $ipsep=$self->{ipsep};
    Common::Rexfile::batchupload($k,$w,$dir1,$dir2,$ipsep);
 };
+
+desc "校验url rex  checkurl --k='server'";
+task "checkurl",sub{
+   my $self = shift;
+   my $k=$self->{k};
+   my $w=$self->{w};
+   Common::Rexfile::batchcheckurl($k,$w);
+};
+
+desc "负载均衡查询 rex  queryk  --k='server' --file='/tmp/save.txt'";
+task "queryk",sub{
+   my $self = shift;
+   my $k=$self->{k};
+   my $file=$self->{file};
+   my $w=$self->{w};
+   Common::Rexfile::batchqueryk($k,$w,$file);
+};
+
+desc "负载均衡查询 rex  updatek --k='server' --weight='10'";
+task "updatek",sub{
+   my $self = shift;
+   my $k=$self->{k};
+   my $w=$self->{w};
+   my $weight=$self->{weight};
+   Common::Rexfile::batchupdatek($k,$w,$weight);
+};
+
+desc "下载日志\n1.rex getLog  --k='server' [--download_local='1']";
+task "getLog",sub{
+   my $self = shift;
+   my $k=$self->{k};
+   my $w=$self->{w};
+   my $download_local=$self->{download_local};
+   Common::Rexfile::batchgetLog($k,$w,$download_local);
+};
