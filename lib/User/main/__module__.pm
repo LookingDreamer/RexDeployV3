@@ -147,16 +147,19 @@ task "route", sub {
 	
 	if ($batch eq 0) {
 		if ( $action eq "query") {
-			queryUser($user);
+			my $query = queryUser($user);
+			$reshash{"query"} = ["$query"];
 		}elsif($action eq "create"){
 			my $query = queryUser($user); 
+			$reshash{"query"} = ["$query"];
 			createUser($user,$level,$query,$sudo,$pass,$allow,$dir);
 		}elsif($action eq "delete"){
 			deleteUser($user);
 		}elsif($action eq "lock"){
 			forbitUser($user);
 		}elsif($action eq "list"){
-			listUser();
+			my $list = listUser();
+			$reshash{"listUser"} = $list ;
 		}elsif($action eq "createkey"){
 			my $key = general_key($user,$pass);
 		}else{
@@ -168,7 +171,7 @@ task "route", sub {
 		my @userlist=split(/,/,$user);
 		for my $user (@userlist) {
 			if ( $action eq "query") {
-				queryUser($user);
+				my $query = queryUser($user);
 			}elsif($action eq "create"){
 				my $query = queryUser($user); 
 				createUser($user,$level,$query,$sudo,$pass,$allow,$dir);
@@ -187,6 +190,8 @@ task "route", sub {
 			}					  
 		}		
 	}
+	Common::Use::json($w,"0","成功",[\%reshash]);
+	return \%reshash;
 
 	
 };
@@ -426,13 +431,14 @@ sub create_sudo{
 sub queryUser{
 	my $user = @_[0];
 	my $server = Rex->get_current_connection()->{'server'};
-	my $res =  run "id $user && result=\$? ;echo status=\$result";
+	my $res =  run "id $user > /dev/null 2>&1 && result=\$? ;echo status=\$result";
 	Rex::Logger::info("__SUB__:开始查询用户"); 
 	Rex::Logger::info("当前服务器: $server");
 	Rex::Logger::info("返回命令结果: $res");
 	if ( $res =~ /status=0/ ) {
 		Rex::Logger::info("$user 用户存在");
-		return 1;
+		my $res =  run "id $user";
+		return $res;
 	}else{
 		Rex::Logger::info("$user 用户不存在","warn");
 		return 0;
@@ -485,9 +491,11 @@ sub listUser {
 	Rex::Logger::info("当前服务器: $server");
 	Rex::Logger::info("当前命令: $cmd ");
 	Rex::Logger::info("返回命令结果: \n$res");
+	my $result = run "cat /etc/passwd |awk -F':' '\$3>=500' |awk -F: '{print \$1,\$NF}' ";
+	my @resultArray = split("\n",$result);
 	if ( $res =~ /status=0/ ) {
 		Rex::Logger::info("查询用户列表成功");
-		return 1;
+		return \@resultArray;
 	}else{
 		Rex::Logger::info("查询用户列表失败","warn");
 		return 0;
