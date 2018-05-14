@@ -20,9 +20,14 @@ Rex::Config->register_config_handler(
 );
 
 
-desc "腾讯云cos \n
-1.上传cos  rex  Cos:Upload:txy --option='upload' --env='app' --pkgpath='/tmp/zhangZhongBao-1525341589008-201805031800-uat.zip' \n
-2.增加cos上传管理文件  rex  Cos:Upload:txy --option='add_cos' --env='app fm'";
+desc "腾讯云cos
+1.上传cos  rex  Cos:Upload:txy --option='upload' --env='app' --pkgpath='/tmp/zhangZhongBao-uat.zip'
+  测试上传  rex  Cos:Upload:txy --option='upload' --env='test' --pkgpath='/tmp/zhangZhongBao-uat.zip'
+
+2.增加cos上传管理文件   rex  Cos:Upload:txy --option='add_cos' --env='app fm'
+3.查询已有cos文件  rex Cos:Upload:query --option='query'
+";
+
 task txy => sub {
    my $self = shift;
    my $k=$self->{env};
@@ -52,6 +57,16 @@ task txy => sub {
 	        print $cmd;
        }
    }
+
+};
+
+task query => sub{
+  my $self = shift;
+  my $func=$self->{option};
+  my $scripts_dir="/data/scripts";
+
+  my $cmd = `ls $scripts_dir/ |grep ^cos_.*_`;
+  print $cmd;
 
 };
 
