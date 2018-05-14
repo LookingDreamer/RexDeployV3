@@ -41,12 +41,28 @@ task "route", sub {
 	my $allow=$self->{allow};
 	my $dir=$self->{dir};
 	my $batch=$self->{batch};
+	my $w=$self->{w};
+	my %reshash ;
+	$reshash{"params"} = {
+		user=>$user,
+		action=>$action,
+		level=>$level,
+		sudo=>$sudo,
+		pass=>$pass,
+		allow=>$allow,
+		dir=>$dir,
+		batch=>$batch,
+		w=>$w
+	};
 	Rex::Logger::info("user参数: $user action参数: $action");
 	if ( $action ne 'list' ) {
 		if ( $batch ne "" ) {
 			if ($user eq "" or $action eq "" ) {
 				Rex::Logger::info("用户名或动作不能为空","error");
-				exit;
+				Common::Use::json($w,"","用户名或动作不能为空","");
+				$reshash{"code"} = -1 ;
+				$reshash{"msg"} = "action or user is null" ;
+				return \%reshash;
 			}
 		}
 	}
@@ -72,6 +88,7 @@ task "route", sub {
 	Rex::Logger::info("level参数: $level sudo参数: $sudo pass参数:$pass allow参数: $allow dir参数:$dir batch参数:$batch");
 	my $server = Rex->get_current_connection()->{'server'};
 	Rex::Logger::info("服务器: $server");
+	$reshash{"server"} = "$server";
 	my @action_list = ('query' ,'create' ,'delete','lock','list','createkey');
 	my $action_status = 0 ;
 	for my $kv (@action_list) {
@@ -82,18 +99,27 @@ task "route", sub {
 	my $action_string = join( ",", @action_list); 
 	if ($action_status eq "0"){
 		Rex::Logger::info("action参数仅支持$action_string","error");
-		exit;
+		Common::Use::json($w,"","action参数仅支持$action_string","");
+		$reshash{"code"} = -1 ;
+		$reshash{"msg"} = "action must in $action_string" ;
+		return \%reshash;
 	}
 
 	if ( $level eq "1" and $action eq "create" and $dir ne "0" and $batch eq "0") {
 		LOCAL{
 				if( ! is_dir("$dir") ){
 					Rex::Logger::info("秘钥目录不存在:$dir","error");
-					exit;
+					Common::Use::json($w,"","秘钥目录不存在:$dir","");
+					$reshash{"code"} = -1 ;
+					$reshash{"msg"} = "private key dir $dir not exist" ;
+					return \%reshash;
 				}
 				if ( ! is_file("$dir/$user\.pub") ) {
 					Rex::Logger::info("公钥文件不存在:$dir/$user\.pub","error");
-					exit;
+					Common::Use::json($w,"","公钥文件不存在:$dir/$user\.pub","");
+					$reshash{"code"} = -1 ;
+					$reshash{"msg"} = "public file: $dir/$user\.pub is not exist" ;
+					return \%reshash;
 				}
 			}
 	}elsif($level eq "1" and $action eq "create" and $dir ne "0" and $batch ne "0"){
@@ -102,11 +128,17 @@ task "route", sub {
 			LOCAL{
 					if( ! is_dir("$dir") ){
 						Rex::Logger::info("秘钥目录不存在:$dir","error");
-						exit;
+						Common::Use::json($w,"","秘钥目录不存在:$dir","");
+						$reshash{"code"} = -1 ;
+						$reshash{"msg"} = "private key dir $dir not exist" ;
+						return \%reshash;
 					}
 					if ( ! is_file("$dir/$user\.pub") ) {
 						Rex::Logger::info("公钥文件不存在:$dir/$user\.pub","error");
-						exit;
+						Common::Use::json($w,"","公钥文件不存在:$dir/$user\.pub","");
+						$reshash{"code"} = -1 ;
+						$reshash{"msg"} = "public file: $dir/$user\.pub is not exist" ;
+						return \%reshash;
 					}
 				}				
 		}
@@ -148,7 +180,10 @@ task "route", sub {
 				my $key = general_key($user,$pass,$batch);
 			}else{
 				Rex::Logger::info("不支持的action","error");
-				exit;		
+				Common::Use::json($w,"","不支持的action","");
+				$reshash{"code"} = -1 ;
+				$reshash{"msg"} = "unsupport action" ;
+				return \%reshash;	
 			}					  
 		}		
 	}
