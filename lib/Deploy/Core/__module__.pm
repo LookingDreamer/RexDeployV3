@@ -428,6 +428,10 @@ task downloading => sub {
     my $start_time ;
     my $end_time ;
     my %reshash;
+    for my $pro (@query_prodir_key){
+        my $proapp_key = $pro->{"app_key"};
+        push @pro_key_array,$proapp_key;
+    }
     $reshash{"params"} = {
         k=>$k,
         local_name=>$local_name,
@@ -437,16 +441,12 @@ task downloading => sub {
         config=>$config,
         update=>$update,
         relocal_name=>$relocal_name,
-        query_prodir_key=>$query_prodir_key,
+        pro_key_array=>\@pro_key_array,
         senv=>$senv,
         type=>$type,
         usetype=>$usetype,
     };
-    $reshash{"query_prodir_key"} = \@query_prodir_key;
-    for my $pro (@query_prodir_key){
-        my $proapp_key = $pro->{"app_key"};
-        push @pro_key_array,$proapp_key;
-    }
+
     my $srck = $local_name;
     $local_name = $k;
     if ( $remotedir =~ m/\/$/ ) {
@@ -546,30 +546,31 @@ task downloading => sub {
     Rex::Logger::info("($k)--开始传输程序和配置目录到本地.");
     $start_time = time();
     $reshash{"start_time"} = $start_time ;
-
+    my $prohash;
+    my $confhash;
 # run_task "Deploy:Core:download",on=>"$network_ip",params => {dir2=>"$localdir",dir1=>"$remotedir",dir4=>"$local_config_dir",dir3=>"$remote_confir_dir",k=>"$k"};
     if ( "$senv" ne "") {
         if ( $type eq "pro"  ) {
             Rex::Logger::info("($senv:$srck)--开始传输 ##### $senv 环境 ###### 程序目录到本地.");
-            run_task "Common:Use:download",
+            $prohash = run_task "Common:Use:download",
               on     => "$network_ip",
               params => { dir2 => "$localdir", dir1 => "$remotedir" };
         }elsif($type eq "conf" ){
             Rex::Logger::info("($senv:$srck)--开始传输 ##### $senv 环境 ###### 配置目录到本地.");
-            run_task "Common:Use:download",
+            $confhash = run_task "Common:Use:download",
               on     => "$network_ip",
               params => { dir2 => "$local_config_dir", dir1 => "$remote_confir_dir" };    
         }elsif($type eq "all"){
             Rex::Logger::info("($senv:$srck)--开始传输 ##### $senv 环境 ###### 程序和配置目录到本地.");
-            run_task "Common:Use:download",
+            $prohash = run_task "Common:Use:download",
                   on     => "$network_ip",
                   params => { dir2 => "$localdir", dir1 => "$remotedir" };
-            run_task "Common:Use:download",
+            $confhash = run_task "Common:Use:download",
               on     => "$network_ip",
               params => { dir2 => "$local_config_dir", dir1 => "$remote_confir_dir" };  
         }else{
             Rex::Logger::info("($senv:$srck)--开始传输 ##### $senv 环境 ###### 程序目录到本地.");
-            run_task "Common:Use:download",
+            $prohash = run_task "Common:Use:download",
               on     => "$network_ip",
               params => { dir2 => "$localdir", dir1 => "$remotedir" };
         }
@@ -579,25 +580,25 @@ task downloading => sub {
    
 
         if ( $usetype eq "pro"  ) {
-            run_task "Common:Use:download",
+            $prohash = run_task "Common:Use:download",
                   on     => "$network_ip",
                   params => { dir2 => "$localdir", dir1 => "$remotedir" };
         }elsif($usetype  eq "conf" ){
-            run_task "Common:Use:download",
+            $confhash = run_task "Common:Use:download",
               on     => "$network_ip",
               params => { dir2 => "$local_config_dir", dir1 => "$remote_confir_dir" };   
         }elsif($usetype  eq "all"){
-            run_task "Common:Use:download",
+            $prohash = run_task "Common:Use:download",
                   on     => "$network_ip",
                   params => { dir2 => "$localdir", dir1 => "$remotedir" };
-            run_task "Common:Use:download",
+            $confhash = run_task "Common:Use:download",
               on     => "$network_ip",
               params => { dir2 => "$local_config_dir", dir1 => "$remote_confir_dir" }; 
         }else{
-            run_task "Common:Use:download",
+            $prohash = run_task "Common:Use:download",
                   on     => "$network_ip",
                   params => { dir2 => "$localdir", dir1 => "$remotedir" };
-            run_task "Common:Use:download",
+            $confhash = run_task "Common:Use:download",
               on     => "$network_ip",
               params => { dir2 => "$local_config_dir", dir1 => "$remote_confir_dir" };  
         }
@@ -607,6 +608,8 @@ task downloading => sub {
 
     }
 
+    $reshash{"proresult"} = $prohash;
+    $reshash{"confresult"} = $confhash;
 
     my $size1 = run "du -sh $localdir |awk '{print \$1}'";
     my $size2 = run "du -sh $local_config_dir |awk '{print \$1}'";

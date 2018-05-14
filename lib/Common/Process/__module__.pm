@@ -138,7 +138,14 @@ sub appProcess{
                     $config->{'key'} = $params->{key} ;
                     $params->{config} = $config;
                     $params->{app_key} = $config->{'app_key'};
-                    my $runres = run_task "$module",on=>$config->{'network_ip'},params=>$params;
+                    my $runres;
+                    if ( "$module" eq "Enter:route:rollback") {
+                      $params->{k} = $config->{'app_key'}; 
+                      $runres = run_task "$module",params=>$params;
+                    }else{
+                      $runres = run_task "$module",on=>$config->{'network_ip'},params=>$params;
+                    }
+                    
                     if ( ref $runres eq "HASH"  ) {
                         $runres->{"app_key"} = $kv;
                     }elsif( ref $runres eq "ARRAY"  ){

@@ -156,6 +156,17 @@ task "release",sub{
     return $deployInfo;
 };
 
+desc "根据识别名称回滚: rex rollback --k='server' --rollstatus=0 \n--rollstatus=0:回滚到上一次最近版本(默认值).\n--rollstatus=1:根据数据库字段rollStatus=1回滚.";
+task "rollback",sub{
+   my $self = shift;
+   my $k=$self->{k};
+   my $w=$self->{w};
+   my $rollstatus=$self->{rollstatus};
+   Common::Rexfile::batchrollback($k,$w,$rollstatus);
+};
+
+
+
 desc "服务控制: rex service --k='server1 server2 ..' --a='start/stop/restart' [--f='' --key='' --j='']";
 task "service",sub{
    my $self = shift;

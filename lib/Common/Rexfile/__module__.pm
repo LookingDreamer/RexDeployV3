@@ -96,6 +96,14 @@ sub batchupload{
    Common::Use::json($w,"0","成功",[$result]);
 };
 
+sub batchrollback{
+   my ($k,$w,$rollstatus) = @_;
+   my $params = {w=>"$w",rollstatus=>"$rollstatus"};
+   my $result = Common::Process::moreProcess($k,$w,"应用回滚","Enter:route:rollback",$params) ;
+   Common::Use::json($w,"0","成功",[$result]);
+};
+
+
 1;
 
 =pod

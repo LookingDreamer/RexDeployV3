@@ -422,46 +422,64 @@ task "rollback", sub {
    my %vars = map { $_ => 1 } @keys;
    my $lastnum=$keys[-1] - 1;
    my $auto_deloy;
+   my %reshash ;
+   $reshash{"k"} = "$k" ;
+   $reshash{"rollstatus"} = "$rollstatus" ;
    if( $k eq ""  ){
    Rex::Logger::info("关键字(--k='')不能为空","error");
-   exit;
+   $reshash{"code"} = -1 ;
+   $reshash{"msg"} = "--k is null" ;
+   return \%reshash;
    }
 
    if( $username eq ""  ){
    Rex::Logger::info("用户名(--u='')不能为空");
-   exit;
+   $reshash{"code"} = -1 ;
+   $reshash{"msg"} = "username is null" ;
+   return \%reshash;
    }
 
 
    if( $rollstatus eq ""  ){
    Rex::Logger::info("回滚status不能为空(--rollstatus='')不能为空");
-   exit;
+   $reshash{"code"} = -1 ;
+   $reshash{"msg"} = "rollstatus can not be null" ;
+   return \%reshash;
    }
 
    Rex::Logger::info("Starting ...... 操作人: $username");
 
+   my @data;
 
    my @ks = split(/ /, $k);
 
    Rex::Logger::info("");
    Rex::Logger::info("开始应用回滚模块.");
+   my %singleData ; 
    for my $kv (@ks) {
    if ( $kv ne "" ){
    if (exists($vars{$kv})){
    Rex::Logger::info("");
-   Rex::Logger::info("##############($kv)###############");
+   Rex::Logger::info("##############($kv)###############"); 
    #初始化数据库信息
+   $singleData{"k"} = $kv;
    my $config=Deploy::Core::init("$kv");
+   $singleData{"config"} = $config;
    #判断是否加入了自动发布
    $auto_deloy=$config->{'auto_deloy'};
    if ( $auto_deloy eq "0"){
+   $singleData{"errmsg"} ="($kv)--have not add deploy" ;
+   push @data,\%singleData;
    Rex::Logger::info("($kv)--该应用没有加入自动发布","warn");
    next;
    } 
 
    #查询该系统是否处于发布的状态,并记录初始化的的信息
    my $myAppStatus=Deploy::Db::getDeployStatus($kv,$config->{'network_ip'},"$username");
+   $singleData{"myAppStatus"} ="$myAppStatus" ;
    if($myAppStatus eq "1" ){
+   $singleData{"errmsg"} ="($kv)--is deploying" ;
+   push @data,\%singleData;    
    Rex::Logger::info("($kv)--该应用正在发布,跳过本次操作.","warn");
    next;
    } 
@@ -469,28 +487,39 @@ task "rollback", sub {
    my $FistSerInfo=Deploy::Core::prepare($kv,$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});    
    #获取上一个最近发布的版本记录
    my $getLastDeloy=Deploy::Db::getLastDeloy($kv,$rollstatus);
+   $singleData{"getLastDeloy"} =$getLastDeloy;
    if( $getLastDeloy eq "0" ){
+   $singleData{"errmsg"} ="($kv)--have not deploy record" ;
+   push @data,\%singleData;    
    Rex::Logger::info("($kv)--该应用没有发布记录,跳过本次操作.","warn");
    next;
    };
    #若rollstatus=1
    if( $getLastDeloy eq "2" ){
+   $singleData{"errmsg"} ="($kv)--have not deploy record where rollstatus=1" ;
+   push @data,\%singleData;     
    Rex::Logger::info("($kv)--rollstatus=1时,数据中没有rollStatus=1的发布记录,跳过本次操作.","warn");
    next;
    };
    #若rollstatus=1
    if( $getLastDeloy eq "3" ){
+   $singleData{"errmsg"} ="($kv)--have too many deploy record where rollstatus=1" ;
+   push @data,\%singleData;     
    Rex::Logger::info("($kv)--rollstatus=1时,数据中存在rollStatus=1多条发布记录,跳过本次操作.","warn");
    next;
    };
    #更改软链接,重启应用
    run_task "Deploy:rollBack:linkrestart",on=>$config->{'network_ip'},params=>{ k => $kv,network_ip =>$config->{'network_ip'},ps_num=>$FistSerInfo->{'ps_num'},pro_key=>$config->{'pro_key'},pro_init=>$config->{'pro_init'},pro_dir=>$config->{'pro_dir'},config_dir=>$config->{'config_dir'},is_deloy_dir=>$config->{'is_deloy_dir'},myAppStatus=>"$myAppStatus",getLastDeloy=>$getLastDeloy}; 
-
+   push @data,\%singleData;  
    }else{
+   $singleData{"errmsg"} ="($kv)--app_key have not exist" ;
+   push @data,\%singleData;      
    Rex::Logger::info("关键字($kv)不存在","error");
    }
    }}
    Rex::Logger::info("应用回滚模块完成.");
+   $reshash{"data"} = \@data;
+   return \%reshash;
 };
 
 
