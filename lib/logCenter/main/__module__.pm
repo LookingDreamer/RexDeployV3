@@ -375,8 +375,13 @@ task "grepLog", sub {
 	my $grep = $self->{grep};
 	my $debug = $self->{debug};
 	my $w = $self->{w};
+	my $k = $self->{k};
+	my $wb = $self->{wb};
 	my %reshash;
-	$reshash{"params"} = {log=>$log,search=>$search,grep=>$grep,debug=>$debug,w=>$w};
+	$reshash{"params"} = {log=>$log,search=>$search,k=>$k,grep=>$grep,debug=>$debug,w=>$w};
+	if ( "$k" ne "") {
+		$search = $k;
+	}
 	if( $log eq "" and $search eq "" ){
 		Rex::Logger::info("日志参数或者搜索关键词不能同时为空","error");
 		Common::Use::json($w,"","日志参数或者搜索关键词不能同时为空","");
@@ -405,6 +410,14 @@ task "grepLog", sub {
         Rex::Logger::info("服务器内网地址:$network_ip,服务器外网地址:$external_ip");
         Rex::Logger::info("服务器名称:$names 服务器日志:$log");
         $reshash{"server_info"} = {network_ip=>$network_ip,external_ip=>$external_ip,names=>$names,log=>$log};	
+        my $file_exist = run_task "logCenter:main:file_exist",on=>"$network_ip",params => {file=>"$log"};
+        if ( ! $file_exist ) {
+			$reshash{"code"} = -1 ;
+			$reshash{"msg"} = "$log is not exist " ;
+			Common::Use::json($w,"","失败",[\%reshash]);
+			Rex::Logger::info("服务器名称:$names 服务器日志:$log 日志文件不存在","error");
+			return \%reshash;
+        }
 
 		my $cmd = "du -sh $log ; grep  '$grep' $log |wc -l ";
 		my $output=run_task "Common:Use:apirun",on=>"$network_ip",params => {cmd=>"$cmd"};
@@ -431,6 +444,7 @@ task "grepLog", sub {
 					Common::Use::json($w,"","生成过滤文件失败:$grep_log","");
 					$reshash{"code"} = -1 ;
 					$reshash{"msg"} = "create $grep_log faild " ;
+					Common::Use::json($w,"","失败",[\%reshash]);
 					return \%reshash;
 				}	
 				$reshash{"rsync_grep_file"} = 1;			
@@ -457,7 +471,7 @@ task "grepLog", sub {
 		}
 		if ( $output_grep ne "" ) {
 			Rex::Logger::info("过滤内容如下:");
-			if ( "$w" ne "1") {
+			if ( "$w" ne "1" && $wb != 1 ) {
 				print("\n$output_grep\n");
 			}
 			
@@ -475,6 +489,7 @@ task "grepLog", sub {
 			Rex::Logger::info("\033[0;32m[$server]-[$names] \033[0m $log 远程日志文件不存在.","error");
 			$reshash{"code"} = -1 ;
 			$reshash{"msg"} = "$log is not exist" ;
+			Common::Use::json($w,"","失败",[\%reshash]);
 			return \%reshash;
 		}
 		my $output = run "du -sh $log ; grep  --color '$grep' $log |wc -l ";
@@ -524,7 +539,7 @@ task "grepLog", sub {
 		}else{
 			$output_grep = run "grep  --color '$grep' $log";
 		}
-		if ( $output_grep ne "" ) {
+		if ( $output_grep ne ""  && $wb != 1 ) {
 			Rex::Logger::info("过滤内容如下:");
 			if ( "$w" ne "1") {
 				print("\n$output_grep\n");
@@ -536,6 +551,16 @@ task "grepLog", sub {
 
 	}
 
+};
+
+task file_exist => sub {
+	my $self = shift; 
+	my $file = $self->{file}; 
+	if (is_file($file)) {
+		return 1 ;
+	}else{
+		return 0;
+	}
 };
 
 

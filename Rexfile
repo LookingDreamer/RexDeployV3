@@ -228,7 +228,7 @@ task "updatek",sub{
    Common::Rexfile::batchupdatek($k,$w,$weight);
 };
 
-desc "下载日志\n1.rex getLog  --k='server' [--download_local='1']";
+desc "下载日志\nrex getLog  --k='server' [--download_local='1']";
 task "getLog",sub{
    my $self = shift;
    my $k=$self->{k};
@@ -236,3 +236,13 @@ task "getLog",sub{
    my $download_local=$self->{download_local};
    Common::Rexfile::batchgetLog($k,$w,$download_local);
 };
+desc "过滤日志\nrex grepLog  --k='server' --grep='转换JSON数据'";
+task "grepLog",sub{
+   my $self = shift;
+   my $k=$self->{k};
+   my $w=$self->{w};
+   my $grep=$self->{grep};
+   my $debug=$self->{debug};
+   Common::Rexfile::batchgrepLog($k,$w,$grep,$debug);
+};
+
