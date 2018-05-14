@@ -32,6 +32,7 @@ task "liveLog", sub {
 	my $self = shift;
 	my $log = $self->{log};
 	my $search = $self->{search};
+	my $k = $self->{k};
 
 	if( $log eq "" and $search eq "" ){
 		Rex::Logger::info("日志参数或者搜索关键词不能同时为空","error");
@@ -61,7 +62,7 @@ task "liveLog", sub {
 		};
 	}elsif($log eq "" and $search ne ""){
 		my @search;
-        my @search = search($search);
+        my @search = search($search,$k);
         my $network_ip = $search[0][0];
         my $log = $search[0][1];
         my $names = $search[0][2];
@@ -130,12 +131,22 @@ task "lookLog", sub {
 	my $self = shift;
 	my $logdir = $self->{logdir};
 	my $search = $self->{search};
+	my $k = $self->{k};
 	my $more = $self->{more} ;
+	my $w = $self->{w} ;
 	my $myFiles;
+	my %reshash;
+	$reshash{"params"} = {logdir => $logdir,search => $search,k => $k,more => $more,w => $w};
 
+	if ( "$k" ne "" ) {
+		$search = $k;
+	}
 	if( $logdir eq "" and $search eq "" ){
 		Rex::Logger::info("日志目录参数或者搜索关键词不能同时为空","error");
-		exit;			
+		$reshash{"code"} = -1 ;
+		$reshash{"msg"} = "search and logdir args is null" ;
+		Common::Use::json($w,"","日志参数或者搜索关键词不能同时为空","");
+		return \%reshash; 		
 	}
 	if ( $more eq "") {
 		$more = '0';
@@ -143,9 +154,15 @@ task "lookLog", sub {
 	if( $logdir ne "" and $search eq ""  ){
 		my $server = Rex->get_current_connection()->{'server'};
 		my $names = Deploy::Db::showname($server);
+		$reshash{"server"} = "$server" ;
+		$reshash{"names"} = "$names" ;
+		$reshash{"logdir"} = "$logdir" ; 
 		if ( ! is_dir($logdir) ) {
 			Rex::Logger::info("服务器: [$server]-[$names] $logdir远程日志目录不存在.","error");
-			exit;
+			$reshash{"code"} = -1 ;
+			$reshash{"msg"} = "$logdir is not exist " ;
+			Common::Use::json($w,"","失败",[\%reshash]);			
+			return \%reshash;
 		}
 		Rex::Logger::info("[$server]-[$names] 远程日志目录:$logdir");
 		if ( $more eq '1') {
@@ -155,11 +172,15 @@ task "lookLog", sub {
 			Rex::Logger::info("最近30条日志记录,如若需要更前的日志,可以加上参数--more='1'");
 			$myFiles = run "ls -lht --time-style='+%Y-%m-%d %H:%M:%S' $logdir |head -n 30  |awk '{print \$5,\$6,\$7,\$8}' |column -t  ";			
 		}
-		Rex::Logger::info("\n$myFiles");
-		exit;
+		my $fileStr = run " ls -lht --time-style='+%Y-%m-%d %H:%M:%S' $logdir |grep -v 'total'|awk '{print \$NF}'  |xargs";
+		my @fileArray  = split(" ",$fileStr);		Rex::Logger::info("\n$myFiles");
+		$reshash{"code"} = 1 ;
+		$reshash{"msg"} = "success" ;
+		$reshash{"myFiles"} = "$myFiles" ;
+		$reshash{"fileres"} = \@fileArray ;
 	}elsif($logdir eq "" and $search ne ""){
 		my @search;
-        my @search = search($search);
+        my @search = search($search,$k);
         my $network_ip = $search[0][0];
         my $log = $search[0][1];
         my $names = $search[0][2];
@@ -167,22 +188,35 @@ task "lookLog", sub {
         my $logdir = $search[0][4];
         Rex::Logger::info("服务器内网地址:$network_ip,服务器外网地址:$external_ip");
         Rex::Logger::info("服务器名称:$names");
-        run_task "logCenter:main:listFile",on=>$network_ip,params => { logdir => $logdir,more=>$more}
-
+ 		$reshash{"server"} = "$network_ip" ;
+		$reshash{"names"} = "$names" ;       
+		$reshash{"logdir"} = "$logdir" ;       
+        my $fileres = run_task "logCenter:main:listFile",on=>$network_ip,params => { logdir => $logdir,more=>$more};
+        $reshash{"fileres"} = $fileres ;  
 	}else{
 		my $server = Rex->get_current_connection()->{'server'};
 		my $names = Deploy::Db::showname($server);
 		if ( ! is_dir($logdir) ) {
 			Rex::Logger::info("服务器: [$server]-[$names] $logdir远程日志目录不存在.","error");
-			exit;
+			$reshash{"code"} = -1 ;
+			$reshash{"msg"} = "$logdir is not exist " ;
+			Common::Use::json($w,"","失败",[\%reshash]);			
+			return \%reshash;
 		}
 		Rex::Logger::info("[$server]-[$names] 远程日志目录:$logdir");
 		Rex::Logger::info("最近30条日志记录,如若需要更前的日志,可以自行根据日志规律组合日志路径");
-		my $myFiles = run "ls -lht --time-style='+%Y-%m-%d %H:%M:%S'  /data/log/cm |head -n 30  |awk '{print \$5,\$6,\$7,\$8}' |column -t  ";
+		my $myFiles = run "ls -lht --time-style='+%Y-%m-%d %H:%M:%S'  $logdir |head -n 30  |awk '{print \$5,\$6,\$7,\$8}' |column -t  ";
 		Rex::Logger::info("\n$myFiles");
-		exit;
+		my $fileStr = run " ls -lht --time-style='+%Y-%m-%d %H:%M:%S' $logdir |grep -v 'total'|awk '{print \$NF}'  |xargs";
+		my @fileArray  = split(" ",$fileStr);		Rex::Logger::info("\n$myFiles");
+		$reshash{"code"} = 1 ;
+		$reshash{"msg"} = "success" ;
+		$reshash{"myFiles"} = "$myFiles" ;
+		$reshash{"fileres"} = \@fileArray ;		
 
 	}
+	Common::Use::json($w,"0","成功",[\%reshash]);
+	return \%reshash;	
 
 };
 
@@ -199,7 +233,9 @@ task "listFile",sub{
 		$myFiles = run "ls -lht --time-style='+%Y-%m-%d %H:%M:%S' $logdir |head -n 30  |awk '{print \$5,\$6,\$7,\$8}' |column -t  ";			
 	}
 	Rex::Logger::info("\n$myFiles");
-	exit;
+	my $fileStr = run " ls -lht --time-style='+%Y-%m-%d %H:%M:%S' $logdir |grep -v 'total'|awk '{print \$NF}'  |xargs";
+	my @fileArray  = split(" ",$fileStr);
+	return \@fileArray;
 };
 
 desc "下载日志模块\n1.rex  logCenter:main:getLog  --search='server1' [--download_local='1']\n2.rex -H '127.0.0.1' logCenter:main:getLog  --log='/data/log/server1/catalina.out.2017-03-06'";
@@ -269,7 +305,7 @@ task "getLog", sub {
 
 	}elsif($log eq "" and $search ne ""){
 		my @search;
-        my @search = search($search);
+        my @search = search($search,$k);
         my $network_ip = $search[0][0];
         my $log = $search[0][1];
         my $names = $search[0][2];
@@ -402,7 +438,7 @@ task "grepLog", sub {
 
 	if($log eq "" and $search ne ""){
 		my @search;
-        my @search = search($search);
+        my @search = search($search,$k);
         my $network_ip = $search[0][0];
         my $log = $search[0][1];
         my $names = $search[0][2];
@@ -567,14 +603,21 @@ task file_exist => sub {
 sub search{
 
 	my $search = @_[0];
+	my $k = @_[1];
 	my @config;
 	my @data;
 	my $log;
-	if( $search eq ""){
+	if( $search eq "" && $k eq ""){
 		Rex::Logger::info("搜索关键词不能为空","error");
 		exit;
 	}
-	my @config=Deploy::Db::search_info("$search");
+	my @config ;
+	if ( $k ne "" ) {
+		@config=Deploy::Db::key_search_info("$search");
+	}else{
+		@config=Deploy::Db::search_info("$search");
+	}
+	
 	my $count = $config[0][0];
 	my $queryLogDir = $config[0][1]{'log_dir'};
 	my $queryLogFile = $config[0][1]{'logfile'};

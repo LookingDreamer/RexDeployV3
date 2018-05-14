@@ -138,6 +138,13 @@ sub batchgrepLog{
    Common::Use::json($w,"0","成功",[$result]);
 };
 
+sub batchlookLog{
+   my ($k,$w,$more) = @_;
+   my $params = {more=>$more,wb=>1};
+   my $result = Common::Process::moreProcess($k,$w,"日志列表","logCenter:main:lookLog",$params,"1") ;
+   Common::Use::json($w,"0","成功",[$result]);
+};
+
 1;
 
 =pod

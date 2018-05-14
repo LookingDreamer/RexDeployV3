@@ -245,4 +245,13 @@ task "grepLog",sub{
    my $debug=$self->{debug};
    Common::Rexfile::batchgrepLog($k,$w,$grep,$debug);
 };
+desc "日志列表\nrex lookLog  --k='server'";
+task "lookLog",sub{
+   my $self = shift;
+   my $k=$self->{k};
+   my $w=$self->{w};
+   my $more=$self->{more};
+   Common::Rexfile::batchlookLog($k,$w,$more);
+};
+
 

@@ -676,6 +676,25 @@ task search_info=>sub {
 
 };
 
+desc "根据app_key返回服务器信息";
+task key_search_info=>sub {
+	my $search = @_[0];
+	if( $search eq "" ){
+		return 0 ;
+	}
+
+	my @server_list = db select => {
+		fields => "*",
+		       from  => $table,
+		       where  => "app_key = '$search'  ",
+	};
+	my $count= @server_list;
+	unshift(@server_list,$count);
+	#say Dumper(@server_list);exit;
+	return \@server_list;
+
+};
+
 desc "返回当前环境关键信息";
 task server_info=>sub {
 	my @server_list = db select => {
