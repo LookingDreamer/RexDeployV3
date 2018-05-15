@@ -42,6 +42,7 @@ task "route", sub {
 	my $dir=$self->{dir};
 	my $batch=$self->{batch};
 	my $w=$self->{w};
+	my $random=$self->{random};
 	my %reshash ;
 	$reshash{"params"} = {
 		user=>$user,
@@ -151,46 +152,64 @@ task "route", sub {
 			$reshash{"query"} = ["$query"];
 		}elsif($action eq "create"){
 			my $query = queryUser($user); 
-			$reshash{"query"} = ["$query"];
-			createUser($user,$level,$query,$sudo,$pass,$allow,$dir);
+			my $createUser = createUser($user,$level,$query,$sudo,$pass,$allow,$dir);
+			$reshash{"query"} = [$query];
+			$reshash{"createUser"} = [$createUser];
 		}elsif($action eq "delete"){
-			deleteUser($user);
+			my $deleteUser = deleteUser($user);
+			$reshash{"deleteUser"} = [$deleteUser];
 		}elsif($action eq "lock"){
-			forbitUser($user);
+			my $forbitUser = forbitUser($user);
+			$reshash{"forbitUser"} = [$forbitUser];
 		}elsif($action eq "list"){
 			my $list = listUser();
 			$reshash{"listUser"} = $list ;
 		}elsif($action eq "createkey"){
 			my $key = general_key($user,$pass);
+			$reshash{"general_key"} = [$key] ;
 		}else{
 			Rex::Logger::info("不支持的action","error");
-			exit;		
+			Common::Use::json($w,"","不支持的action","");
+			$reshash{"code"} = -1 ;
+			$reshash{"msg"} = "unsupport action" ;
+			return \%reshash;	
 		}
 
 	}else{
+		my @queryArray;
+		my @createUserArray;
+		my @deleteUserArray;
+		my @forbitUserArray;
+		my @general_keyArray;
 		my @userlist=split(/,/,$user);
 		for my $user (@userlist) {
+	
 			if ( $action eq "query") {
 				my $query = queryUser($user);
+				push @queryArray,$query;
 			}elsif($action eq "create"){
 				my $query = queryUser($user); 
-				createUser($user,$level,$query,$sudo,$pass,$allow,$dir);
+				my $createUser = createUser($user,$level,$query,$sudo,$pass,$allow,$dir);
+				push @queryArray,$query;
+				push @createUserArray,$createUser;
 			}elsif($action eq "delete"){
-				deleteUser($user);
+				my $deleteUser = deleteUser($user);
+				push @deleteUserArray,$deleteUser;
 			}elsif($action eq "lock"){
-				forbitUser($user);
+				my $forbitUser = forbitUser($user);
+				push @forbitUserArray,$forbitUser;
 			}elsif($action eq "createkey"){
 				my $key = general_key($user,$pass,$batch);
-			}else{
-				Rex::Logger::info("不支持的action","error");
-				Common::Use::json($w,"","不支持的action","");
-				$reshash{"code"} = -1 ;
-				$reshash{"msg"} = "unsupport action" ;
-				return \%reshash;	
-			}					  
-		}		
+				push @general_keyArray,$key;
+			}
+		};
+		$reshash{"query"} = \@queryArray;
+		$reshash{"createUser"} = \@createUserArray;
+		$reshash{"deleteUser"} = \@deleteUserArray;
+		$reshash{"forbitUser"} = \@forbitUserArray;
+		$reshash{"general_key"} = \@general_keyArray;				
 	}
-	Common::Use::json($w,"0","成功",[\%reshash]);
+	Common::Use::json($w,"0","成功",[\%reshash],$random);
 	return \%reshash;
 
 	
@@ -209,35 +228,95 @@ sub createUser{
 	my $pass = @_[4];
 	my $allow = @_[5];
 	my $dir = @_[6];
+	my %hash ; 
+	my $create ; 
+	my $append_allow ; 
+	my $create_sudo ; 
+	my $create_authorized_keys ; 
+	$hash{"createUserParams"} = {user=>$user,level=>$level,query=>$query,sudo=>$sudo,pass=>$pass,allow=>$allow,dir=>$dir};
 	if ( $query eq "0" ) {
 		if ( $level eq "0") {
-			create($user,$pass);
+			$create = create($user,$pass);
+			$hash{"create"} = $create;
+			if ( ! $create ) {
+				Rex::Logger::info("创建普通用户:$user失败","error");
+				$hash{"code"} = -1 ;
+				$hash{"msg"} = "create user:$user faild" ;
+				return \%hash;				
+			}
 			if ($allow eq "1") {
-				append_allow($user);
+				$append_allow = append_allow($user);
+				$hash{"append_allow"} = $append_allow;
+				if ( ! $append_allow ) {
+					Rex::Logger::info("添加sshd_config allow 失败","error");
+					$hash{"code"} = -1 ;
+					$hash{"msg"} = "append sshd_config allow $user faild" ;
+					return \%hash;				
+				}				
 			}
 			if ($sudo eq "1") {
-				create_sudo($user);
+				$create_sudo = create_sudo($user);
+				$hash{"create_sudo"} = $create_sudo;				
+				if ( ! $create_sudo ) {
+					Rex::Logger::info("添加sudo wheel组失败","error");
+					$hash{"code"} = -1 ;
+					$hash{"msg"} = "append sudo wheel faild" ;
+					return \%hash;				
+				}					
 			}
 		}elsif($level eq "1" or $level eq "2" or $level eq "3"){
 			my $res = create($user,$pass);
+			$hash{"create"} = $res;
 			if ( $res eq "0") {
-				exit;
+				$hash{"code"} = -1 ;
+				$hash{"msg"} = "create user faild." ;
+				return \%hash;
 			}
-			create_authorized_keys($user,$level,$pass,$dir);
+			$create_authorized_keys = create_authorized_keys($user,$level,$pass,$dir);
+			$hash{"authorized_keys"} = $create_authorized_keys;
+			if ( ! $create_authorized_keys ) {
+				Rex::Logger::info("创建秘钥失败","error");
+				$hash{"code"} = -1 ;
+				$hash{"msg"} = "create private key faild" ;
+				return \%hash;				
+			}				
 			if ($sudo eq "1") {
-				create_sudo($user);
+				$create_sudo = create_sudo($user);
+				$hash{"create_sudo"} = $create_sudo;
+				if ( ! $create_sudo ) {
+					Rex::Logger::info("添加sudo wheel组失败","error");
+					$hash{"code"} = -1 ;
+					$hash{"msg"} = "append sudo wheel faild" ;
+					return \%hash;				
+				}				
 			}
 			if ($allow eq "1") {
-				append_allow($user);
+				$append_allow  = append_allow($user);
+				$hash{"append_allow"} = $append_allow;
+				if ( ! $append_allow ) {
+					Rex::Logger::info("添加sshd_config allow 失败","error");
+					$hash{"code"} = -1 ;
+					$hash{"msg"} = "append sshd_config allow $user faild" ;
+					return \%hash;				
+				}	
+
 			}			
 		}else{
 			Rex::Logger::info("level参数仅支持0,1,2,3","error");
-			exit;
+			$hash{"code"} = -1 ;
+			$hash{"msg"} = "level must in 0,1,2,3" ;
+			return \%hash;
 		}
 		
 	}else{
 		Rex::Logger::info("用户已经存在");
+		$hash{"code"} = -1 ;
+		$hash{"msg"} = "user already exist" ;
+		return \%hash;		
 	}	
+	$hash{"code"} = 1 ;
+	$hash{"msg"} = "success" ;
+	return \%hash;
 
 };
 
@@ -301,10 +380,10 @@ sub general_key{
 	if ( $res =~ /status=0/ ) {
 		Rex::Logger::info("秘钥路径: $base_dir");
 		Rex::Logger::info("生成秘钥成功");
-		return 1;
+		return $base_dir;
 	}else{
 		Rex::Logger::info("生成秘钥失败","error");
-		exit;
+		return 0;
 	}
 
 }
@@ -376,7 +455,7 @@ sub create_authorized_keys{
 		if ( $pass ne 0) {
 			if ( length($pass) < 8 ) {
 				Rex::Logger::info("密码为真时必须大于8个长度","error");
-				exit;
+				return 0;
 			}
 		}
 		$cmd = "mkdir /home/$user/.ssh ;echo $common_public_key > /home/$user/.ssh/authorized_keys ;chown $user:$user  /home/$user -R &&  result=\$? ;echo status=\$result" ;	
@@ -404,7 +483,7 @@ sub create_authorized_keys{
 				}
 			}
 		}
-		return 1;
+		return "/tmp/$user/$random";
 	}else{
 		Rex::Logger::info("创建秘钥失败","error");
 		return 0;
@@ -450,13 +529,13 @@ sub queryUser{
 sub deleteUser{
 	my $user = @_[0];
 	my $server = Rex->get_current_connection()->{'server'};
-	my $res =  run "userdel -rf $user && result=\$? ;echo status=\$result";
+	my $res =  run "userdel -rf $user > /dev/null 2>&1 && result=\$? ;echo status=\$result";
 	Rex::Logger::info("__SUB__:开始删除用户"); 
 	Rex::Logger::info("当前服务器: $server");
 	Rex::Logger::info("返回命令结果: $res");
 	if ( $res =~ /status=0/ ) {
 		Rex::Logger::info("删除用户$user成功");
-		return 1;
+		return $user;
 	}else{
 		Rex::Logger::info("删除用户$user失败","warn");
 		return 0;
@@ -475,7 +554,7 @@ sub forbitUser {
 	Rex::Logger::info("返回命令结果: $res");
 	if ( $res =~ /status=0/ ) {
 		Rex::Logger::info("锁定用户$user成功");
-		return 1;
+		return $user;
 	}else{
 		Rex::Logger::info("锁定用户$user失败","warn");
 		return 0;
