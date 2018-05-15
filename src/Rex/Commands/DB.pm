@@ -119,10 +119,7 @@ sub db {
     return;
   }
 
-   $dbh->do('set SESSION wait_timeout=72000');
-   $dbh->do('set SESSION interactive_timeout=72000');
-
-
+  $dbh = reconnect();
   if ( $type eq "select" ) {
     my $sql = sprintf(
       "SELECT %s FROM %s WHERE %s",
@@ -145,7 +142,7 @@ sub db {
     $sth->finish;
     # Disconnect from the database.
     $dbh->disconnect(); 
-    return @return;
+    return @return;  
   }
   elsif ( $type eq "insert" ) {
     my $sql = "INSERT INTO %s (%s) VALUES(%s)";
@@ -211,6 +208,43 @@ sub db {
 
 }
 
+#重新连接DB
+sub reconnect{
+
+  my $env;
+  my $dbname;
+  my $dbhost;
+  my $dbuser;
+  my $dbpassword;
+  my $dbport;
+
+  Rex::Config->register_config_handler("env", sub {
+    my ($param) = @_;
+    $env = $param->{key} ;
+  });
+  Rex::Config->register_config_handler("$env", sub {
+    my ($param) = @_;
+    $dbname = $param->{dbname} ;
+    $dbhost = $param->{dbhost} ;
+    $dbuser = $param->{dbuser} ;
+    $dbpassword = $param->{dbpassword} ;
+    $dbport = $param->{dbport} ;
+  });
+
+  $dbh = DBI->connect(
+      "DBI:mysql:database=$dbname;host=$dbhost;port=$dbport", "$dbuser",
+      "$dbpassword" || "", { RaiseError => 1, AutoCommit => 1 }
+   );
+
+   $dbh->{mysql_auto_reconnect} = 1;
+
+   $dbh->do('set SESSION wait_timeout=72000');
+   $dbh->do('set SESSION interactive_timeout=72000');
+   $dbh->do("SET NAMES utf8"); 
+   return $dbh;
+
+}
+
 sub import {
 
   my ( $class, $opt ) = @_;
@@ -220,7 +254,6 @@ sub import {
     #   $opt->{"dsn"}, $opt->{"user"},
     #   $opt->{"password"} || "", $opt->{"attr"}
     # );
-
     $dbh = DBI->connect(
       $opt->{"dsn"}, $opt->{"user"},
       $opt->{"password"} || "", { RaiseError => 1, AutoCommit => 1 }

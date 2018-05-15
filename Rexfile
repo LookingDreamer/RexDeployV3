@@ -219,7 +219,7 @@ task "queryk",sub{
    Common::Rexfile::batchqueryk($k,$w,$file);
 };
 
-desc "负载均衡查询 rex  updatek --k='server' --weight='10'";
+desc "负载均衡修改 rex  updatek --k='server' --weight='10'";
 task "updatek",sub{
    my $self = shift;
    my $k=$self->{k};
@@ -228,7 +228,7 @@ task "updatek",sub{
    Common::Rexfile::batchupdatek($k,$w,$weight);
 };
 
-desc "下载日志\nrex getLog  --k='server' [--download_local='1']";
+desc "下载日志 rex getLog  --k='server' [--download_local='1']";
 task "getLog",sub{
    my $self = shift;
    my $k=$self->{k};
@@ -236,7 +236,7 @@ task "getLog",sub{
    my $download_local=$self->{download_local};
    Common::Rexfile::batchgetLog($k,$w,$download_local);
 };
-desc "过滤日志\nrex grepLog  --k='server' --grep='转换JSON数据'";
+desc "过滤日志 rex grepLog  --k='server' --grep='转换JSON数据'";
 task "grepLog",sub{
    my $self = shift;
    my $k=$self->{k};
@@ -245,7 +245,7 @@ task "grepLog",sub{
    my $debug=$self->{debug};
    Common::Rexfile::batchgrepLog($k,$w,$grep,$debug);
 };
-desc "日志列表\nrex lookLog  --k='server'";
+desc "日志列表 rex lookLog  --k='server'";
 task "lookLog",sub{
    my $self = shift;
    my $k=$self->{k};
@@ -254,4 +254,11 @@ task "lookLog",sub{
    Common::Rexfile::batchlookLog($k,$w,$more);
 };
 
+desc "获取JSON rex json  --r='random' --d='1'";
+task "json",sub{
+    my $self = shift;
+    my $random=$self->{r};
+    my $delete=$self->{d};
+    run_task "Common:Use:getJson",params=>{random=>$random,delete=>$delete};
+};
 
