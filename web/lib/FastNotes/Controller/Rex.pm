@@ -72,10 +72,10 @@ sub runcmd {
         $pwd =  $self->app->defaults->{"config"}->{"pwd"};        
     }
     if ( ! defined $precmd ){
-        $precmd = " -q ";
+        $precmd = " -qF ";
     }else{
         $precmd =~ s/,/ /i; 
-        $precmd = " -q ".$precmd;
+        $precmd = " -qF ".$precmd;
     }
     if ( ! defined $requestCmd || "$requestCmd" eq "" ){
         $result{"code"} = 3 ;
@@ -94,7 +94,15 @@ sub runcmd {
             $log->error("执行异常: $@");
         }   
         $log->info("返回结果:".Dumper($respon));
-        # $stdout = $respon->{"stdout"};
+        $stdout = $respon->{"stdout"};
+        my $decoded_json ;
+        eval {
+            $decoded_json = decode_json($stdout);
+        };
+        if ($@) {
+            $log->error("解析返回JSON异常");
+        }       
+        $result{"data"} = $decoded_json;   
         # $yaml = Load($stdout);  
         # $result{"data"} = $yaml;   
         $result{"respon"} = $respon;   
