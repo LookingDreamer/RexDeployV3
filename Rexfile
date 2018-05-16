@@ -127,7 +127,7 @@ task "list",sub{
 };
 
 
-desc "根据识别名称滚动发布: rex deploy --k='server' [--senv='uat']\n";
+desc "根据识别名称灰度发布: rex deploy --k='server' [--senv='uat']\n";
 task "deploy",sub{
     my $self = shift;
     my $k=$self->{k};
@@ -142,14 +142,17 @@ task "deploy",sub{
     return $deployInfo;
 };
 
-desc "根据识别名称直接发布: rex release --k='server' [--senv='uat']\n";
+desc "根据识别名称自动发布: rex release --k='server' [--senv='uat' --url='' --full='1' --set='1' ]\n";
 task "release",sub{
     my $self = shift;
     my $k=$self->{k};
     my $w =$self->{w};
     my $senv =$self->{senv};
+    my $url =$self->{url};
+    my $full =$self->{full};
+    my $set =$self->{set};
     my @data;
-    my $deployInfo=Enter::deploy::release($k,$w,$senv);
+    my $deployInfo=Enter::deploy::release($k,$w,$senv,$url,$full,$set);
     push @data,$deployInfo;
     Rex::Logger::info("");
     Common::Use::json($w,"0","成功",\@data);

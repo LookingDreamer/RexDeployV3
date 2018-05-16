@@ -1006,6 +1006,34 @@ task query_local_app_key=>sub {
 	return \@data;
 };
 
+desc "查询local_name/app_key返回的local_name";
+task query_ilocal_name=>sub {
+	my $app_key = @_[0];
+	my @app_keys_array = split(" ",$app_key);
+	my $app_keys = join(" ",@app_keys_array);
+    $app_keys =~ s/ /','/g;
+    $app_keys = "'".$app_keys."'";
+	my @data = db select => {
+		fields => "*",
+		       from  => $table,
+		        where => "local_name in ($app_keys) or app_key in ($app_keys) group by local_name",
+	};
+	my $count = @data;
+
+	my %result ; 
+	$result{"count"} = $count;
+	$result{"data"} =  \@data;
+	if ( $count > 0 ) {
+		$result{"local_name"} =  $data[0]->{local_name};
+		$result{"checkdir"} =  $data[0]->{checkdir};
+	}
+	Rex::Logger::info("查询(local_name in $app_key) or (app_key in $app_key)的local_name,返回记录数:$count");
+	
+	
+	return \%result;
+};
+
+
 1;
 
 =pod

@@ -136,7 +136,7 @@ task getdepoloy=>sub {
 
 desc "直接发布 rex Enter:deploy:release --k='server'";
 task release => sub {
-    my ($k,$w,$senv) = @_;
+    my ($k,$w,$senv,$url,$full,$set) = @_;
 	my $datetime = strftime("%Y-%m-%d %H:%M:%S", localtime(time));
 	my $subject = "自动发布";
 	my $content = "开始时间: $datetime 发布系统: $k";
@@ -167,10 +167,20 @@ task release => sub {
 		push @app_keys,$app_key;	
 	}
 	$app_keys_string = join(" ",@app_keys);
+	if ( "$url" ne "" && "$full" ne "") {
+		my $name;
+		if ( $full eq "1") {
+			$name = "增量";
+		}else{
+			$name = "全量";
+		}
+		sendMsg($subject,"($k) http下载更新,url:$url 更新方式:$name",$is_finish);
+		checkHttp($app_keys_string,$subject,$content,$is_finish,$w,$senv);
+	}
 	eval {
 		Rex::Logger::info("$app_keys_string  开始自动发布...");
 		#1.下载远程文件并同步更新目录到待发布目录
-		downloadSync($app_keys_string,$subject,$content,$is_finish,$w,$senv);
+		downloadSync($app_keys_string,$subject,$content,$is_finish,$w,$senv,$url,$full,$set);
 		#2.校验发布包和原包差异
 		checkDiff($app_keys_string,$subject,$content,$is_finish,$w,$senv);
 		#3.开始发布		
@@ -252,6 +262,40 @@ task main => sub {
 
 
 };
+
+
+
+#校验http下载更新时仅支持单个k
+sub checkHttp{
+	my ($k,$subject,$content,$is_finish,$w,$senv) = @_;
+	eval {
+		if ( "$senv" ne "" ) {
+		  Rex::Logger::info("当url和full都存在时,senv不能同时有值","error");
+		  sendMsg($subject,"当url和full都存在时,senv不能同时有值",$is_finish);
+		  Common::Use::json($w,"","当url和full都存在时,senv不能同时有值","");   
+		  exit;  
+		}
+		my $config=Deploy::Db::query_ilocal_name($k);
+		my $count = $config->{count};
+		my $local_name = $config->{local_name} ;
+		my $check = $config->{checkdir} ;
+		if ( $count ne 1 ) {
+		  Rex::Logger::info("http下载更新: $k不存在或者存在多个k,目前仅支持下载单个url,单个k","error");
+		  sendMsg($subject,"http下载更新: $k不存在或者存在多个k,目前仅支持下载单个url,单个k",$is_finish);
+		  Common::Use::json($w,"","$k不存在或者存在多个k,目前仅支持下载单个url,单个k","");   
+		  exit;  
+		}
+
+
+	};
+	if ($@) {
+		Rex::Logger::info("($k) http下载更新校验异常:$@","error");
+		sendMsg($subject,"($k) http下载更新校验异常:$@",$is_finish);
+		Common::Use::json($w,-1,"($k) http下载更新校验异常:$@","");
+		exit;
+	}
+
+}
 
 
 #6.添加节点并判断节点是否成功摘取
@@ -510,12 +554,16 @@ sub checkDiff{
 
 #2.下载远程文件并同步更新目录到待发布目录
 sub downloadSync(){
-	my ($k,$subject,$content,$is_finish,$w,$senv) = @_;
+	my ($k,$subject,$content,$is_finish,$w,$senv,$url,$full,$set) = @_;
 	eval {
 		if ( "$senv" ne "" ) {
 			run_task "Enter:route:download",params => { k => $k,usetype=>"conf"};
 		}else{
-			run_task "Enter:route:download",params => { k => $k};
+			if ( "$url" ne "" && "$full" ne "") {
+				run_task "Enter:route:download",params => { k => $k,update => 1};
+			}else{
+				run_task "Enter:route:download",params => { k => $k};
+			}			
 		}
 		
 		if ( "$senv" ne "" ) {
@@ -537,6 +585,18 @@ sub downloadSync(){
 			Rex::Logger::info("($k)  同步更新目录到待发布目录失败,更新目录($errDir)不存在","error");
 			sendMsg($subject,"($k)  同步更新目录到待发布目录失败,更新目录($errDir)不存在",$is_finish);
 			exit;
+		}
+
+		if ( "$url" ne "" && "$full" ne "") {
+			my $httpc =  run_task "Enter:route:downloadCombile",params => { k => $k,url=>$url,full => $full,dest => 1,set=>$set};
+			my $httpcode = $httpc->{code};
+			my $urlmsg = $httpc->{msg};
+			if ( $httpcode != 1 ){
+				Rex::Logger::info("($k) 合并下载包到$k的softdir目录失败: $urlmsg","error");
+				Common::Use::json($w,-1,"($k) 合并下载包到$k的softdir目录失败: $urlmsg","");
+				sendMsg($subject,"($k) 合并下载包到$k的softdir目录失败: $urlmsg",$is_finish);
+				exit;
+			}
 		}
 
 	};

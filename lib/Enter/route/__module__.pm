@@ -22,6 +22,11 @@ my $random_temp_file;
 my $deploy_finish_file;
 my $process_temp_dir;
 my $parallelism;
+my $httpdowndir;
+my $default_basehttp;
+my $is_check_dir;
+my $softdir;
+my $update_local_prodir;
 Rex::Config->register_config_handler("env", sub {
  my ($param) = @_;
  $env = $param->{key} ;
@@ -35,6 +40,11 @@ Rex::Config->register_config_handler("$env", sub {
      $deploy_finish_file  = $param->{deploy_finish_file};
      $process_temp_dir  = $param->{process_temp_dir};
      $parallelism  = $param->{parallelism};
+     $httpdowndir  = $param->{httpdowndir};
+     $default_basehttp  = $param->{default_basehttp};
+     $is_check_dir  = $param->{is_check_dir};
+     $softdir  = $param->{softdir};
+     $update_local_prodir  = $param->{update_local_prodir};
  });
 
 desc "应用下载模块: rex  Enter:route:download   --k='server1 server2 ../groupname/all' [--update='1'] [--senv='uat'] [--type='pro/conf/all']";
@@ -596,14 +606,229 @@ sub saveFile{
 
 };
 
-
-
-desc "程序包Http下载合并";
+desc "程序包Http下载合并  rex Enter:route:downloadCombile --k='server' --url='http://download.52zzb.com/1/cm-20180515-142727.tar.gz'
+--downdir: 自定义下载目录
+--set: 根据配置文件合并url
+--full: 1增量更新 2全量更新
+--dest: 1配置文件定义的softdir 2配置文件定义的update_local_prodir
+";
 task "downloadCombile",sub{
    my $self = shift;
-   my $app_key=$self->{app_key};
-   
+   my $k=$self->{k};
+   my $w=$self->{w};
+   my $url=$self->{url};
+   my $downdir=$self->{downdir};
+   my $set=$self->{set};
+   my $full=$self->{full};
+   my $dest=$self->{dest};
+   my %reshash ;
+   my $now = strftime("%Y%m%d_%H%M%S", localtime(time));
+   if ( $k eq "" ){
+      Rex::Logger::info("k参数不能为空","error");
+      $reshash{"code"} = -1;
+      $reshash{"msg"} = "k params is null";    
+      return \%reshash;
+   }
+   if ( "$set" eq "1" ) {
+     $url = $default_basehttp."/".$url;
+   }
+   if ( $url eq "" ){
+      Rex::Logger::info("url参数不能为空","error");
+      $reshash{"code"} = -1;
+      $reshash{"msg"} = "url params is null";    
+      return \%reshash;
+   } 
+   if ( "$downdir" eq "" ) {
+      $downdir = $httpdowndir."/".$now;
+   }
+   my $config=Deploy::Db::query_ilocal_name($k);
+   my $count = $config->{count};
+   my $local_name = $config->{local_name} ;
+   my $check = $config->{checkdir} ;
+   if ( $count ne 1 ) {
+      Rex::Logger::info("$k不存在或者存在多个k,目前仅支持下载单个url,单个k","error");
+      $reshash{"code"} = -1;
+      $reshash{"msg"} = "$k is wrong ,please comfire";    
+      return \%reshash;    
+   }
+   if ( "$local_name" eq "") {
+      Rex::Logger::info("$k查询到local_name为空","error");
+      $reshash{"code"} = -1;
+      $reshash{"msg"} = "$k local_name is null,please comfire";    
+      return \%reshash;  
+   }
+   Rex::Logger::info("关联应用:$local_name 下载url:$url 下载路径: $downdir");
+   if ( ! is_dir($downdir) ) {
+      mkdir($downdir);
+   }
+   my $download = run_task "Common:Use:download",params => { dir1 => $url,dir2 => $downdir,http => 1};
+   if ( $download->{code} == 0  ) {
+      Rex::Logger::info("http下载成功");
+   }else{
+      Rex::Logger::info("http下载失败","error");
+      $reshash{"code"} = -1;
+      $reshash{"msg"} = "http download faild";    
+      return \%reshash;
+   }
+   my $localFile = $download->{download}->{localPath};
+   my $fileJude = run "file -i $localFile";
+   Rex::Logger::info("下载文件: $localFile");
+   my $fileType;
+   if ( $fileJude =~ m/application\/x-gzip/ ) { 
+      $fileType = "tar";
+   }elsif($fileJude =~ m/application\/zip/ ){
+      $fileType = "zip";
+   }else{
+      $fileType = "file";
+   }
+   Rex::Logger::info("下载文件类型: $fileType");
+   my $unzip = unztar($localFile,$fileType,$downdir) ;
+   my $code = $unzip->{code} ;
+   my $res = $unzip->{res} ;
+   if (  $code == -1  ) {
+      Rex::Logger::info("解压文件: $localFile 失败: $res ","error");
+      $reshash{"code"} = -1;
+      $reshash{"msg"} = "unzip $localFile faild";    
+      return \%reshash;
+   }
+   Rex::Logger::info("解压成功");
+   my $checkRes = checkDir($downdir,$is_check_dir,$check);
+   if ( ! $checkRes ) {
+      Rex::Logger::info("校验$downdir 目录列表失败,请检查该目录是否在允许列表之内","error");
+      $reshash{"code"} = -1;
+      $reshash{"msg"} = "check $downdir faild";    
+      return \%reshash;
+   }
+   my $combileRes;
+   if ( "$full" ne "" && "$dest" ne "") {
+      $combileRes = combile($full,$dest,$local_name,$downdir);
+      my $msg = $combileRes->{msg} ; 
+      if ( $combileRes->{code} != 1  ) {
+          Rex::Logger::info("合并http包失败: $msg  ","error");
+          $reshash{"code"} = -1;
+          $reshash{"msg"} = "combile http package faild";    
+          return \%reshash;
+      }
+   }
+   $reshash{"code"} = 1;
+   $reshash{"msg"} = "success";
+   return \%reshash;
+
 };
+
+
+
+#合并拷贝
+sub combile{
+   my ($full,$dest,$local_name,$downdir) = @_;
+   my (%hash,$remoteDir) ;
+   if ( "$dest"  eq "1" ) {
+      $remoteDir = $softdir."/".$local_name;
+   }elsif( "$dest"  eq "2"  ){
+      $remoteDir = $update_local_prodir."/".$local_name;
+   }else{
+      $hash{"code"} = -1 ;
+      $hash{"msg"} = "dest params is not in 1,2" ;
+      Rex::Logger::info("dest参数不正确,仅支持1,2","error");
+      return \%hash;
+   } 
+   if( ! is_dir($remoteDir) ){
+      mkdir($remoteDir);
+   }
+   if ( "$full"  eq "1" ) {
+      my $checkNumber= run "ls $remoteDir/ |wc -l";
+      if (  $? ne 0 ) {
+         Rex::Logger::info("执行查询目录失败: ls $remoteDir/ |wc -l","error");
+         $hash{"code"} = -1 ;
+         $hash{"msg"} = "cmd: ls $remoteDir/ |wc -l faild" ;
+         return \%hash; 
+      }
+      if ( "$checkNumber" eq "0" ) {
+         Rex::Logger::info("增量合并模式下,原目录为空:$remoteDir/ ","error");
+         $hash{"code"} = -1 ;
+         $hash{"msg"} = "$remoteDir must not be empty" ;
+         return \%hash; 
+      }
+      run "cp -ar $downdir/* $remoteDir/"
+   }elsif( "$full"  eq "2"  ){
+     if( is_dir($remoteDir) ){
+        rmdir($remoteDir);
+     }
+      mkdir($remoteDir);
+      run "cp -ar $downdir/* $remoteDir/"
+   }else{
+      $hash{"code"} = -1 ;
+      $hash{"msg"} = "full params is not in 1,2" ;
+      Rex::Logger::info("full参数不正确,仅支持1,2","error");
+      return \%hash;
+   } 
+   if ( $? ne 0 ) {
+      Rex::Logger::info("合并$downdir => $remoteDir/ 失败","error");
+      $hash{"code"} = -1 ;
+      $hash{"msg"} = "combile $downdir => $remoteDir/ faild" ;
+      return \%hash;      
+   }
+   Rex::Logger::info("合并$downdir => $remoteDir/ 成功");
+   $hash{"code"} = 1 ;
+   $hash{"msg"} = "success" ;
+   return \%hash;   
+} 
+
+
+#校验第1级文件或者目录
+sub checkDir{
+   my ($dir,$is_check_dir,$check) = @_;
+   if ( $is_check_dir != 1 ) {
+      Rex::Logger::info("全局校验参数未开启");
+      return 1 ;
+   }
+   my @checkArray = split(",",$check);
+   my $localDirNames = run "ls $dir |xargs  |sed 's/ /,/g'";
+   if ( $? != 0 ) {
+      Rex::Logger::info("执行查询本地下载目录失败","error");
+      return 0;
+   }
+   if ( "$localDirNames" eq "") {
+      Rex::Logger::info("查询本地下载目录列表为空","error");
+      return 0;
+   }
+   my @localDirNamesArray = split(",",$localDirNames);
+   for  my $dir(@localDirNamesArray){
+      if ( ! grep /^$dir$/, @checkArray) { 
+          Rex::Logger::info("$dir 不在允许的列表之中:$check ","error");
+          return 0 ; 
+      }  
+   }
+   Rex::Logger::info("校验成功");
+   return 1 ; 
+
+};
+
+#解压文件
+sub unztar{
+   my ($file,$type,$dir) = @_;
+   my $res ; 
+   my %hash ;
+   my $cmd ;
+   if ( $type eq "tar" ) {  
+     $cmd = "tar -zxf $file -C $dir" ; 
+   }elsif ( $type eq "zip" ) {
+     $cmd  = run "unzip $file -d $dir";
+   }    
+   $res = run "$cmd";
+   if ( $? eq 0  ) {
+     $hash{"code"} = 1 ;
+   }else{      
+     $hash{"code"} = -1 ; 
+   }
+   if ( $type ne "file" ) {
+     unlink($file);
+   }
+   $hash{"res"} = $res ;
+   $hash{"cmd"} = $cmd ;
+   return \%hash;
+
+}
 
 1;
 

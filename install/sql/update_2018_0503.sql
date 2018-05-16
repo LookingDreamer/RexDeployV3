@@ -21,3 +21,5 @@ CREATE TABLE `load_key_sorts` (
 `local_name`  varchar(255) NULL COMMENT '识别名称' ,
 `app_key_sort`  text NULL COMMENT '排序关键词' 
 );
+ALTER TABLE `pre_server_detail`
+ADD COLUMN `checkdir`  text NULL  COMMENT '校验更新文件' ;
