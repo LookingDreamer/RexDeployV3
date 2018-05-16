@@ -648,9 +648,9 @@ task downloading => sub {
             if ( ! is_dir( $update_local_confdir) ) {
                 mkdir($update_local_confdir);
             }
-            if ( is_dir("$update_local_confdir") ) {
-                rmdir("$update_local_confdir");
-                Rex::Logger::info("删除原有更新配置目录完成: rmdir $update_local_confdir.");
+            if ( is_dir("$update_local_confdir/$local_name") ) {
+                rmdir("$update_local_confdir/$local_name");
+                Rex::Logger::info("删除原有更新配置目录完成: rmdir $update_local_confdir/$local_name.");
             }            
             cp("$local_config_dir_remote", "$update_local_confdir");
             Rex::Logger::info("($k)--拷贝本地配置到更新目录完成  $local_config_dir_remote => $update_local_confdir.");

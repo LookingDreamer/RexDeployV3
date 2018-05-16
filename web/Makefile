@@ -182,24 +182,30 @@ PERL_ARCHIVE_AFTER =
 TO_INST_PM = lib/FastNotes.pm \
 	lib/FastNotes/Controller/Auths.pm \
 	lib/FastNotes/Controller/Notes.pm \
+	lib/FastNotes/Controller/Rex.pm \
 	lib/FastNotes/Controller/Users.pm \
 	lib/FastNotes/Model.pm \
 	lib/FastNotes/Model/Base.pm \
 	lib/FastNotes/Model/Note.pm \
-	lib/FastNotes/Model/User.pm
+	lib/FastNotes/Model/User.pm \
+	run.pl
 
 PM_TO_BLIB = lib/FastNotes/Model.pm \
 	blib/lib/FastNotes/Model.pm \
+	run.pl \
+	$(INST_LIB)/run.pl \
 	lib/FastNotes/Model/Base.pm \
 	blib/lib/FastNotes/Model/Base.pm \
 	lib/FastNotes/Controller/Users.pm \
 	blib/lib/FastNotes/Controller/Users.pm \
+	lib/FastNotes/Controller/Rex.pm \
+	blib/lib/FastNotes/Controller/Rex.pm \
 	lib/FastNotes/Model/Note.pm \
 	blib/lib/FastNotes/Model/Note.pm \
-	lib/FastNotes/Controller/Notes.pm \
-	blib/lib/FastNotes/Controller/Notes.pm \
 	lib/FastNotes/Controller/Auths.pm \
 	blib/lib/FastNotes/Controller/Auths.pm \
+	lib/FastNotes/Controller/Notes.pm \
+	blib/lib/FastNotes/Controller/Notes.pm \
 	lib/FastNotes.pm \
 	blib/lib/FastNotes.pm \
 	lib/FastNotes/Model/User.pm \
@@ -488,8 +494,82 @@ realclean purge ::  clean realclean_subdirs
 
 
 # --- MakeMaker metafile section:
-metafile :
-	$(NOECHO) $(NOOP)
+metafile : create_distdir
+	$(NOECHO) $(ECHO) Generating META.yml
+	$(NOECHO) $(ECHO) '---' > META_new.yml
+	$(NOECHO) $(ECHO) 'abstract: unknown' >> META_new.yml
+	$(NOECHO) $(ECHO) 'author:' >> META_new.yml
+	$(NOECHO) $(ECHO) '  - unknown' >> META_new.yml
+	$(NOECHO) $(ECHO) 'build_requires:' >> META_new.yml
+	$(NOECHO) $(ECHO) '  ExtUtils::MakeMaker: '\''0'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) 'configure_requires:' >> META_new.yml
+	$(NOECHO) $(ECHO) '  ExtUtils::MakeMaker: '\''0'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) 'dynamic_config: 1' >> META_new.yml
+	$(NOECHO) $(ECHO) 'generated_by: '\''ExtUtils::MakeMaker version 6.68, CPAN::Meta::Converter version 2.150010'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) 'license: unknown' >> META_new.yml
+	$(NOECHO) $(ECHO) 'meta-spec:' >> META_new.yml
+	$(NOECHO) $(ECHO) '  url: http://module-build.sourceforge.net/META-spec-v1.4.html' >> META_new.yml
+	$(NOECHO) $(ECHO) '  version: '\''1.4'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) 'name: web' >> META_new.yml
+	$(NOECHO) $(ECHO) 'no_index:' >> META_new.yml
+	$(NOECHO) $(ECHO) '  directory:' >> META_new.yml
+	$(NOECHO) $(ECHO) '    - t' >> META_new.yml
+	$(NOECHO) $(ECHO) '    - inc' >> META_new.yml
+	$(NOECHO) $(ECHO) 'requires:' >> META_new.yml
+	$(NOECHO) $(ECHO) '  DBD::SQLite: '\''0'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) '  DBIx::Simple: '\''0'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) '  Mojolicious: '\''0'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) '  SQL::Abstract: '\''0'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) 'version: '\'''\''' >> META_new.yml
+	$(NOECHO) $(ECHO) 'x_serialization_backend: '\''CPAN::Meta::YAML version 0.018'\''' >> META_new.yml
+	-$(NOECHO) $(MV) META_new.yml $(DISTVNAME)/META.yml
+	$(NOECHO) $(ECHO) Generating META.json
+	$(NOECHO) $(ECHO) '{' > META_new.json
+	$(NOECHO) $(ECHO) '   "abstract" : "unknown",' >> META_new.json
+	$(NOECHO) $(ECHO) '   "author" : [' >> META_new.json
+	$(NOECHO) $(ECHO) '      "unknown"' >> META_new.json
+	$(NOECHO) $(ECHO) '   ],' >> META_new.json
+	$(NOECHO) $(ECHO) '   "dynamic_config" : 1,' >> META_new.json
+	$(NOECHO) $(ECHO) '   "generated_by" : "ExtUtils::MakeMaker version 6.68, CPAN::Meta::Converter version 2.150010",' >> META_new.json
+	$(NOECHO) $(ECHO) '   "license" : [' >> META_new.json
+	$(NOECHO) $(ECHO) '      "unknown"' >> META_new.json
+	$(NOECHO) $(ECHO) '   ],' >> META_new.json
+	$(NOECHO) $(ECHO) '   "meta-spec" : {' >> META_new.json
+	$(NOECHO) $(ECHO) '      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",' >> META_new.json
+	$(NOECHO) $(ECHO) '      "version" : "2"' >> META_new.json
+	$(NOECHO) $(ECHO) '   },' >> META_new.json
+	$(NOECHO) $(ECHO) '   "name" : "web",' >> META_new.json
+	$(NOECHO) $(ECHO) '   "no_index" : {' >> META_new.json
+	$(NOECHO) $(ECHO) '      "directory" : [' >> META_new.json
+	$(NOECHO) $(ECHO) '         "t",' >> META_new.json
+	$(NOECHO) $(ECHO) '         "inc"' >> META_new.json
+	$(NOECHO) $(ECHO) '      ]' >> META_new.json
+	$(NOECHO) $(ECHO) '   },' >> META_new.json
+	$(NOECHO) $(ECHO) '   "prereqs" : {' >> META_new.json
+	$(NOECHO) $(ECHO) '      "build" : {' >> META_new.json
+	$(NOECHO) $(ECHO) '         "requires" : {' >> META_new.json
+	$(NOECHO) $(ECHO) '            "ExtUtils::MakeMaker" : "0"' >> META_new.json
+	$(NOECHO) $(ECHO) '         }' >> META_new.json
+	$(NOECHO) $(ECHO) '      },' >> META_new.json
+	$(NOECHO) $(ECHO) '      "configure" : {' >> META_new.json
+	$(NOECHO) $(ECHO) '         "requires" : {' >> META_new.json
+	$(NOECHO) $(ECHO) '            "ExtUtils::MakeMaker" : "0"' >> META_new.json
+	$(NOECHO) $(ECHO) '         }' >> META_new.json
+	$(NOECHO) $(ECHO) '      },' >> META_new.json
+	$(NOECHO) $(ECHO) '      "runtime" : {' >> META_new.json
+	$(NOECHO) $(ECHO) '         "requires" : {' >> META_new.json
+	$(NOECHO) $(ECHO) '            "DBD::SQLite" : "0",' >> META_new.json
+	$(NOECHO) $(ECHO) '            "DBIx::Simple" : "0",' >> META_new.json
+	$(NOECHO) $(ECHO) '            "Mojolicious" : "0",' >> META_new.json
+	$(NOECHO) $(ECHO) '            "SQL::Abstract" : "0"' >> META_new.json
+	$(NOECHO) $(ECHO) '         }' >> META_new.json
+	$(NOECHO) $(ECHO) '      }' >> META_new.json
+	$(NOECHO) $(ECHO) '   },' >> META_new.json
+	$(NOECHO) $(ECHO) '   "release_status" : "stable",' >> META_new.json
+	$(NOECHO) $(ECHO) '   "version" : "",' >> META_new.json
+	$(NOECHO) $(ECHO) '   "x_serialization_backend" : "JSON::PP version 2.27400"' >> META_new.json
+	$(NOECHO) $(ECHO) '}' >> META_new.json
+	-$(NOECHO) $(MV) META_new.json $(DISTVNAME)/META.json
 
 
 # --- MakeMaker signature section:
@@ -802,11 +882,13 @@ ppd :
 pm_to_blib : $(FIRST_MAKEFILE) $(TO_INST_PM)
 	$(NOECHO) $(ABSPERLRUN) -MExtUtils::Install -e 'pm_to_blib({@ARGV}, '\''$(INST_LIB)/auto'\'', q[$(PM_FILTER)], '\''$(PERM_DIR)'\'')' -- \
 	  lib/FastNotes/Model.pm blib/lib/FastNotes/Model.pm \
+	  run.pl $(INST_LIB)/run.pl \
 	  lib/FastNotes/Model/Base.pm blib/lib/FastNotes/Model/Base.pm \
 	  lib/FastNotes/Controller/Users.pm blib/lib/FastNotes/Controller/Users.pm \
+	  lib/FastNotes/Controller/Rex.pm blib/lib/FastNotes/Controller/Rex.pm \
 	  lib/FastNotes/Model/Note.pm blib/lib/FastNotes/Model/Note.pm \
-	  lib/FastNotes/Controller/Notes.pm blib/lib/FastNotes/Controller/Notes.pm \
 	  lib/FastNotes/Controller/Auths.pm blib/lib/FastNotes/Controller/Auths.pm \
+	  lib/FastNotes/Controller/Notes.pm blib/lib/FastNotes/Controller/Notes.pm \
 	  lib/FastNotes.pm blib/lib/FastNotes.pm \
 	  lib/FastNotes/Model/User.pm blib/lib/FastNotes/Model/User.pm 
 	$(NOECHO) $(TOUCH) pm_to_blib

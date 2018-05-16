@@ -681,6 +681,13 @@ task "downloadCombile",sub{
    }else{
       $fileType = "file";
    }
+   my $notFound = run "grep '404 Not Found' $localFile |wc -l";
+   if ( $notFound > 0  ) {
+      Rex::Logger::info("$url 访问404,请确认url是否正确 ","error");
+      $reshash{"code"} = -1;
+      $reshash{"msg"} = "$url return 404";    
+      return \%reshash;
+   }
    Rex::Logger::info("下载文件类型: $fileType");
    my $unzip = unztar($localFile,$fileType,$downdir) ;
    my $code = $unzip->{code} ;
@@ -810,11 +817,20 @@ sub unztar{
    my $res ; 
    my %hash ;
    my $cmd ;
+   if ( ! is_file($file) ) {
+     $hash{"code"} = -1 ; 
+     $hash{"res"} = "$file is not exist" ; 
+     return \%hash;
+   }
+   if ( !is_dir($dir) ) {
+     mkdir($dir);
+   }
    if ( $type eq "tar" ) {  
      $cmd = "tar -zxf $file -C $dir" ; 
    }elsif ( $type eq "zip" ) {
-     $cmd  = run "unzip $file -d $dir";
-   }    
+     $cmd  = "unzip $file -d $dir";
+   }
+   Rex::Logger::info("解压命令: $cmd");    
    $res = run "$cmd";
    if ( $? eq 0  ) {
      $hash{"code"} = 1 ;

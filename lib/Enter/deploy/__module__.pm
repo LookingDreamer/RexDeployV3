@@ -555,6 +555,7 @@ sub checkDiff{
 #2.下载远程文件并同步更新目录到待发布目录
 sub downloadSync(){
 	my ($k,$subject,$content,$is_finish,$w,$senv,$url,$full,$set) = @_;
+	Rex::Logger::info("($k) senv:$senv url:$url full:$full set:$set");
 	eval {
 		if ( "$senv" ne "" ) {
 			run_task "Enter:route:download",params => { k => $k,usetype=>"conf"};
