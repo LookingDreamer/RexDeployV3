@@ -23,3 +23,5 @@ CREATE TABLE `load_key_sorts` (
 );
 ALTER TABLE `pre_server_detail`
 ADD COLUMN `checkdir`  text NULL  COMMENT '校验更新文件' ;
+ALTER TABLE `pre_server_detail`
+ADD COLUMN `predir`  text NULL  COMMENT 'http包合并下层路径' ;

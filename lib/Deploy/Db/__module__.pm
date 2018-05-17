@@ -1026,6 +1026,7 @@ task query_ilocal_name=>sub {
 	if ( $count > 0 ) {
 		$result{"local_name"} =  $data[0]->{local_name};
 		$result{"checkdir"} =  $data[0]->{checkdir};
+		$result{"predir"} =  $data[0]->{predir};
 	}
 	Rex::Logger::info("查询(local_name in $app_key) or (app_key in $app_key)的local_name,返回记录数:$count");
 	

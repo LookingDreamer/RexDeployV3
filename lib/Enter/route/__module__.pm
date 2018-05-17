@@ -24,6 +24,7 @@ my $process_temp_dir;
 my $parallelism;
 my $httpdowndir;
 my $default_basehttp;
+my $default_basehttp2;
 my $is_check_dir;
 my $softdir;
 my $update_local_prodir;
@@ -45,6 +46,7 @@ Rex::Config->register_config_handler("$env", sub {
      $is_check_dir  = $param->{is_check_dir};
      $softdir  = $param->{softdir};
      $update_local_prodir  = $param->{update_local_prodir};
+     $default_basehttp2  = $param->{default_basehttp2};
  });
 
 desc "应用下载模块: rex  Enter:route:download   --k='server1 server2 ../groupname/all' [--update='1'] [--senv='uat'] [--type='pro/conf/all']";
@@ -629,8 +631,10 @@ task "downloadCombile",sub{
       $reshash{"msg"} = "k params is null";    
       return \%reshash;
    }
-   if ( "$set" eq "1" ) {
+   if ( "$set" eq "3.102" ) {
      $url = $default_basehttp."/".$url;
+   }elsif( "$set" eq "3.228" ){
+     $url = $default_basehttp2."/".$url;
    }
    if ( $url eq "" ){
       Rex::Logger::info("url参数不能为空","error");
@@ -645,6 +649,7 @@ task "downloadCombile",sub{
    my $count = $config->{count};
    my $local_name = $config->{local_name} ;
    my $check = $config->{checkdir} ;
+   my $predir = $config->{predir} ;
    if ( $count ne 1 ) {
       Rex::Logger::info("$k不存在或者存在多个k,目前仅支持下载单个url,单个k","error");
       $reshash{"code"} = -1;
@@ -708,7 +713,7 @@ task "downloadCombile",sub{
    }
    my $combileRes;
    if ( "$full" ne "" && "$dest" ne "") {
-      $combileRes = combile($full,$dest,$local_name,$downdir);
+      $combileRes = combile($full,$dest,$local_name,$downdir,$predir);
       my $msg = $combileRes->{msg} ; 
       if ( $combileRes->{code} != 1  ) {
           Rex::Logger::info("合并http包失败: $msg  ","error");
@@ -727,7 +732,7 @@ task "downloadCombile",sub{
 
 #合并拷贝
 sub combile{
-   my ($full,$dest,$local_name,$downdir) = @_;
+   my ($full,$dest,$local_name,$downdir,$predir) = @_;
    my (%hash,$remoteDir) ;
    if ( "$dest"  eq "1" ) {
       $remoteDir = $softdir."/".$local_name;
@@ -739,6 +744,9 @@ sub combile{
       Rex::Logger::info("dest参数不正确,仅支持1,2","error");
       return \%hash;
    } 
+   if ( "$predir" ne ""  ) {
+      $remoteDir = $remoteDir ."/". $predir;
+   }
    if( ! is_dir($remoteDir) ){
       mkdir($remoteDir);
    }
