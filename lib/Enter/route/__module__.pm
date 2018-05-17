@@ -686,6 +686,9 @@ task "downloadCombile",sub{
    }else{
       $fileType = "file";
    }
+   if ( $localFile =~ m/.jar$/ ) { 
+      $fileType = "file";
+   }   
    my $notFound = run "grep '404 Not Found' $localFile |wc -l";
    if ( $notFound > 0  ) {
       Rex::Logger::info("$url 访问404,请确认url是否正确 ","error");
