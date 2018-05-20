@@ -25,3 +25,7 @@ ALTER TABLE `pre_server_detail`
 ADD COLUMN `checkdir`  text NULL  COMMENT '校验更新文件' ;
 ALTER TABLE `pre_server_detail`
 ADD COLUMN `predir`  text NULL  COMMENT 'http包合并下层路径' ;
+ALTER TABLE `pre_server_detail`
+ADD COLUMN `local_pro_cmd`  text NULL  COMMENT '待发布包之前的工程初始化操作' ;
+ALTER TABLE `pre_server_detail`
+ADD COLUMN `local_conf_cmd`  text NULL  COMMENT '待发布包之前的配置初始化操作' ;
