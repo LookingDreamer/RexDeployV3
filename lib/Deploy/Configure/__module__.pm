@@ -4,6 +4,7 @@ use Rex -base;
 use Deploy::Db;
 use DBI;
 use Data::Dumper;
+use Rex::Misc::ShellBlock;
 
 my $env;
 my $softdir;
@@ -16,7 +17,7 @@ Rex::Config->register_config_handler("$env", sub {
  my ($param) = @_;
  our $user = $param->{user} ;
      $softdir  = $param->{softdir};
-     $configuredir  = $param->{softdir};
+     $configuredir  = $param->{configuredir};
  });
 
 
@@ -46,6 +47,21 @@ task config => sub {
     	Rex::Logger::info("$k 不存在工程路径自定义命令执行");
     }
 
+    my $diff_conf = Deploy::Db::query_local_conf_cmd($k);
+    my @diff_conf_array = @$diff_conf;
+    my $diff_conf_count = @diff_conf_array;
+    my $run_conf_cmd ;
+    if ( $diff_conf_count > 0 ) {
+        Rex::Logger::info("$k 存在配置路径自定义命令执行");
+        $run_conf_cmd = run_conf_cmd($diff_conf);
+        if ( $run_conf_cmd->{code} != 0 ) {
+            Rex::Logger::info("$k 执行配置初始化命令失败","error");
+            return ;
+        }
+    }else{
+        Rex::Logger::info("$k 不存在配置路径自定义命令执行");
+    }
+
 
 
 };
@@ -60,20 +76,34 @@ sub run_pro_cmd {
     	my $local_name = $pro->{"local_name"};
     	my $pro_cmd = $pro->{"local_pro_cmd"};
     	my $run_dir = $softdir."/".$local_name ; 
-    	Rex::Logger::info("$local_name 执行路径: $run_dir 执行命令: $pro_cmd");
+        Rex::Logger::info("$local_name 执行路径: $run_dir");
+        Rex::Logger::info("$local_name 执行命令: \n$pro_cmd");
     	$singleData{"local_name"} = $local_name;
     	$singleData{"pro_cmd"} = $pro_cmd;
     	$singleData{"run_dir"} = $run_dir;
+
+        if ( ! is_dir($run_dir) ) {
+            Rex::Logger::info("$local_name 执行路径: $run_dir 不存在","error");
+            $reshash{"code"} = -1 ;
+            $reshash{"msg"} = "run cmd path is not exist: $run_dir" ;
+            return \%reshash;
+        }
     	my $runres;
     	eval {
-    		$runres = run " cd $run_dir && $pro_cmd";
+    		# $runres = run " cd $run_dir && $pro_cmd";
+  $runres = shell_block <<EOF;
+    cd $run_dir
+    $pro_cmd
+EOF
+
     		if ( $? != 0 ) {
     			Rex::Logger::info("$local_name 执行路径: $run_dir 执行命令: $pro_cmd 执行失败: $runres","error");
 	    		$reshash{"code"} = -1 ;
 	    		$reshash{"msg"} = "run cmd faild: $runres" ;
 	    		return \%reshash;
     		}else{
-    			Rex::Logger::info("$local_name 执行路径: $run_dir 执行命令: $pro_cmd 执行成功");
+                Rex::Logger::info("$local_name 执行路径: $run_dir 执行成功");
+                Rex::Logger::info("$local_name 执行返回内容: $runres");
     		}
     	};
     	if ($@) {
@@ -92,6 +122,63 @@ sub run_pro_cmd {
 
 }
 
+
+sub run_conf_cmd {
+    my ($diff_conf)= @_;
+    my @diff_conf_array = @$diff_conf;
+    my %reshash ; 
+    my @data ; 
+    for my $conf (@diff_conf_array){
+        my %singleData ; 
+        my $local_name = $conf->{"local_name"};
+        my $conf_cmd = $conf->{"local_conf_cmd"};
+        my $app_key = $conf->{"app_key"};
+        my $run_dir = $configuredir."/".$local_name."/". $app_key; 
+        Rex::Logger::info("$local_name/$app_key 执行路径: $run_dir");
+        Rex::Logger::info("$local_name/$app_key 执行命令: \n$conf_cmd");
+        $singleData{"local_name"} = $local_name;
+        $singleData{"conf_cmd"} = $conf_cmd;
+        $singleData{"run_dir"} = $run_dir;
+
+        if ( ! is_dir($run_dir) ) {
+            Rex::Logger::info("$local_name/$app_key 执行路径: $run_dir 不存在","error");
+            $reshash{"code"} = -1 ;
+            $reshash{"msg"} = "run cmd path is not exist: $run_dir" ;
+            return \%reshash;
+        }
+        my $runres;
+        eval {
+            # $runres = run " cd $run_dir && $conf_cmd";
+  $runres = shell_block <<EOF;
+    cd $run_dir
+    $conf_cmd
+EOF
+
+            if ( $? != 0 ) {
+                Rex::Logger::info("$local_name/$app_key 执行路径: $run_dir 执行命令: $conf_cmd 执行失败: $runres","error");
+                $reshash{"code"} = -1 ;
+                $reshash{"msg"} = "run cmd faild: $runres" ;
+                return \%reshash;
+            }else{
+                Rex::Logger::info("$local_name/$app_key 执行路径: $run_dir 执行成功");
+                Rex::Logger::info("$local_name/$app_key 执行返回内容: $runres");
+            }
+        };
+        if ($@) {
+            push @data,\%singleData;
+            $reshash{"code"} = -1 ;
+            $reshash{"msg"} = "run cmd except: $@" ;
+            return \%reshash;
+        }
+        push @data,\%singleData;
+            
+    }
+    $reshash{"code"} = 0 ;
+    $reshash{"msg"} = "run cmd success" ;
+    $reshash{"data"} =\@data; 
+    return \%reshash;
+
+}
 
 task example => sub {
     # file "/data/www/ins_share/cm/config/config.properties",

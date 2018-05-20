@@ -1043,9 +1043,9 @@ task query_local_pro_cmd=>sub {
     $local_name =~ s/ /','/g;
     $local_name = "'".$local_name."'";
 	my @data = db select => {
-		fields => "DISTINCT(local_name),local_pro_cmd ",
+		fields => "local_name,local_pro_cmd ",
 		       from  => $table,
-		         where => "local_pro_cmd is not null and  local_pro_cmd !='' and  ( app_key in ($local_name) or local_name in ($local_name)) ",
+		         where => "local_pro_cmd is not null and  local_pro_cmd !='' and  ( app_key in ($local_name) or local_name in ($local_name))  group by local_name",
 
 
 	};
@@ -1060,6 +1060,31 @@ task query_local_pro_cmd=>sub {
 	return \@data;
 };
 
+
+desc "根据local_name/app_key查询服务器conf信息";
+task query_local_conf_cmd=>sub {
+	my $local_name = @_[0];
+	my @local_name_array = split(" ",$local_name);
+	my $local_name = join(" ",@local_name_array);
+    $local_name =~ s/ /','/g;
+    $local_name = "'".$local_name."'";
+	my @data = db select => {
+		fields => "local_name,app_key,local_conf_cmd ",
+		       from  => $table,
+		         where => "local_conf_cmd is not null and  local_conf_cmd !='' and  ( app_key in ($local_name) or local_name in ($local_name))  group by local_name",
+
+
+	};
+	unshift(@data);
+	my $count = @data;
+	if ( $count == 0 ) {
+		Rex::Logger::info("查询($local_name)服务器信息完成,返回记录数:$count","warn");
+	}else{
+		Rex::Logger::info("查询($local_name)服务器信息完成,返回记录数:$count");		
+	}
+
+	return \@data;
+};
 
 1;
 
