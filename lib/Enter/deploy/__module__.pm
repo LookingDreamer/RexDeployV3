@@ -183,6 +183,8 @@ task release => sub {
 		downloadSync($app_keys_string,$subject,$content,$is_finish,$w,$senv,$url,$full,$set);
 		#2.校验发布包和原包差异
 		checkDiff($app_keys_string,$subject,$content,$is_finish,$w,$senv);
+		#2.1 待发布程序和配置初始化命令
+		initProconf($k,$subject,$content,$is_finish,$w);
 		#3.开始发布		
 		$deployRes = startDeplopy($app_keys_string,$subject,$content,$is_finish,$w);
 		Rex::Logger::info("$app_keys_string  结束自动发布.");
@@ -245,6 +247,8 @@ task main => sub {
 	downloadSync($k,"灰度发布-滚动发布(2)",$content,$is_finish,$w,$senv);
 	#3.校验发布包和原包差异
 	checkDiff($k,"灰度发布-滚动发布(3)",$content,$is_finish,$w,$senv);
+	#3.1 待发布程序和配置初始化命令
+	initProconf($k,"灰度发布-滚动发布(3)",$content,$is_finish,$w);
 	#4.开始发布
 	$deployRes = startDeplopy($k,"灰度发布-滚动发布(4)",$content,$is_finish,$w);
 	#5.校验url
@@ -521,6 +525,31 @@ sub readFile{
 	    return \@data;
 
 }
+
+#3.1 待发布程序和配置初始化命令
+sub initProconf{
+	my ($k,$subject,$content,$is_finish,$w) = @_;
+	eval {
+
+		my $errData = run_task "Deploy:Configure:config",params => { k => $k };
+		if ( $errData->{"code"} != 0 ) {
+			Rex::Logger::info("($k) 待发布程序和配置初始化命令失败 ".$errData->{"msg"},"error");
+			sendMsg($subject,"($k)  待发布程序和配置初始化命令失败".$errData->{"msg"},$is_finish);
+			Common::Use::json($w,-1,"失败",[{msg=>"待发布程序和配置初始化命令失败".$errData->{"msg"},code=>-1}]);
+			exit;
+		}
+		Rex::Logger::info("($k) 待发布程序和配置初始化命令成功");
+	};
+	if ($@) {
+		Rex::Logger::info("($k) 待发布程序和配置初始化命令异常:$@","error");
+		sendMsg($subject,"($k)  待发布程序和配置初始化命令异常:$@",$is_finish);
+		Common::Use::json($w,-1,"失败",[{msg=>"run pro and config cmd  error: $@",code=>-1}]);
+		exit;
+	}
+
+
+}
+
 
 #3.校验发布包和原包差异
 sub checkDiff{

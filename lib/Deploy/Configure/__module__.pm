@@ -21,7 +21,7 @@ Rex::Config->register_config_handler("$env", sub {
  });
 
 
-desc "配置文件初始化";
+desc "配置文件初始化 rex Deploy:Configure:config --k='server'";
 task config => sub {
     my $self = shift;
     my $k=$self->{k};
@@ -30,18 +30,25 @@ task config => sub {
     if( $k eq ""  ){
 	    Rex::Logger::info("关键字(--k='')不能为空");
 	    Common::Use::json($w,"","关键字(--k='')不能为空","");
-	    exit;
+        $reshash{"code"} = -1; 
+        $reshash{"msg"} = "--k is null"; 
+	    return \%reshash;
     }
     my $diff_pro = Deploy::Db::query_local_pro_cmd($k);
     my @diff_pro_array = @$diff_pro;
     my $diff_pro_count = @diff_pro_array;
     my $run_pro_cmd ;
+    $reshash{diff_pro} = $diff_pro;
     if ( $diff_pro_count > 0 ) {
     	Rex::Logger::info("$k 存在工程路径自定义命令执行");
     	$run_pro_cmd = run_pro_cmd($diff_pro);
+        $reshash{run_pro_cmd} = $run_pro_cmd;
     	if ( $run_pro_cmd->{code} != 0 ) {
-    		Rex::Logger::info("$k 执行程序初始化命令失败","error");
-    		return ;
+    		Rex::Logger::info("$k 执行程序初始化命令失败","error");           
+            $reshash{"code"} = -1; 
+            $reshash{"msg"} = "init pro faild".$run_pro_cmd->{msg}; 
+            Common::Use::json($w,"","失败",[\%reshash ]);            
+    		return \%reshash;
     	}
     }else{
     	Rex::Logger::info("$k 不存在工程路径自定义命令执行");
@@ -51,18 +58,25 @@ task config => sub {
     my @diff_conf_array = @$diff_conf;
     my $diff_conf_count = @diff_conf_array;
     my $run_conf_cmd ;
+    $reshash{diff_conf} = $diff_conf;
     if ( $diff_conf_count > 0 ) {
         Rex::Logger::info("$k 存在配置路径自定义命令执行");
         $run_conf_cmd = run_conf_cmd($diff_conf);
+        $reshash{run_conf_cmd} = $run_conf_cmd;
         if ( $run_conf_cmd->{code} != 0 ) {
-            Rex::Logger::info("$k 执行配置初始化命令失败","error");
-            return ;
+            Rex::Logger::info("$k 执行配置初始化命令失败","error");            
+            $reshash{"code"} = -1; 
+            $reshash{"msg"} = "init config faild ".$run_conf_cmd->{msg}; 
+            Common::Use::json($w,"","失败",[\%reshash ]);
+            return \%reshash;
         }
     }else{
         Rex::Logger::info("$k 不存在配置路径自定义命令执行");
     }
-
-
+    $reshash{"code"} = 0; 
+    $reshash{"msg"} = "run init pro and config success"; 
+    Common::Use::json($w,"0","成功",[\%reshash]);
+    return \%reshash;
 
 };
 
@@ -71,6 +85,8 @@ sub run_pro_cmd {
     my @diff_pro_array = @$diff_pro;
     my %reshash ; 
     my @data ; 
+    $reshash{"code"} = 0 ;
+    $reshash{"msg"} = "run cmd success" ;
     for my $pro (@diff_pro_array){
     	my %singleData ; 
     	my $local_name = $pro->{"local_name"};
@@ -99,9 +115,11 @@ EOF
     		if ( $? != 0 ) {
     			Rex::Logger::info("$local_name 执行路径: $run_dir 执行命令: $pro_cmd 执行失败: $runres","error");
 	    		$reshash{"code"} = -1 ;
-	    		$reshash{"msg"} = "run cmd faild: $runres" ;
+	    		$reshash{"msg"} = "run cmd faild: $runres,return code is not 0" ;
+                $reshash{"runres"} = "$runres" ;
 	    		return \%reshash;
     		}else{
+                $reshash{"runres"} = "$runres" ;
                 Rex::Logger::info("$local_name 执行路径: $run_dir 执行成功");
                 Rex::Logger::info("$local_name 执行返回内容: $runres");
     		}
@@ -115,8 +133,6 @@ EOF
     	push @data,\%singleData;
     		
     }
-	$reshash{"code"} = 0 ;
-	$reshash{"msg"} = "run cmd success" ;
     $reshash{"data"} =\@data; 
     return \%reshash;
 
@@ -128,6 +144,8 @@ sub run_conf_cmd {
     my @diff_conf_array = @$diff_conf;
     my %reshash ; 
     my @data ; 
+    $reshash{"code"} = 0 ;
+    $reshash{"msg"} = "run cmd success" ;
     for my $conf (@diff_conf_array){
         my %singleData ; 
         my $local_name = $conf->{"local_name"};
@@ -157,9 +175,11 @@ EOF
             if ( $? != 0 ) {
                 Rex::Logger::info("$local_name/$app_key 执行路径: $run_dir 执行命令: $conf_cmd 执行失败: $runres","error");
                 $reshash{"code"} = -1 ;
-                $reshash{"msg"} = "run cmd faild: $runres" ;
+                $reshash{"msg"} = "run cmd faild: $runres,return code is not 0" ;
+                $reshash{"runres"} = "$runres" ;
                 return \%reshash;
             }else{
+                $reshash{"runres"} = "$runres" ;
                 Rex::Logger::info("$local_name/$app_key 执行路径: $run_dir 执行成功");
                 Rex::Logger::info("$local_name/$app_key 执行返回内容: $runres");
             }
@@ -173,8 +193,8 @@ EOF
         push @data,\%singleData;
             
     }
-    $reshash{"code"} = 0 ;
-    $reshash{"msg"} = "run cmd success" ;
+    
+    
     $reshash{"data"} =\@data; 
     return \%reshash;
 
