@@ -24,6 +24,7 @@ sub index {
     my %result;
     my $pwd;
     my $rex;
+    $self->res->headers->header('Access-Control-Allow-Origin' => '*');
     $pwd = $self->param('pwd');
     $rex = $self->param('rex');
     my $start = time();
@@ -60,6 +61,7 @@ sub index {
 sub runcmd {
     my ($self) = @_;
     my ($pwd,$rex,$cmd,$precmd,$requestCmd,$yaml,$stdout,$respon,$result,%result,@cmdArray);
+    $self->res->headers->header('Access-Control-Allow-Origin' => '*');
     $pwd = $self->param('pwd');
     $rex = $self->param('rex');
     $precmd = $self->param('precmd');

@@ -10,6 +10,7 @@ use FastNotes::Model;
 # This method will run once at server start
 sub startup {
     my $self = shift;
+    
 
     $self->secrets(['SomethingVerySecret']);
     $self->mode('development');
