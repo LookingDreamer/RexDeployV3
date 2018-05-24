@@ -265,3 +265,7 @@ task "json",sub{
     run_task "Common:Use:getJson",params=>{random=>$random,delete=>$delete};
 };
 
+desc "清除内存冗余数据 rex clean";
+task "clean",sub{
+   Common::Rexfile::cleanData();
+};

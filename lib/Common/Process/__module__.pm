@@ -236,26 +236,30 @@ sub appProcess{
     #重新返回该进程的数据
     my $allCount =@shared;
     my @mainShared;
-    my $i = 0 ;
     my $u = 0 ;
-    # for (my $var = 0; $var < $allCount; $var++) {
-    #    my $process = $shared[$var]->{"mainProcess"};
-    #    if ( "$process" eq "$mainProces" ) {
-    #        $u = $u + 1;
-    #        push @mainShared,$data ;
-    #        splice (@shared, $i, 1);            
-    #    }
-    # }
-    for my $data (@shared){
-       my $process = $data->{"mainProcess"};
+    my @deleteArray;
+    
+      Rex::Logger::info("当前全局内存存储变量数量: $allCount");
+    for (my $var = 0; $var < $allCount; $var++) {
+       my $process = $shared[$var]->{"mainProcess"};
        if ( "$process" eq "$mainProces" ) {
            $u = $u + 1;
-           push @mainShared,$data ;
-           # splice (@shared, $i, 1);            
+           push @mainShared,$shared[$var] ;
+           push @deleteArray,$var;
        }
-       $i = $ i + 1;
     }
-    Rex::Logger::info("当前全局内存存储变量数量: $allCount 实际使用变量数量: $u");
+    my $i = 0 ;
+    for my $index (sort @deleteArray){
+       if ( $i ==  0 ) {
+          splice (@shared, $index , 1);
+       }else{
+          splice (@shared, $index - 1 , 1);
+       }
+       $i = $i + 1;
+    }
+    my $allCount =@shared;
+
+    Rex::Logger::info("当前全局内存存储变量数量: $allCount 当前实际使用变量数量: $u");
     my $sharedCount = @mainShared;
     my %result = (
        msg => "success",

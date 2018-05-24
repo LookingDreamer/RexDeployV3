@@ -145,6 +145,21 @@ sub batchlookLog{
    Common::Use::json($w,"0","成功",[$result]);
 };
 
+sub cleanData{
+	my @shared;
+    my $ipch = tie @shared,   'IPC::Shareable',
+                           "foco",
+                           {  create    => 1,
+                              exclusive => 'no',
+                              mode      => 0666,
+                              size      => 1024*512,
+                              # destroy   => 'yes',
+                           };
+    (tied @shared)->remove;
+    IPC::Shareable->clean_up;
+    IPC::Shareable->clean_up_all;
+    Rex::Logger::info("清除全局内存shared存储变量");
+}
 1;
 
 =pod
