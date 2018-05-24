@@ -75,6 +75,7 @@ task "download",sub{
    my @data ;
    my $srck = $k ;
    my @sharedown;
+   my $mainProces = $$;
    $reshash{"params"} = {k=>"$k",senv=>"$senv",type=>"$type",update=>"$update",usetype=>"$usetype",w=>"$w"};
     
    if( $k eq ""  ){
@@ -206,8 +207,9 @@ task "download",sub{
            }
            # my $FistSerInfo=Deploy::Core::prepare($kv,$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
             my $downloadres = Deploy::Core::downloading($kv,$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config,$update,$config->{'local_name'},$query_prodir_key,$senv,$type,$usetype);               
+            my $single = {"mainProcess"=>"$mainProces","data"=>$downloadres}  ;   
             $ipch->shlock;
-            push @sharedown, $downloadres;
+            push @sharedown, $single;
             $ipch->shunlock;          
 
            }else{
@@ -244,18 +246,48 @@ task "download",sub{
    Rex::Logger::info("");
    Rex::Logger::info("下载远程服务器数据到本地完成.");
    $reshash{"take"} = $take_time ;
+
+    #重新返回该进程的数据
+    my $allCount =@sharedown;
+    my @mainShared;
+    my $u = 0 ;
+    my @deleteArray;
+    
+    Rex::Logger::info("当前全局内存存储变量数量: $allCount");
+    for (my $var = 0; $var < $allCount; $var++) {
+       my $process = $sharedown[$var]->{"mainProcess"};
+       if ( "$process" eq "$mainProces" ) {
+           $u = $u + 1;
+           push @mainShared,$sharedown[$var] ;
+           push @deleteArray,$var;
+       }
+    }
+    my $i = 0 ;
+    for my $index (sort @deleteArray){
+       if ( $i ==  0 ) {
+          splice (@sharedown, $index , 1);
+       }else{
+          splice (@sharedown, $index - 1 , 1);
+       }
+       $i = $i + 1;
+    }
+    my $allCount =@sharedown;
+
+    Rex::Logger::info("当前全局内存存储变量数量: $allCount 当前实际使用变量数量: $u");
+
    
-    my $sharedownCount = @sharedown;
+    my $sharedownCount = @mainShared;
     my %result = (
        msg => "success",
        code  => 0,
        count  => $sharedownCount,
-       data => [@sharedown] ,
+       data => [@mainShared] ,
        srcdata => \%reshash
     );
-    (tied @sharedown)->remove;
-    IPC::Shareable->clean_up;
-    IPC::Shareable->clean_up_all;
+    $result{"mainProcess"} = $mainProces;
+    # (tied @sharedown)->remove;
+    # IPC::Shareable->clean_up;
+    # IPC::Shareable->clean_up_all;
     Common::Use::json($w,"0","成功",[\%result]);
 
     return \%result;
