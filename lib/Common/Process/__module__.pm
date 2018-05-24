@@ -84,6 +84,7 @@ sub appProcess{
     my $start = time;
     my $data = [];
     my @shared;
+    my $mainProces = $$;
 
     if( $k eq ""  ){
      Rex::Logger::info("关键字(--k='')不能为空");
@@ -95,7 +96,8 @@ sub appProcess{
                            {  create    => 1,
                               exclusive => 'no',
                               mode      => 0666,
-                              size      => 1024*512
+                              size      => 1024*512,
+                              # destroy   => 'yes',
                            };
 
     my $keys=Deploy::Db::getallkey();
@@ -150,9 +152,10 @@ sub appProcess{
                         $runres->{"app_key"} = $kv;
                     }elsif( ref $runres eq "ARRAY"  ){
                         push   $runres,$kv;   
-                    }                
+                    } 
+                    my $single = {"mainProcess"=>"$mainProces","data"=>$runres}  ;             
                     $ipch->shlock;
-                    push @shared, $runres;
+                    push @shared, $single ;
                     $ipch->shunlock;
 
                   }else{
@@ -193,9 +196,10 @@ sub appProcess{
                   }elsif( ref $runres eq "ARRAY"  ){
                       push   $runres,$kv;   
 
-                  }                
+                  }  
+                  my $single = {"mainProcess"=>"$mainProces","data"=>$runres}  ;                  
                   $ipch->shlock;
-                  push @shared, $runres;
+                  push @shared, $single;
                   $ipch->shunlock;
 
                 }else{
@@ -229,16 +233,40 @@ sub appProcess{
     Rex::Logger::info("执行".$desc."完成.");
     my $take_time = time - $start;
     Rex::Logger::info("总共花费时间:$take_time秒.");
-    my $sharedCount = @shared;
+    #重新返回该进程的数据
+    my $allCount =@shared;
+    my @mainShared;
+    my $i = 0 ;
+    my $u = 0 ;
+    # for (my $var = 0; $var < $allCount; $var++) {
+    #    my $process = $shared[$var]->{"mainProcess"};
+    #    if ( "$process" eq "$mainProces" ) {
+    #        $u = $u + 1;
+    #        push @mainShared,$data ;
+    #        splice (@shared, $i, 1);            
+    #    }
+    # }
+    for my $data (@shared){
+       my $process = $data->{"mainProcess"};
+       if ( "$process" eq "$mainProces" ) {
+           $u = $u + 1;
+           push @mainShared,$data ;
+           # splice (@shared, $i, 1);            
+       }
+       $i = $ i + 1;
+    }
+    Rex::Logger::info("当前全局内存存储变量数量: $allCount 实际使用变量数量: $u");
+    my $sharedCount = @mainShared;
     my %result = (
        msg => "success",
        code  => 0,
        count  => $sharedCount,
-       data => [@shared]
+       data => [@mainShared]
     );
-    (tied @shared)->remove;
-    IPC::Shareable->clean_up;
-    IPC::Shareable->clean_up_all;
+    # (tied @shared)->remove;
+    # IPC::Shareable->clean_up;
+    # IPC::Shareable->clean_up_all;
+    $result{"mainProcess"} = $mainProces;
     return \%result;
     exit; #全部结束
 }
