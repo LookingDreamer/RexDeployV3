@@ -11,7 +11,6 @@ use Deploy::rollBack;
 use Rex::Group::Lookup::INI;
 use POSIX;
 use IPC::Shareable;
-my $maxchild = 5 ;
 my $s;
 my $i;
 my %hash_pids; 
@@ -48,6 +47,7 @@ Rex::Config->register_config_handler("$env", sub {
      $update_local_prodir  = $param->{update_local_prodir};
      $default_basehttp2  = $param->{default_basehttp2};
  });
+my $maxchild = $parallelism;
 
 desc "应用下载模块: rex  Enter:route:download   --k='server1 server2 ../groupname/all' [--update='1'] [--senv='uat'] [--type='pro/conf/all']";
 task "download",sub{
@@ -301,6 +301,7 @@ desc "应用发布模块: rex  Enter:route:deploy --k='server1 server2 ..' \n";
 task "deploy", sub {
    my $self = shift;
    my $k=$self->{k};
+   my $w=$self->{w};
    my $username=$user;
    my $keys=Deploy::Db::getallkey();
    my @keys=split(/,/, $keys);
@@ -312,6 +313,12 @@ task "deploy", sub {
    undef %hash_pids;
    my %hash_pids;
    push @errData,1;
+   my @sharedeploy;
+   my $mainProces = $$;
+   my %result;
+
+   $result{"k"} = $k ;
+   $result{"parallelism"} = $parallelism ;
    if( $k eq ""  ){
    Rex::Logger::info("关键字(--k='')不能为空","error");
    exit;
@@ -324,134 +331,202 @@ task "deploy", sub {
 
    Rex::Logger::info("Starting ...... 操作人: $username");
 
-   if ( "$random_temp_file" ne "" ) {
-         my $fh;
-         eval {
-              $fh = file_write "$random_temp_file";
-          };
-          if ($@) {
-              Rex::Logger::info("写入随机数据文件:$random_temp_file 异常:$@","warn");
-          } 
-         
-         $fh->write("");
-         $fh->close;
-   }
+  my $deploy = Deploy::Db::query_name_keys($k);
+  my @deploy = @$deploy;
+  my $deploylength = @deploy;
+  if ( $deploylength == 0 ) {
+    Rex::Logger::info("($k) 根据识别名称local_name查询到关键词为空,请确认是否已经录入数据","error");
+    exit;
+  }
+  Rex::Logger::info("($k) 根据识别名称查询到$deploylength条记录");
+  my @app_keys ;
+  my $app_keys_string;
+  for my $info (@deploy){
+    my $app_key = $info->{"app_key"}; 
+    push @app_keys,$app_key;  
+  }
+  $k = join(" ",@app_keys);
+
+  my $ipch = tie @sharedeploy,   'IPC::Shareable',
+                         "foco",
+                         {  create    => 1,
+                            exclusive => 'no',
+                            mode      => 0666,
+                            size      => 1024*512,
+                            # destroy   => 'yes',
+                         };
+
 
    my @ks = split(/ /, $k);
    my $max = @ks;
 
    Rex::Logger::info("");
    Rex::Logger::info("开始应用发布模块.");
-   for(my $g=0; $g < $max ;){
-		$g = $g+$maxchild;
-		$s = $g-$maxchild ;
-		if( $g > $max ){
-		  Rex::Logger::info("并发控制:($s - $max)");
-		}else{
-		  Rex::Logger::info("并发控制:($s - $g)");
-		}
+   Rex::Logger::info("当前并发数: $maxchild  当前主进程: $mainProces");
 
-		for($i=$g-$maxchild;$i<$g;$i++){
-		  if( $i == $max  ){
-		     #最后一次收割并等待子进程完成
-		     while (scalar keys %hash_pids) { #一直判断hash中是否含有pid值,直到退出.
-		       my $kid = waitpid(-1, WNOHANG); #无阻塞模式收割
-		       if ($kid and exists $hash_pids{$kid}) {
-		         delete $hash_pids{$kid};  #如果回收的子进程存在于hash中,那么删除它.
-		       }
-		     }
-		    Rex::Logger::info("应用发布模块完成.");
-		    my $take_time = time - $start;
-		    Rex::Logger::info("总共花费时间:$take_time秒.");
-        my $ranomstring = join(",",@randomArray);
-        push @errData,$ranomstring;
+  #根据的传值key来下载应用
+  for(my $g=0; $g < $max ;){
+    $g = $g+$maxchild;
+    $s = $g-$maxchild ;
+    my $initNumber;
+    my $maxNumber;
+    if( $g > $max ){
+      $initNumber = 0 ;
+      $maxNumber = $max;
+      Rex::Logger::info("并发控制:($s - $max)");
+    }else{
+      $initNumber = $g-$maxchild ;
+      $maxNumber = $g;
+      Rex::Logger::info("并发控制:($s - $g)");
+    }
 
-        my $fh = file_write "$deploy_finish_file";
-        $fh->write("总共花费时间:$take_time秒");
-        $fh->close;
-        return \@errData;
-		    # exit; 
-		    #全部结束
-		  }
-		  select(undef, undef, undef, 0.25);
-			  my $kv = $ks[$i];
-		    my $child=fork(); #派生一个子进程
-		  if($child){   # child >; 0, so we're the parent 
-		      $hash_pids{$child} = $child; 
-		      Rex::Logger::info("父进程PID:$$ 子进程PID:$child");
-		  }else{ 
-		    #在子进程中执行相关动作开始
-		    Rex::Logger::info("执行子进程,进程序号:$i");
-		   	if ( $kv ne "" ){
-			   if (exists($vars{$kv})){
-				   Rex::Logger::info("");
-				   Rex::Logger::info("##############($kv)###############");
-				   #初始化数据库信息
-				   my $config;
-				   my $FistSerInfo;
-		       my $dir;
-  				 my $myAppStatus;			
-				   my $config=Deploy::Core::init("$kv");
-				   my $auto_deloy;
-				   #判断是否加入了自动发布
-				   $auto_deloy=$config->{'auto_deloy'};
-				   if ( $auto_deloy eq "0"){
-				     Rex::Logger::info("($kv)--该应用没有加入自动发布","warn");
-				     # next;
-				     # exit 0;
-             $errData[0] = 0;
-             my $ranomstring = join(",",@randomArray);
-             push @errData,$ranomstring;
-             exit 0;
-             # return \@errData;
-				   }
-				   #查询该系统是否处于发布的状态,并记录初始化的的信息
-				   my $myAppStatus=Deploy::Db::getDeployStatus($kv,$config->{'network_ip'},"$username");
-           push @randomArray,$myAppStatus;
-           Rex::Logger::info("($kv)--$random_temp_file写入随机数: $myAppStatus");
-           saveFile($random_temp_file,$myAppStatus.",");
-				   if($myAppStatus eq "1" ){
-				     Rex::Logger::info("($kv)--该应用正在发布,跳过本次操作.","warn");
-				     # next;
-				     # exit 0;
-             $errData[0] = 0;
-             my $ranomstring = join(",",@randomArray);
-             push @errData,$ranomstring;
-             exit 0 ;
-             # return \@errData;
-				   }
-				   #第一次连接获取远程服务器信息
-				   my $FistSerInfo=Deploy::Core::prepare($kv,$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
-				   #上传程序目录和配置目录
-				   my $dir=Deploy::Core::uploading($kv,$config->{'local_name'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config->{'app_key'},$config->{'is_deloy_dir'},$config->{'pro_dir'},$config->{'config_dir'},"$myAppStatus");	
-				   #更改软链接,重启应用
-				   #run_task "Deploy:Core:linkrestart",on=>$config->{'network_ip'},params=>{ k => $kv,network_ip =>$config->{'network_ip'},ps_num=>$FistSerInfo->{'ps_num'},pro_key=>$config->{'pro_key'},pro_init=>$config->{'pro_init'},remote_prodir=>$dir->{'remote_prodir'},remote_configdir=>$dir->{'remote_configdir'},pro_dir=>$config->{'pro_dir'},config_dir=>$config->{'config_dir'},is_deloy_dir=>$config->{'is_deloy_dir'},localdir=>$dir->{'localdir'},local_config_dir=>$dir->{'local_config_dir'},myAppStatus=>"$myAppStatus",backupdir_same_level=>$config->{'backupdir_same_level'},deploydir_same_level=>$config->{'deploydir_same_level'}};	
-				   run_task "Deploy:Core:linkrestart",on=>$config->{'network_ip'},params=>{ k => $kv,config =>$config,FistSerInfo=>$FistSerInfo,dir=>$dir,myAppStatus=>"$myAppStatus"};	
-			   }else{
-			   	   Rex::Logger::info("关键字($kv)不存在","error");
-             $errData[0] = 0;
-             my $ranomstring = join(",",@randomArray);
-             push @errData,$ranomstring;
-             exit 0;
-			   }
-	        }
 
-        # $errData[0] = 0;
-        my $ranomstring = join(",",@randomArray);
-        push @errData,$ranomstring;
-        # return \@errData;
-		    exit 0;             # child is done
-		    #在子进程中执行相关动作结束
-		 } 
-		}
-		#收割并等待子进程完成
-		while (scalar keys %hash_pids) { #一直判断hash中是否含有pid值,直到退出.
-		  my $kid = waitpid(-1, WNOHANG); #无阻塞模式收割
-		  if ($kid and exists $hash_pids{$kid}) {
-		    delete $hash_pids{$kid};  #如果回收的子进程存在于hash中,那么删除它.
-		  }
-		}
-	}
+    for($i=$initNumber;$i<$maxNumber;$i++){
+
+      select(undef, undef, undef, 0.25);
+        my $kv = $ks[$i];
+        my $child=fork(); #派生一个子进程
+      if($child){   # child >; 0, so we're the parent 
+          $hash_pids{$child} = $child;  
+          Rex::Logger::info("父进程PID:$$ 子进程PID:$child");
+      }else{ 
+        #在子进程中执行相关动作开始
+          Rex::Logger::info("执行子进程,进程序号:$i");
+          if ( $kv ne "" ){
+              if (exists($vars{$kv})){
+                  Rex::Logger::info("");
+                  Rex::Logger::info("##############($kv)###############");
+                  #1.初始化数据库信息
+                  my $config;
+                  my $FistSerInfo;
+                  my $dir;
+                  my $myAppStatus;     
+                  my $config=Deploy::Core::init("$kv");
+                  my $auto_deloy;
+                  #2.判断是否加入了自动发布
+                  $auto_deloy=$config->{'auto_deloy'};
+                  if ( $auto_deloy eq "0"){
+                      Rex::Logger::info("($kv)--该应用没有加入自动发布","warn");
+                      my $single = {"mainProcess"=>"$mainProces","app_key"=>$kv,"data"=>$myAppStatus,"code"=> -1 ,"msg"=>"($kv)--have not add deploy(auto_deloy = 0)"}  ;  
+                      $ipch->shlock;
+                      push @sharedeploy, $single ;
+                      $ipch->shunlock;
+                      exit 0;
+                  }
+                  #3.查询该系统是否处于发布的状态,并记录初始化的的信息
+                  my $myAppStatus=Deploy::Db::getDeployStatus($kv,$config->{'network_ip'},"$username");
+                  Rex::Logger::info("($kv) 生成随机数: $myAppStatus");
+
+                  if($myAppStatus eq "1" ){
+                      Rex::Logger::info("($kv)--该应用正在发布,跳过本次操作.","warn");
+                      my $single = {"mainProcess"=>"$mainProces","app_key"=>$kv,"data"=>$myAppStatus,"code"=> -1 ,"msg"=>"($kv)--is deploying"}  ;  
+                      $ipch->shlock;
+                      push @sharedeploy, $single ;
+                      $ipch->shunlock;
+                      exit 0 ;
+                  }
+                  my $single = {"mainProcess"=>"$mainProces","app_key"=>$kv,"data"=>$myAppStatus,"code"=> 0 ,"msg"=>"get random success"}  ;  
+                  $ipch->shlock;
+                  push @sharedeploy, $single ;
+                  $ipch->shunlock;
+
+                  #4.第一次连接获取远程服务器信息
+                  my $FistSerInfo=Deploy::Core::prepare($kv,$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
+                  #5.上传程序目录和配置目录
+                  my $dir=Deploy::Core::uploading($kv,$config->{'local_name'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config->{'app_key'},$config->{'is_deloy_dir'},$config->{'pro_dir'},$config->{'config_dir'},"$myAppStatus");  
+                  #6.更改软链接,重启应用
+                  run_task "Deploy:Core:linkrestart",on=>$config->{'network_ip'},params=>{ k => $kv,config =>$config,FistSerInfo=>$FistSerInfo,dir=>$dir,myAppStatus=>"$myAppStatus"}; 
+              }else{
+                  Rex::Logger::info("关键字($kv)不存在","error");
+                  my $single = {"mainProcess"=>"$mainProces","app_key"=>$kv,"data"=>"","code"=> -1 ,"msg"=>"($kv)--is not exist"}  ;  
+                  $ipch->shlock;
+                  push @sharedeploy, $single ;
+                  $ipch->shunlock;
+                  exit 0;
+              }
+          }
+          exit 0;             # child is done
+        #在子进程中执行相关动作结束
+     } 
+    }
+    #收割并等待子进程完成
+    while (scalar keys %hash_pids) { #一直判断hash中是否含有pid值,直到退出.
+      my $kid = waitpid(-1, WNOHANG); #无阻塞模式收割
+      if ($kid and exists $hash_pids{$kid}) {
+        delete $hash_pids{$kid};  #如果回收的子进程存在于hash中,那么删除它.
+      }
+    }
+  }
+
+  #最后一次收割并等待子进程完成
+  while (scalar keys %hash_pids) { #一直判断hash中是否含有pid值,直到退出.
+      my $kid = waitpid(-1, WNOHANG); #无阻塞模式收割
+      if ($kid and exists $hash_pids{$kid}) {
+          delete $hash_pids{$kid};  #如果回收的子进程存在于hash中,那么删除它.
+      }
+  }
+
+
+  #全部结束
+  Rex::Logger::info("应用发布模块完成.");
+  my $take_time = time - $start;
+  Rex::Logger::info("总共花费时间:$take_time秒.");
+
+  my $fh = file_write "$deploy_finish_file";
+  $fh->write("总共花费时间:$take_time秒");
+  $fh->close;
+
+  $result{"take"} = $take_time ;
+
+    #重新返回该进程的数据
+    my $allCount =@sharedeploy;
+    my @mainShared;
+    my $u = 0 ;
+    my @deleteArray;
+    
+    Rex::Logger::info("当前全局内存存储变量数量: $allCount");
+    for (my $var = 0; $var < $allCount; $var++) {
+       my $process = $sharedeploy[$var]->{"mainProcess"};
+       if ( "$process" eq "$mainProces" ) {
+           $u = $u + 1;
+           push @mainShared,$sharedeploy[$var] ;
+           push @deleteArray,$var;
+       }
+    }
+
+    my $i = 0 ;
+    for my $index (sort @deleteArray){
+       if ( $i ==  0 ) {
+          splice (@sharedeploy, $index , 1);
+       }else{
+          splice (@sharedeploy, $index - 1 , 1);
+       }
+       $i = $i + 1;
+    }
+    my $allCount =@sharedeploy;
+
+    Rex::Logger::info("当前全局内存存储剩余变量数量: $allCount 当前实际使用变量数量: $u");
+
+   
+    my $sharedownCount = @mainShared;
+    my %result = (
+       msg => "success",
+       code  => 0,
+       count  => $sharedownCount,
+       data => [@mainShared] ,
+       srcdata => \%result
+    );
+    $result{"mainProcess"} = $mainProces;
+    # (tied @sharedown)->remove;
+    # IPC::Shareable->clean_up;
+    # IPC::Shareable->clean_up_all;
+    Common::Use::json($w,"0","成功",[\%result]);
+
+    return \%result;
+
+
+
+
 };
 
 desc "应用回滚模块: rex  Enter:route:rollback  --rollstatus=0 --k='server1 server2 ..' \n--rollstatus=0:回滚到上一次最近版本(默认值).\n--rollstatus=1:根据数据库字段rollStatus=1回滚.";
