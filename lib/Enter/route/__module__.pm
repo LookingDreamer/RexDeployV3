@@ -323,6 +323,7 @@ task "deploy", sub {
    Rex::Logger::info("关键字(--k='')不能为空","error");
    exit;
    }
+   exit;
 
    if( $username eq ""  ){
    Rex::Logger::info("操作人(--u='')不能为空");

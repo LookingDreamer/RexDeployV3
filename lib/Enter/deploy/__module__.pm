@@ -414,7 +414,34 @@ sub startDeplopy{
 	    if (is_file($deploy_finish_file)) {
 	        unlink($deploy_finish_file);
 	    }
-		run_task "Enter:route:deploy",params => { k => $k };
+	    Rex::Logger::info("---------------------------start deploy--------------------------") ;
+		my $deploy_res = run_task "Enter:route:deploy",params => { k => $k };
+
+		Rex::Logger::info("保存返回发布数据: ".Dumper($deploy_res)) ;
+
+		if ( $deploy_res  ==  undef) {
+			Rex::Logger::info("($k) 发布失败,执行发布返回undef,请查看日志","error");
+			sendMsg($subject,"($k) 发布失败,执行发布返回undef,请查看日志",$is_finish);
+			Common::Use::json($w,-1,"失败",[{msg=>"deploy faild,query deploy info is null",code=>-1}]);
+			exit;
+		}
+
+		my @data;
+		my @deploy_result = @$deploy_res->{data};
+		for my $deployData (@deploy_result){
+			my $code = 	$deployData->{code};
+			my $msg = 	$deployData->{msg};
+			my $random = $deployData->{data};
+			if ( $code != 0 ) {
+				Rex::Logger::info("($k) 发布失败".$msg,"error");
+				sendMsg($subject,"($k) 发布失败".$msg,$is_finish);
+				Common::Use::json($w,-1,"失败",[{msg=>"deploy faild,".$msg,code=>-1}]);
+				exit;
+			}
+			push @data,$random;
+
+		}
+
 
 		for (my $var = 1; $var <= $deploy_max_count; $var++) {
 			if ( is_file($deploy_finish_file) ) {
@@ -425,8 +452,8 @@ sub startDeplopy{
 		}
 		select(undef, undef, undef, 3);
 
-	    my $data = readFile($random_temp_file) ;
-	    my @data = @$data;
+	    # my $data = readFile($random_temp_file) ;
+	    # my @data = @$data;
 	    my $datastring = join(" ",@data);
 	    Rex::Logger::info("($k) 发布随机数: $datastring");
 	    my $deployInfo = Deploy::Db::query_deploy_info($datastring,$k);
