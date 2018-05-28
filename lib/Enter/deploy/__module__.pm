@@ -426,8 +426,19 @@ sub startDeplopy{
 			exit;
 		}
 
+		my $code = $deploy_res->{code};		
+		if ( $code != 0 ) {
+			my $msg = 	$deploy_res->{msg};
+			Rex::Logger::info("($k) 发布失败".$msg,"error");
+			sendMsg($subject,"($k) 发布失败".$msg,$is_finish);
+			Common::Use::json($w,-1,"失败",[{msg=>"deploy faild,".$msg,code=>-1}]);
+			exit;
+		}
+
 		my @data;
-		my @deploy_result = @$deploy_res->{data};
+		my $dataVar = $deploy_res->{data};
+		my @deploy_result = @$dataVar;
+
 		for my $deployData (@deploy_result){
 			my $code = 	$deployData->{code};
 			my $msg = 	$deployData->{msg};
@@ -441,7 +452,6 @@ sub startDeplopy{
 			push @data,$random;
 
 		}
-
 
 		for (my $var = 1; $var <= $deploy_max_count; $var++) {
 			if ( is_file($deploy_finish_file) ) {

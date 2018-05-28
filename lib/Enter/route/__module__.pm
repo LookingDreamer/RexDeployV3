@@ -319,15 +319,19 @@ task "deploy", sub {
 
    $result{"k"} = $k ;
    $result{"parallelism"} = $parallelism ;
+   $result{"mainProcess"} = $mainProces;
    if( $k eq ""  ){
-   Rex::Logger::info("关键字(--k='')不能为空","error");
-   exit;
+     Rex::Logger::info("关键字(--k='')不能为空","error");
+     $result{"code"} = -1;
+     $result{"msg"} = " --k is null";
+     return \%result;
    }
-   exit;
 
    if( $username eq ""  ){
-   Rex::Logger::info("操作人(--u='')不能为空");
-   exit;
+     Rex::Logger::info("操作人(--u='')不能为空");
+     $result{"code"} = -1;
+     $result{"msg"} = " --u is null";
+     return \%result;
    }
 
    Rex::Logger::info("Starting ...... 操作人: $username");
@@ -337,7 +341,9 @@ task "deploy", sub {
   my $deploylength = @deploy;
   if ( $deploylength == 0 ) {
     Rex::Logger::info("($k) 根据识别名称local_name查询到关键词为空,请确认是否已经录入数据","error");
-    exit;
+     $result{"code"} = -1;
+     $result{"msg"} = "query k or local_name return is null";
+     return \%result;
   }
   Rex::Logger::info("($k) 根据识别名称查询到$deploylength条记录");
   my @app_keys ;
@@ -517,7 +523,7 @@ task "deploy", sub {
        data => [@mainShared] ,
        srcdata => \%result
     );
-    $result{"mainProcess"} = $mainProces;
+    
     # (tied @sharedown)->remove;
     # IPC::Shareable->clean_up;
     # IPC::Shareable->clean_up_all;
