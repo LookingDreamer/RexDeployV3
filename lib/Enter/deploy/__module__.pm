@@ -411,9 +411,9 @@ sub startDeplopy{
 	my ($k,$subject,$content,$is_finish,$w) = @_;
 	my @deploy ;
 	eval {
-	    if (is_file($deploy_finish_file)) {
-	        unlink($deploy_finish_file);
-	    }
+	    # if (is_file($deploy_finish_file)) {
+	    #     unlink($deploy_finish_file);
+	    # }
 	    Rex::Logger::info("---------------------------start deploy--------------------------") ;
 		my $deploy_res = run_task "Enter:route:deploy",params => { k => $k };
 
@@ -453,13 +453,13 @@ sub startDeplopy{
 
 		}
 
-		for (my $var = 1; $var <= $deploy_max_count; $var++) {
-			if ( is_file($deploy_finish_file) ) {
-				Rex::Logger::info("检测到发布已经结束") ;
-				last;
-			}
-			select(undef, undef, undef, $deploy_interval_time);
-		}
+		# for (my $var = 1; $var <= $deploy_max_count; $var++) {
+		# 	if ( is_file($deploy_finish_file) ) {
+		# 		Rex::Logger::info("检测到发布已经结束") ;
+		# 		last;
+		# 	}
+		# 	select(undef, undef, undef, $deploy_interval_time);
+		# }
 		select(undef, undef, undef, 3);
 
 	    # my $data = readFile($random_temp_file) ;

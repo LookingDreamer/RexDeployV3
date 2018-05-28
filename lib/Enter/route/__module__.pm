@@ -479,9 +479,9 @@ task "deploy", sub {
   my $take_time = time - $start;
   Rex::Logger::info("总共花费时间:$take_time秒.");
 
-  my $fh = file_write "$deploy_finish_file";
-  $fh->write("总共花费时间:$take_time秒");
-  $fh->close;
+  # my $fh = file_write "$deploy_finish_file";
+  # $fh->write("总共花费时间:$take_time秒");
+  # $fh->close;
 
   $result{"take"} = $take_time ;
 
