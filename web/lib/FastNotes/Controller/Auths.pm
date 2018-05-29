@@ -34,5 +34,17 @@ sub check {
     shift->session('user_id') ? 1 : 0;
 }
 
+sub checkapi {
+    my ($self) = @_;
+    my $apikey    = $self->param('apikey');
+    my $password = $self->param('password');
+    my %result ;
+    $result{"apikey"} = $apikey;
+    $result{"take"} = 1;
+    $result{"code"} = 0 ;
+    $self->render(json => \%result);
+    shift->session('user_id') ? 0 : 0;
+}
+
 1;
 
