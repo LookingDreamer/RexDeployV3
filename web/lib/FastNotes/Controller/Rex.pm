@@ -13,7 +13,7 @@ use Mojo::Base 'Mojolicious::Plugin';
 use YAML;
 use Mojo::JSON qw(decode_json encode_json);
 use List::MoreUtils qw(uniq);
-use Encode;
+use Encode qw(encode_utf8);
 
 my $log = Mojo::Log->new;
 
@@ -102,7 +102,9 @@ sub directruncmd {
         if ( $stdout ne "" ) {
             $stdout = $respon->{"stdout"};
             eval {
-                $decoded_json = decode_json($stdout);
+                my $data_json = qq( $stdout );
+                $decoded_json = decode_json(encode_utf8($data_json));
+                # $decoded_json = decode_json($stdout);
             };
             if ($@) {
                 $result{"code"} = -1 ;

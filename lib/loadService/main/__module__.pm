@@ -341,7 +341,7 @@ task check => sub {
            #处理逻辑
            if ( "$url" eq "" ) {
                $errData[0] = 0 ;
-               push @errData,"校验url为空:".$kv;
+               push @errData,"check url is null: ".$kv;
                Rex::Logger::info("校验url不能为空","error");
                next;
            }
