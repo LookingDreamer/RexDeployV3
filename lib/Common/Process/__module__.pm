@@ -248,15 +248,11 @@ sub appProcess{
            push @deleteArray,$var;
        }
     }
-    my $i = 0 ;
-    for my $index (sort @deleteArray){
-       if ( $i ==  0 ) {
-          splice (@shared, $index , 1);
-       }else{
-          splice (@shared, $index - 1 , 1);
-       }
-       $i = $i + 1;
-    }
+    my $i = 0;
+    for (@deleteArray) {
+        splice(@shared, $_-$i, 1);
+        $i++;
+    }   
     my $allCount =@shared;
 
     Rex::Logger::info("当前全局内存存储变量数量: $allCount 当前实际使用变量数量: $u");
