@@ -264,9 +264,14 @@ task "download",sub{
     }
     my $i = 0;
     for (@deleteArray) {
-        splice(@sharedown, $_-$i, 1);
+        my $deleteIndex = $_-$i ;
+        my $deleteprocess = $sharedown[$deleteIndex]->{"mainProcess"};
+        if ( "$deleteprocess" eq "$mainProces"  ) {
+            splice(@sharedown, $deleteIndex, 1);
+        }       
         $i++;
-    }       
+    } 
+
     my $allCount =@sharedown;
 
     Rex::Logger::info("当前全局内存存储变量数量: $allCount 当前实际使用变量数量: $u");
@@ -499,10 +504,13 @@ task "deploy", sub {
 
     my $i = 0;
     for (@deleteArray) {
-        splice(@sharedeploy, $_-$i, 1);
+        my $deleteIndex = $_-$i ;
+        my $deleteprocess = $sharedeploy[$deleteIndex]->{"mainProcess"};
+        if ( "$deleteprocess" eq "$mainProces"  ) {
+            splice(@sharedeploy, $deleteIndex, 1);
+        }       
         $i++;
-    }
-            
+    }      
     my $allCount =@sharedeploy;
 
     Rex::Logger::info("当前全局内存存储剩余变量数量: $allCount 当前实际使用变量数量: $u");

@@ -239,7 +239,7 @@ sub appProcess{
     my $u = 0 ;
     my @deleteArray;
     
-      Rex::Logger::info("当前全局内存存储变量数量: $allCount");
+    Rex::Logger::info("当前全局内存存储变量数量: $allCount");
     for (my $var = 0; $var < $allCount; $var++) {
        my $process = $shared[$var]->{"mainProcess"};
        if ( "$process" eq "$mainProces" ) {
@@ -250,12 +250,16 @@ sub appProcess{
     }
     my $i = 0;
     for (@deleteArray) {
-        splice(@shared, $_-$i, 1);
+        my $deleteIndex = $_-$i ;
+        my $deleteprocess = $shared[$deleteIndex]->{"mainProcess"};
+        if ( "$deleteprocess" eq "$mainProces"  ) {
+            splice(@shared, $deleteIndex, 1);
+        }       
         $i++;
     }   
     my $allCount =@shared;
 
-    Rex::Logger::info("当前全局内存存储变量数量: $allCount 当前实际使用变量数量: $u");
+    Rex::Logger::info("当前全局内存存储剩余变量数量: $allCount 当前实际使用变量数量: $u");
     my $sharedCount = @mainShared;
     my %result = (
        msg => "success",
