@@ -22,7 +22,8 @@ sub startup {
     $r->namespaces(['FastNotes::Controller']);
 
     $r->route('/')                   ->to('auths#create_form')->name('auths_create_form');
-    # $r->route('/login')              ->to('auths#create')     ->name('auths_create');
+    $r->route('/login')              ->to('auths#login')     ->name('auth_login');
+    $r->route('/token')              ->to('auths#token')     ->name('get_token');
     # $r->route('/logout')             ->to('auths#delete')     ->name('auths_delete');
     # $r->route('/signup')->via('get') ->to('users#create_form')->name('users_create_form');
     # $r->route('/signup')->via('post')->to('users#create')     ->name('users_create');

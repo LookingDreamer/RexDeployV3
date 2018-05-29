@@ -8,6 +8,7 @@ use Carp qw/croak/;
 
 use FastNotes::Model::User;
 use FastNotes::Model::Note;
+use FastNotes::Model::Token;
 
 my $DB;
 
@@ -28,9 +29,12 @@ sub init {
                convert       => 'upper'
         );
 
-        unless ( eval {$DB->select('users')} ) { # TODO make better check
+        unless ( eval { $DB->select('users') } ) { # TODO make better check
             $class->create_db_structure();
         }
+        unless ( eval { $DB->select('tokens') } ) { # TODO make better check
+            $class->create_db_structure_token();
+        }        
     }
 
     return $DB;
@@ -39,6 +43,15 @@ sub init {
 sub db {
     return $DB if $DB;
     croak "You should init model first!";
+}
+
+sub create_db_structure_token{
+    my $class = shift;
+    $class->db->query(
+            'CREATE TABLE tokens (token    TEXT    NOT NULL PRIMARY KEY UNIQUE,
+                                      expire TEXT    NOT NULL,
+                                      timestamp    TEXT);'
+    );  
 }
 
 sub create_db_structure {
@@ -52,7 +65,7 @@ sub create_db_structure {
                                       jid      TEXT,
                                       gravatar TEXT);'
     );
-
+  
     $class->db->query(
             'CREATE TABLE notes (note_id INTEGER NOT NULL PRIMARY KEY ASC AUTOINCREMENT,
                                       user_id INTEGER NOT NULL

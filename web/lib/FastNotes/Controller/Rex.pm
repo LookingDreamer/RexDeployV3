@@ -13,6 +13,7 @@ use Mojo::Base 'Mojolicious::Plugin';
 use YAML;
 use Mojo::JSON qw(decode_json encode_json);
 use List::MoreUtils qw(uniq);
+use Encode;
 
 my $log = Mojo::Log->new;
 
