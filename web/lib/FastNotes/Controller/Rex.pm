@@ -12,6 +12,7 @@ use Data::Dumper;
 use Mojo::Base 'Mojolicious::Plugin';
 use YAML;
 use Mojo::JSON qw(decode_json encode_json);
+use List::MoreUtils qw(uniq);
 
 my $log = Mojo::Log->new;
 
@@ -130,15 +131,21 @@ sub runcmd {
     $self->res->headers->header('Access-Control-Allow-Origin' => '*');
     $pwd = $self->param('pwd');
     $rex = $self->param('rex');
+    my $print = $self->param('sprint');
+    my $debug = $self->param('debug');
     my @all_param_names = @{$self->req->params->names};
     my $param = $self->req->params->to_hash;
     $log->info("获取post参数".encode_json($param));
     $result{"param"} = $param ;
-    my $parseparameters = parseparameters($param,\@all_param_names);
+    my $allow =  $self->app->defaults->{"config"}->{"allow"}; 
+    my $print_stdout =  $self->app->defaults->{"config"}->{"print_stdout"}; 
+    my $precmdAllow =  $self->app->defaults->{"config"}->{"precmdAllow"}; 
+    my $parseparameters = parseparameters($param,$allow,$precmdAllow,\@all_param_names);
     $result{"parseparameters"} = $parseparameters ;
     $precmd = $parseparameters->{precmd};
     $requestCmd = $parseparameters->{requestCmd};
     $result{"code"} = 0 ;
+    $result{"print_stdout"} = $print_stdout ;
     my $start = time();
     if (defined $pwd && defined $rex) {
         $log->info("pwd:" . $pwd . " rex:".$rex);
@@ -147,12 +154,23 @@ sub runcmd {
         $pwd =  $self->app->defaults->{"config"}->{"pwd"};  
         $log->info("pwd:" . $pwd . " rex:".$rex);      
     }
-  
+
     if ( ! defined $precmd ||  $precmd eq ""){
-        $precmd = " -qF ";
+        if ( $debug ) {
+            $precmd = " -F ";
+        }else{
+            $precmd = " -qF ";
+        }
+        
     }else{
-        $precmd =~ s/,/ /i; 
-        $precmd = " -qF ".$precmd;
+        if ($debug) {
+            $precmd =~ s/,/ /i; 
+            $precmd = " -F ".$precmd;
+        }else{
+            $precmd =~ s/,/ /i; 
+            $precmd = " -qF ".$precmd;            
+        }
+
     }
 
     if($parseparameters->{code} !=  0 ){
@@ -204,15 +222,22 @@ sub runcmd {
     my $end = time();
     my $take = $end - $start;
     $result{"take"} = $take;
+    if ( ! defined $print ||  $print eq ""){
+        if ( $print_stdout ==  0 ) {
+            $result{"respon"}{"stdout"} = "" ;
+        }        
+    }
+
     $self->render(json => \%result);
 }
 
 
 sub  parseparameters{
-    my ($paramsHash,$paramsArray) = @_;
-    my (%reshash,@paramsArray,$count,$action,$requestCmd,$precmd);
+    my ($paramsHash,$allow,$precmdAllow,$paramsArray) = @_;
+    my (%reshash,@paramsArray,$count,$action,$requestCmd,$precmd,@requestCmd,@precmd);
     @paramsArray = @$paramsArray;
     $count =  @paramsArray;
+    my @precmdAllow = @$precmdAllow;
     if ( $count ==  0 ) {
         $reshash{"code"} = -1 ;
         $reshash{"msg"} = "post参数为空" ;
@@ -227,28 +252,99 @@ sub  parseparameters{
     my $action;
     $action = $paramsHash->{action};
     $log->info("action: $action");
+    $log->info("转换POST参数: @paramsArray");
 
-    given( $action ) {
+    my @allow = @$allow;
+    my $action_status = 0 ;
+    my $mustParams_status = 0 ;
+    my $mustOneParams_status = 0 ;
+    for my $allowData (@allow){
+        my $allowaction = $allowData->{action};
+        my $mustParams = $allowData->{mustParams};
+        my $mustOneParams = $allowData->{mustOneParams};
+        $allowaction =~ s/ //g;  
+        $mustParams =~ s/ //g;  
+        $mustOneParams =~ s/ //g;  
+        if ( "$allowaction" eq "$action" ) {
+            $action_status = $action_status + 1 ;
+            if ( "$mustParams" ne "" ) {
+               my @mustParamsArray = split(",",$mustParams); 
+               push @mustParamsArray,"action";
+               my $number = uniq @paramsArray,@mustParamsArray;
+               if ( $number != uniq(@paramsArray) ) {
+                    $log->error("当执行 $action 模块时,post参数为空,必须传参: $mustParams");
+                    $reshash{"code"} = -1 ;
+                    $reshash{"msg"} = "当执行 $action 模块时,post参数为空,必须传参: $mustParams" ;
+                    return \%reshash;
+               }
+            }else{
+                $mustParams_status = $mustParams_status + 1 ;  
+            }
 
-        when('run') { 
-            if( ! grep { $_ eq "k" } @paramsArray){  
-                $log->error("当执行run模块时,k参数不能为空");
-                $reshash{"code"} = -1 ;
-                $reshash{"msg"} = "当执行run模块时,k参数不能为空" ;
-                return \%reshash;
-            }           
+            if ( "$mustOneParams" ne "" ) {
+                my @mustOneParamsArray = @$mustOneParams ; 
+                for my $mustOne (@mustOneParamsArray){
+                     my @mustArray = @$mustOne;
+                     my $muststr = join(",",@mustArray);
+                     my $must = 0 ;
+                     my $mustCount = @mustArray ;
+                     for my $one (@mustArray){
+                        if(  grep { $_ eq "$one" } @paramsArray){
+                            $must = $must + 1;  
+                        }  
+                     }
+                     if ( $mustCount > 0  ) {
+                        if ( $must != 1  ) {
+                            $log->error("当执行 $action 模块时,post前置参数为空,必须传单个参: $muststr");
+                            $reshash{"code"} = -1 ;
+                            $reshash{"msg"} = "当执行 $action 模块时,post前置参数为空,必须传单个参: $muststr" ;
+                            return \%reshash;
+                        }
+                     }  
+                }
+            }else{
+                $mustOneParams_status = $mustOneParams_status + 1 ;  
+            }
+
         }
-        default{
-            $log->error("action: $action 模块未定义");
-            $reshash{"code"} = -1 ;
-            $reshash{"msg"} = "action: $action 模块未定义";
-            return \%reshash;
-        }
+
     }
 
+    if( $action_status == 0 ){
+        $log->error("不支持的action参数: $action");
+        $reshash{"code"} = -1 ;
+        $reshash{"msg"} = "不支持的action参数: $action";
+        return \%reshash;
+    }
+    #重新组合cmd
+    push @requestCmd,$paramsHash->{action} ;
+    my $precmdVar;
+    for my $param (@paramsArray){
+        $param =~ s/ //g; 
+        if(grep { $_ eq "$param" } @precmdAllow){
+            my $preParam ;
+            if ( $paramsHash->{$param} eq "" ) {
+                $preParam = "-".$param  ;
+            }else{
+                $preParam = "-".$param ." \"".$paramsHash->{$param}."\"" ;
+            }
+            
+            push @precmd,$preParam ;
+        }else{
+            if ( "$param" ne "action") {
+                my $singeParam = "--".$param ."=\"".$paramsHash->{$param}."\"";
+                push @requestCmd,$singeParam;
+            }
+        }
 
-    $reshash{"requestCmd"} = $requestCmd;
-    $reshash{"precmd"} = $precmd ;
+    }
+    push @requestCmd,"--w=\"1\"" ;
+    my  $requestCmdVar = join(",",@requestCmd);
+    my  $precmdVar = join(",",@precmd);
+    $log->info("重新组合cmd: $requestCmdVar");
+    $log->info("重新组合precmd: $precmdVar");
+    $reshash{"requestCmd"} = $requestCmdVar;
+    $reshash{"precmd"} = $precmdVar ;
     $reshash{"code"} = 0 ;
     $reshash{"msg"} = "校验和解析参数成功" ;
     return \%reshash;

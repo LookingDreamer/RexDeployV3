@@ -1,4 +1,228 @@
 {
-    "rex":"/usr/bin/rex",
-    "pwd":"/data/RexDeployV3"
+    "rex": "/usr/bin/rex", 
+    "pwd": "/data/RexdeployV3", 
+    "print_stdout": 0, 
+    "precmdAllow": ["b","e","E","G","g","H","z","K","P","p","u","d","ddd","m","o","q","qw","Q","T","Tm","Tv","Ty","c","C","f","F","h","M","O","s","S","t","v"],
+    "allow": [
+        {
+            "action": "Common:Use:download", 
+            "mustParams": "dir1,dir2", 
+            "mustOneParams": [["H","g","G"]]
+        }, 
+        {
+            "action": "Common:Use:get", 
+            "mustParams": "url,header", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "Common:Use:getJson", 
+            "mustParams": "random,delelte", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "Common:Use:post", 
+            "mustParams": "url,header,param", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "Common:Use:run", 
+            "mustParams": "cmd", 
+            "mustOneParams": [["H","g","G"]]
+        }, 
+        {
+            "action": "Common:Use:upload", 
+            "mustParams": "dir1,dir2",  
+            "mustOneParams": [["H","g","G"]]
+        }, 
+        {
+            "action": "Cos:Upload:query", 
+            "mustParams": "option", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "Cos:Upload:txy", 
+            "mustParams": "option,env,pkgpath", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "Deploy:Configure:config", 
+            "mustParams": "k", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "Deploy:Core:diff", 
+            "mustParams": "k", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "Deploy:Core:syncpro", 
+            "mustParams": "k", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "Deploy:Db:initdb", 
+            "mustParams": "", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "Enter:deploy:main", 
+            "mustParams": "k", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "Enter:route:download", 
+            "mustParams": "k", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "Enter:route:downloadCombile", 
+            "mustParams": "k,url", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "Enter:route:rollback", 
+            "mustParams": "k", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "Enter:route:service", 
+            "mustParams": "k,a", 
+            "mustOneParams": ""
+        },  
+        {
+            "action": "Predeploy:Judge:accesslog", 
+            "mustParams": "k", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "User:main:route", 
+            "mustParams": "action", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "check", 
+            "mustParams": "k", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "checkurl", 
+            "mustParams": "k", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "clean", 
+            "mustParams": "", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "deploy", 
+            "mustParams": "k", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "download", 
+            "mustParams": "k,dir1,dir2", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "getLog", 
+            "mustParams": "k", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "grepLog", 
+            "mustParams": "k", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "list", 
+            "mustParams": "", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "loadService:main:check", 
+            "mustParams": "k", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "loadService:main:query", 
+            "mustParams": "loadBalancerId", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "loadService:main:queryk", 
+            "mustParams": "k", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "loadService:main:update", 
+            "mustParams": "k,w", 
+            "mustOneParams": ""
+        },  
+        {
+            "action": "logCenter:main:getLog", 
+            "mustParams": "", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "logCenter:main:grepLog", 
+            "mustParams": "", 
+            "mustOneParams": ""
+        },  
+        {
+            "action": "logCenter:main:liveLog", 
+            "mustParams": "", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "logCenter:main:lookLog", 
+            "mustParams": "", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "logCenter:main:queryList", 
+            "mustParams": "", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "lookLog", 
+            "mustParams": "k", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "queryk", 
+            "mustParams": "k", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "release", 
+            "mustParams": "k", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "rollback", 
+            "mustParams": "k", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "run", 
+            "mustParams": "k,cmd", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "service", 
+            "mustParams": "k,a", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "updatek", 
+            "mustParams": "k,weight", 
+            "mustOneParams": ""
+        }, 
+        {
+            "action": "upload", 
+            "mustParams": "k,dir1,dir2", 
+            "mustOneParams": ""
+        }
+    ]
 }
