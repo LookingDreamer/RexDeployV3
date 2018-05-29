@@ -53,6 +53,7 @@ sub get_random {
 
 sub login {
     my ($self) = @_;
+    $self->res->headers->header('Access-Control-Allow-Origin' => '*');
     my $username = $self->param('username');
     my $password = $self->param('password');
     my %result ;
@@ -85,6 +86,7 @@ sub login {
 
 sub token {
     my ($self) = @_;
+    $self->res->headers->header('Access-Control-Allow-Origin' => '*');
     my $token = $self->param('token');
     my %result ;
     my $config =  $self->app->defaults->{"config"};
