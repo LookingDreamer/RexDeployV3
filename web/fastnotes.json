@@ -3,7 +3,7 @@
     "password": "admin20180529#@!", 
     "expire": "3600", 
     "rex": "/usr/bin/rex", 
-    "pwd": "/data/RexDeployV3", 
+    "pwd": "/data/RexdeployV3", 
     "print_stdout": 0, 
     "precmdAllow": ["b","e","E","G","g","H","z","K","P","p","u","d","ddd","m","o","q","qw","Q","T","Tm","Tv","Ty","c","C","f","F","h","M","O","s","S","t","v"],
     "allow": [
