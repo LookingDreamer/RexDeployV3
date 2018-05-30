@@ -106,6 +106,11 @@ sub token {
 sub getToken{
     my ($token) = @_;
     my %hash ;
+    if ( !defined $token || $token  eq "") {
+        $hash{"code"} = -1 ;
+        $hash{"msg"} = "token数据为空" ; 
+        return \%hash; 
+    }
     my $query_token = scalar FastNotes::Model::Token->select( { token => $token } )->hash ;
     $hash{"query"} = $query_token ;
     if( $query_token->{token} eq "") {
@@ -148,6 +153,7 @@ sub saveToken{
 
 sub checkapi {
     my ($self) = @_;
+    $self->res->headers->header('Access-Control-Allow-Origin' => '*');
     my $token    = $self->param('token');
     my %result ;
     $result{"token"} = $token;

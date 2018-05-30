@@ -1105,6 +1105,7 @@ desc
 task "syncpro", sub {
     my $self       = shift;
     my $k          = $self->{k};
+    my $w          = $self->{w};
     my $update          = $self->{update};
     my $localnames = run_task "Deploy:Db:getlocalname";
     my @base       = split( /,/, $localnames );
@@ -1329,6 +1330,7 @@ task "syncpro", sub {
     }
     push @errData,join(",",@errpro);
     push @errData,join(",",@errconf);
+    Common::Use::json($w,"0","成功",\@errData);
     return \@errData;
 };
 

@@ -13,13 +13,18 @@
             "mustOneParams": [["H","g","G"]]
         }, 
         {
+            "action": "Deploy:Db:initdb", 
+            "mustParams": "", 
+            "mustOneParams": ""
+        },
+        {
             "action": "Common:Use:get", 
             "mustParams": "url,header", 
             "mustOneParams": ""
-        }, 
+        },               
         {
             "action": "Common:Use:getJson", 
-            "mustParams": "random,delelte", 
+            "mustParams": "random,delete", 
             "mustOneParams": ""
         }, 
         {
