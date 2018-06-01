@@ -144,7 +144,7 @@ task "download",sub{
 
    Rex::Logger::info("");
    Rex::Logger::info("开始下载远程服务器数据到本地.");
-
+   Rex::Logger::info("当前并发数: $maxchild.");
 
   my $ipch = tie @sharedown,   'IPC::Shareable',
                          "foco",
