@@ -740,10 +740,12 @@ task "downloadCombile",sub{
    my $dest=$self->{dest};
    my %reshash ;
    my $now = strftime("%Y%m%d_%H%M%S", localtime(time));
+   $reshash{"params"} = {k=>"$k",url=>"$url",downdir=>"$downdir",set=>"$set",full=>"$full",dest=>"$dest"};
    if ( $k eq "" ){
       Rex::Logger::info("k参数不能为空","error");
       $reshash{"code"} = -1;
-      $reshash{"msg"} = "k params is null";    
+      $reshash{"msg"} = "k params is null"; 
+      Common::Use::json($w,"","失败",[\%reshash]);   
       return \%reshash;
    }
    if ( "$set" eq "3.102" ) {
@@ -754,7 +756,8 @@ task "downloadCombile",sub{
    if ( $url eq "" ){
       Rex::Logger::info("url参数不能为空","error");
       $reshash{"code"} = -1;
-      $reshash{"msg"} = "url params is null";    
+      $reshash{"msg"} = "url params is null"; 
+      Common::Use::json($w,"","失败",[\%reshash]);    
       return \%reshash;
    } 
    if ( "$downdir" eq "" ) {
@@ -768,26 +771,31 @@ task "downloadCombile",sub{
    if ( $count ne 1 ) {
       Rex::Logger::info("$k不存在或者存在多个k,目前仅支持下载单个url,单个k","error");
       $reshash{"code"} = -1;
-      $reshash{"msg"} = "$k is wrong ,please comfire";    
+      $reshash{"msg"} = "$k is wrong ,please comfire";   
+      Common::Use::json($w,"","失败",[\%reshash]);  
       return \%reshash;    
    }
    if ( "$local_name" eq "") {
       Rex::Logger::info("$k查询到local_name为空","error");
       $reshash{"code"} = -1;
-      $reshash{"msg"} = "$k local_name is null,please comfire";    
+      $reshash{"msg"} = "$k local_name is null,please comfire"; 
+      Common::Use::json($w,"","失败",[\%reshash]);    
       return \%reshash;  
    }
    Rex::Logger::info("关联应用:$local_name 下载url:$url 下载路径: $downdir");
    if ( ! is_dir($downdir) ) {
       mkdir($downdir);
    }
+   $reshash{"downdir"} = "$downdir";
    my $download = run_task "Common:Use:download",params => { dir1 => $url,dir2 => $downdir,http => 1};
+   $reshash{"download"} = $download;
    if ( $download->{code} == 0  ) {
       Rex::Logger::info("http下载成功");
    }else{
       Rex::Logger::info("http下载失败","error");
       $reshash{"code"} = -1;
-      $reshash{"msg"} = "http download faild";    
+      $reshash{"msg"} = "http download faild"; 
+      Common::Use::json($w,"","失败",[\%reshash]);    
       return \%reshash;
    }
    my $localFile = $download->{download}->{localPath};
@@ -808,40 +816,48 @@ task "downloadCombile",sub{
    if ( $notFound > 0  ) {
       Rex::Logger::info("$url 访问404,请确认url是否正确 ","error");
       $reshash{"code"} = -1;
-      $reshash{"msg"} = "$url return 404";    
+      $reshash{"msg"} = "$url return 404"; 
+      Common::Use::json($w,"","失败",[\%reshash]);    
       return \%reshash;
    }
    Rex::Logger::info("下载文件类型: $fileType");
    my $unzip = unztar($localFile,$fileType,$downdir) ;
+   $reshash{"unzip"} = $unzip;
    my $code = $unzip->{code} ;
    my $res = $unzip->{res} ;
    if (  $code == -1  ) {
       Rex::Logger::info("解压文件: $localFile 失败: $res ","error");
       $reshash{"code"} = -1;
-      $reshash{"msg"} = "unzip $localFile faild";    
+      $reshash{"msg"} = "unzip $localFile faild";  
+      Common::Use::json($w,"","失败",[\%reshash]);   
       return \%reshash;
    }
    Rex::Logger::info("解压成功");
    my $checkRes = checkDir($downdir,$is_check_dir,$check);
+   $reshash{"checkRes"} = $checkRes;
    if ( ! $checkRes ) {
       Rex::Logger::info("校验$downdir 目录列表失败,请检查该目录是否在允许列表之内","error");
       $reshash{"code"} = -1;
-      $reshash{"msg"} = "check $downdir faild";    
+      $reshash{"msg"} = "check $downdir faild";   
+      Common::Use::json($w,"","失败",[\%reshash]);  
       return \%reshash;
    }
    my $combileRes;
    if ( "$full" ne "" && "$dest" ne "") {
       $combileRes = combile($full,$dest,$local_name,$downdir,$predir);
+      $reshash{"combileRes"} = $combileRes;
       my $msg = $combileRes->{msg} ; 
       if ( $combileRes->{code} != 1  ) {
           Rex::Logger::info("合并http包失败: $msg  ","error");
           $reshash{"code"} = -1;
-          $reshash{"msg"} = "combile http package faild";    
+          $reshash{"msg"} = "combile http package faild";  
+          Common::Use::json($w,"","失败",[\%reshash]);   
           return \%reshash;
       }
    }
    $reshash{"code"} = 1;
    $reshash{"msg"} = "success";
+   Common::Use::json($w,"0","成功",[\%reshash]); 
    return \%reshash;
 
 };

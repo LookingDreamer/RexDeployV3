@@ -649,8 +649,15 @@ sub search{
 	}
 	if ( $queryLogFile =~ /#/ ) {
 		my @queryLogFileList=split(/#/, $queryLogFile);
+		my $count=@queryLogFileList;
 		my $today=strftime($queryLogFileList[1], localtime(time));
-		my $LogFile="$queryLogFileList[0]$today";
+		my $LogFile;
+		if ( $count == 3 ) {
+			$LogFile="$queryLogFileList[0]$today$queryLogFileList[2]";
+		}else{
+			$LogFile="$queryLogFileList[0]$today";
+		}
+		
 		$log="$queryLogDir/$LogFile";
 	}else{
 		$log="$queryLogDir/$queryLogFile";
