@@ -86,6 +86,7 @@ task getconfig => sub {
 		$config{require}=$list->{'require'};
 		$config{requirecode}=$list->{'requirecode'};
 		$config{access_log}=$list->{'access_log'};
+		$config{is_restart_status}=$list->{'is_restart_status'};
 
 		$config{config_dir}=~ s/ //g;
 		$config{pro_dir}=~ s/ //g;
@@ -1071,7 +1072,7 @@ task query_local_conf_cmd=>sub {
 	my @data = db select => {
 		fields => "local_name,app_key,local_conf_cmd ",
 		       from  => $table,
-		         where => "local_conf_cmd is not null and  local_conf_cmd !='' and  ( app_key in ($local_name) or local_name in ($local_name))  group by local_name",
+		         where => "local_conf_cmd is not null and  local_conf_cmd !='' and  ( app_key in ($local_name) or local_name in ($local_name))",
 
 
 	};

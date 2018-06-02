@@ -245,6 +245,7 @@ task "getLog", sub {
 	my $search = $self->{search};
 	my $k = $self->{k};
 	my $w = $self->{w};
+	my $random = $self->{random};
 	my $download_local = $self->{download_local};
 	my %reshash ; 
 	$reshash{"params"} = {log=>$log,search=>$search,k=>$k,download_local=>$download_local};
@@ -255,7 +256,7 @@ task "getLog", sub {
 		Rex::Logger::info("日志参数或者搜索关键词不能同时为空","error");
 		$reshash{"code"} = -1 ;
 		$reshash{"msg"} = "search and log args is null" ;
-		Common::Use::json($w,"","日志参数或者搜索关键词不能同时为空","");
+		Common::Use::json($w,"","日志参数或者搜索关键词不能同时为空","",$random);
 		return \%reshash; 		
 	}
 	if ( $download_local eq "") {
@@ -385,7 +386,7 @@ task "getLog", sub {
 	}
 
 	$reshash{"download"} = $downloadRes ;
-	Common::Use::json($w,"0","成功",[\%reshash]);
+	Common::Use::json($w,"0","成功",[\%reshash],$random);
 	return \%reshash;
 
 };
@@ -413,6 +414,7 @@ task "grepLog", sub {
 	my $w = $self->{w};
 	my $k = $self->{k};
 	my $wb = $self->{wb};
+	my $random = $self->{random};
 	my %reshash;
 	$reshash{"params"} = {log=>$log,search=>$search,k=>$k,grep=>$grep,debug=>$debug,w=>$w};
 	if ( "$k" ne "") {
@@ -420,14 +422,14 @@ task "grepLog", sub {
 	}
 	if( $log eq "" and $search eq "" ){
 		Rex::Logger::info("日志参数或者搜索关键词不能同时为空","error");
-		Common::Use::json($w,"","日志参数或者搜索关键词不能同时为空","");
+		Common::Use::json($w,"","日志参数或者搜索关键词不能同时为空","",$random );
 		$reshash{"code"} = -1 ;
 		$reshash{"msg"} = "log and search is null" ;
 		return \%reshash;		
 	}
 	if( $grep eq ""){
 		Rex::Logger::info("过滤关键词不能为空","error");
-		Common::Use::json($w,"","过滤关键词不能为空","");
+		Common::Use::json($w,"","过滤关键词不能为空","",$random);
 		$reshash{"code"} = -1 ;
 		$reshash{"msg"} = "grep is null" ;
 		return \%reshash;	
@@ -450,7 +452,7 @@ task "grepLog", sub {
         if ( ! $file_exist ) {
 			$reshash{"code"} = -1 ;
 			$reshash{"msg"} = "$log is not exist " ;
-			Common::Use::json($w,"","失败",[\%reshash]);
+			Common::Use::json($w,"","失败",[\%reshash],$random);
 			Rex::Logger::info("服务器名称:$names 服务器日志:$log 日志文件不存在","error");
 			return \%reshash;
         }
@@ -477,7 +479,7 @@ task "grepLog", sub {
 				}else{
 					$reshash{"resgrep_file_faild"} = 1;
 					Rex::Logger::info("生成过滤文件失败:$grep_log");
-					Common::Use::json($w,"","生成过滤文件失败:$grep_log","");
+					Common::Use::json($w,"","生成过滤文件失败:$grep_log","",$random);
 					$reshash{"code"} = -1 ;
 					$reshash{"msg"} = "create $grep_log faild " ;
 					Common::Use::json($w,"","失败",[\%reshash]);
@@ -513,19 +515,20 @@ task "grepLog", sub {
 			
 		}
 		$reshash{"output_grep"} = $output_grep;
-		Common::Use::json($w,"0","成功",[\%reshash]);
+		Common::Use::json($w,"0","成功",[\%reshash],$random);
 		return \%reshash;
 
 
 	}else{
 
 		my $server = Rex->get_current_connection()->{'server'};
+		$server = "$server";
 		my $names = Deploy::Db::showname($server);
 		if ( ! is_file($log) ) {
 			Rex::Logger::info("\033[0;32m[$server]-[$names] \033[0m $log 远程日志文件不存在.","error");
 			$reshash{"code"} = -1 ;
 			$reshash{"msg"} = "$log is not exist" ;
-			Common::Use::json($w,"","失败",[\%reshash]);
+			Common::Use::json($w,"","失败",[\%reshash],$random);
 			return \%reshash;
 		}
 		my $output = run "du -sh $log ; grep  --color '$grep' $log |wc -l ";
@@ -551,7 +554,7 @@ task "grepLog", sub {
 				}else{
 					$reshash{"resgrep_file_faild"} = 1;
 					Rex::Logger::info("生成过滤文件失败:$grep_log","error");
-					Common::Use::json($w,"","生成过滤文件失败:$grep_log","");
+					Common::Use::json($w,"","生成过滤文件失败:$grep_log","",$random);
 					$reshash{"code"} = -1 ;
 					$reshash{"msg"} = "create $grep_log faild " ;
 					return \%reshash;
@@ -582,7 +585,7 @@ task "grepLog", sub {
 			}
 		}
 		$reshash{"output_grep"} = $output_grep;
-		Common::Use::json($w,"0","成功",[\%reshash]);
+		Common::Use::json($w,"0","成功",[\%reshash],$random);
 		return \%reshash;
 
 	}
