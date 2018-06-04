@@ -21,3 +21,13 @@ CREATE TABLE `load_key_sorts` (
 `local_name`  varchar(255) NULL COMMENT '识别名称' ,
 `app_key_sort`  text NULL COMMENT '排序关键词' 
 );
+ALTER TABLE `pre_server_detail`
+ADD COLUMN `checkdir`  text NULL  COMMENT '校验更新文件' ;
+ALTER TABLE `pre_server_detail`
+ADD COLUMN `predir`  text NULL  COMMENT 'http包合并下层路径' ;
+ALTER TABLE `pre_server_detail`
+ADD COLUMN `local_pro_cmd`  text NULL  COMMENT '待发布包之前的工程初始化操作' ;
+ALTER TABLE `pre_server_detail`
+ADD COLUMN `local_conf_cmd`  text NULL  COMMENT '待发布包之前的配置初始化操作' ;
+ALTER TABLE `pre_server_detail`
+ADD COLUMN `is_restart_status`  int DEFAULT 0 COMMENT '不需要启动和关闭应用' ;
