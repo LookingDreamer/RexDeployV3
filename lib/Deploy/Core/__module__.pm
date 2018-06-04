@@ -695,6 +695,7 @@ task linkrestart => sub {
     my $is_deloy_dir     = $config->{is_deloy_dir};
     my $localdir         = $dir->{localdir};
     my $local_config_dir = $dir->{local_config_dir};
+    my $is_restart_status = $config->{is_restart_status};
     our $backupdir_same_level = $config->{backupdir_same_level};
     our $deploydir_same_level = $config->{deploydir_same_level};
 
@@ -782,6 +783,18 @@ task linkrestart => sub {
             "($k)--发布前软链接详情: $pro_desc_be || $conf_desc_be");
     }
 
+
+
+    if (  $is_restart_status == 1 ) {
+        Rex::Logger::info("($k)--is_restart_status=1,无需重启和关闭应用.");
+        link_start(
+            $k,                $pro_dir,       $config_dir,
+            $remote_configdir, $remote_prodir, $pro_key,
+            $pro_init,         $is_deloy_dir,  $myAppStatus,$network_ip,$is_restart_status
+        );        
+        return ;
+    }
+
     #重启,更改软链接
     if ( $ps_num == 0 ) {
 
@@ -864,7 +877,7 @@ task linkrestart => sub {
             $k,                $pro_dir,       $config_dir,
             $remote_configdir, $remote_prodir, $pro_key,
             $pro_init,         $is_deloy_dir,  $myAppStatus,
-            $network_ip
+            $network_ip ,$is_restart_status
         ) = @_;
         # my $args = Dumper(@_);
         # Rex::Logger::info("更改软链接->重启-start,参数: $args");
@@ -997,6 +1010,16 @@ task linkrestart => sub {
                     'error' );
             }
         }    #else结束
+
+        if ( $is_restart_status  == 1 ) {
+            my $ps_start_num = run "ps aux |grep -v grep |grep -v sudo |grep '$pro_key' |wc -l";
+            Rex::Logger::info("($k)--进程数为$ps_start_num: is_restart_status=1,无需重启和关闭应用");
+            Deploy::Db::updateTimes( $myAppStatus, "app_start_time" );
+            Deploy::Db::updateTimes( $myAppStatus, "deploy_end", "$ps_start_num" );
+            Deploy::Db::updateTimes( $myAppStatus, "deploy_finish", "$k" );
+            return ;
+        };
+
         Rex::Logger::info("($k)--进程数为0,开始启动应用.");
         my $servername = $pro_init;
         $servername =~ s /\/etc\/init.d\///g;

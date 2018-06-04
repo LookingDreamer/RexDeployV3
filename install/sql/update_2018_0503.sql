@@ -30,4 +30,4 @@ ADD COLUMN `local_pro_cmd`  text NULL  COMMENT '待发布包之前的工程初�
 ALTER TABLE `pre_server_detail`
 ADD COLUMN `local_conf_cmd`  text NULL  COMMENT '待发布包之前的配置初始化操作' ;
 ALTER TABLE `pre_server_detail`
-ADD COLUMN `is_restart_status`  text NULL  COMMENT '是否需要启动和关闭' ;
+ADD COLUMN `is_restart_status`  int DEFAULT 0 COMMENT '不需要启动和关闭应用' ;
