@@ -3,7 +3,7 @@ USER root
 RUN yum install wget -y && mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup \
 && wget -O /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo \
 && yum clean all && yum makecache \
-&& yum install  tar unzip make  dos2unix perl-DBD-MySQL rsync passwd openssl openssh-server net-tools vim openssh-clients sudo httpd gcc -y \
+&& yum install  tar unzip make  dos2unix perl-DBD-MySQL rsync passwd openssl openssh-server net-tools vim openssh-clients sudo httpd gcc  zip unzip -y \
 && sed -i "s/\/var\/www\/html/\/data\/rsync/g" /etc/httpd/conf/httpd.conf \
 && mkdir -p /data/rsync && chmod 777 /data/rsync -R \
 && ssh-keygen -q -t rsa -b 2048 -f /etc/ssh/ssh_host_rsa_key -N ''   \
