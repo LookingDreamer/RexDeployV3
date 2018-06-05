@@ -133,7 +133,7 @@ sub batchgetLog{
 
 sub batchgrepLog{
    my ($k,$w,$grep,$debug) = @_;
-   my $params = {grep=>$grep,debug=>$debug,wb=>1};
+   my $params = {grep=>$grep,debug=>$debug,wb=>1,w=>$w};
    my $result = Common::Process::moreProcess($k,$w,"日志过滤","logCenter:main:grepLog",$params,"1") ;
    Common::Use::json($w,"0","成功",[$result]);
 };

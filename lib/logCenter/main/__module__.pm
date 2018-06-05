@@ -509,13 +509,17 @@ task "grepLog", sub {
 		}
 		if ( $output_grep ne "" ) {
 			Rex::Logger::info("过滤内容如下:");
-			if ( "$w" ne "1" && $wb != 1 ) {
+			if (  "$wb" eq "1" && "$w" eq "" ) {
+				print("\n$output_grep\n");
+			}elsif( "$w" eq "" && "$wb" eq "" ){
 				print("\n$output_grep\n");
 			}
 			
 		}
 		$reshash{"output_grep"} = $output_grep;
-		Common::Use::json($w,"0","成功",[\%reshash],$random);
+		if ( "$wb" ne  "1" ) {
+			Common::Use::json($w,"0","成功",[\%reshash],$random);
+		}
 		return \%reshash;
 
 
@@ -580,12 +584,16 @@ task "grepLog", sub {
 		}
 		if ( $output_grep ne ""  && $wb != 1 ) {
 			Rex::Logger::info("过滤内容如下:");
-			if ( "$w" ne "1") {
+			if (  "$wb" eq "1" && "$w" eq "" ) {
+				print("\n$output_grep\n");
+			}elsif( "$w" eq "" && "$wb" eq "" ){
 				print("\n$output_grep\n");
 			}
 		}
 		$reshash{"output_grep"} = $output_grep;
-		Common::Use::json($w,"0","成功",[\%reshash],$random);
+		if ( "$wb" ne "1" ) {
+			Common::Use::json($w,"0","成功",[\%reshash],$random);
+		}
 		return \%reshash;
 
 	}
