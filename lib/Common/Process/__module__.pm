@@ -116,7 +116,7 @@ sub appProcess{
      for(my $g=0; $g < $max ;){
        $g = $g+$maxchild;
        $s = $g-$maxchild ;
-       if( $g > $max ){
+       if( $g > $max && $max < $maxchild ){
          Rex::Logger::info("并发控制:($s - $max)");
 
          for($i=0;$i<$max;$i++){
