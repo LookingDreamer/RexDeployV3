@@ -151,7 +151,7 @@ sub appProcess{
                     if ( ref $runres eq "HASH"  ) {
                         $runres->{"app_key"} = $kv;
                     }elsif( ref $runres eq "ARRAY"  ){
-                        push   $runres,$kv;   
+                        push   @$runres,$kv;   
                     } 
                     my $single = {"mainProcess"=>"$mainProces","data"=>$runres}  ;             
                     $ipch->shlock;
@@ -194,7 +194,7 @@ sub appProcess{
                   if ( ref $runres eq "HASH"  ) {
                       $runres->{"app_key"} = $kv;
                   }elsif( ref $runres eq "ARRAY"  ){
-                      push   $runres,$kv;   
+                      push   @$runres,$kv;   
 
                   }  
                   my $single = {"mainProcess"=>"$mainProces","data"=>$runres}  ;                  

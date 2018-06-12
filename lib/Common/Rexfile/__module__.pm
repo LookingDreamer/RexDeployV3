@@ -39,7 +39,7 @@ sub check{
 			#say $keys[$num];     
 			#第一次连接获取远程服务器信息
 			my $FistSerInfo=Deploy::Core::prepare($keys[$num],$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'},$w);
-			push $data, $FistSerInfo;
+			push @$data, $FistSerInfo;
 		}
 		Rex::Logger::info("检查 发布系统 服务器以及数据库配置完成---$keys[-1] 个.");
 	}else{   
@@ -54,7 +54,7 @@ sub check{
 					my $config=Deploy::Core::init("$kv");
 					#第一次连接获取远程服务器信息
 					my $FistSerInfo=Deploy::Core::prepare($kv,$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});  
-					push $data, $FistSerInfo;
+					push @$data, $FistSerInfo;
 				}else{
 					Rex::Logger::info("关键字($kv)不存在","error");
 				}
