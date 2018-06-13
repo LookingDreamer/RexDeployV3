@@ -5,6 +5,7 @@ use Deploy::Db;
 use DBI;
 use Data::Dumper;
 use Rex::Misc::ShellBlock;
+use POSIX qw(strftime); 
 
 my $env;
 my $softdir;
@@ -77,6 +78,101 @@ task config => sub {
     $reshash{"msg"} = "run init pro and config success"; 
     Common::Use::json($w,"0","成功",[\%reshash]);
     return \%reshash;
+
+};
+
+
+desc "配置文件同步 rex Deploy:Configure:sync --k='server'";
+task sync => sub {
+    my $self = shift;
+    my $k=$self->{k};
+    my $w=$self->{w};
+    my %reshash ;
+    if( $k eq ""  ){
+        Rex::Logger::info("关键字(--k='')不能为空");
+        Common::Use::json($w,"","关键字(--k='')不能为空","");
+        $reshash{"code"} = -1; 
+        $reshash{"msg"} = "--k is null"; 
+        return \%reshash;
+    }
+
+    my $conf = Deploy::Db::query_conf($k);
+    my @conf_array = @$conf;
+    my $conf_count = @conf_array;
+    $reshash{conf} = $conf;
+    if ( $conf_count > 0 ) {
+        Rex::Logger::info("$k 开始执行配置文件同步");
+        for my $config (@conf_array){
+            my $app_key = $config->{app_key};
+            my $pro_dir = $config->{pro_dir};
+            my $config_dir = $config->{config_dir};
+            my $is_deloy_dir = $config->{is_deloy_dir};
+            my $configure_file_status = $config->{configure_file_status};
+            my $configure_file_list = $config->{configure_file_list};
+            my $network_ip = $config->{network_ip};
+            run_task "Deploy:Configure:backup",
+              on     => "$network_ip",
+              params => {
+                app_key    => "$app_key",
+                pro_dir    => "$pro_dir",
+                config_dir => "$config_dir",
+                is_deloy_dir          => "$is_deloy_dir",
+                configure_file_status       => "$configure_file_status",
+                configure_file_list         => "$configure_file_list",
+                network_ip         => "$network_ip",
+            };
+
+        }
+
+        Rex::Logger::info("$k 结束执行配置文件同步");
+    }else{
+        Rex::Logger::info("$k 不存在配置项文件同步或者$k不存在","error");            
+        $reshash{"code"} = -1; 
+        $reshash{"msg"} = "$k 不存在配置项文件同步或者$k不存在"; 
+        Common::Use::json($w,"","失败",[\%reshash ]);
+        return \%reshash;        
+    }
+    $reshash{"code"} = 0; 
+    $reshash{"msg"} = "执行配置同步成功"; 
+    Common::Use::json($w,"0","成功",[\%reshash]);
+    return \%reshash;
+
+};
+
+desc "配置文件备份和同步 rex Deploy:Configure:backup --k='server'";
+task backup => sub {
+    my $self = shift;
+    my $k=$self->{app_key};
+    my $config_dir=$self->{config_dir};
+    my $is_deloy_dir=$self->{is_deloy_dir};
+    my $configure_file_status=$self->{configure_file_status};
+    my $configure_file_list=$self->{configure_file_list};
+    my $network_ip=$self->{network_ip};
+    my $datetime = strftime("%Y%m%d_%H%M%S", localtime(time));
+    $config_dir =~ s/\/$//;
+    my $myAppStatus=Deploy::Db::getDeployStatus($k,$network_ip,"configureUser");
+    if($myAppStatus eq "1" ){
+        run_task "Deploy:Db:initdb";
+        $myAppStatus=Deploy::Db::getDeployStatus($k,$network_ip,"configureUser");
+    }
+    Rex::Logger::info("($k) 生成随机数: $myAppStatus");    
+    my %data ; 
+    my $link_status = run "ls $config_dir -ld |grep '^l' |wc -l";
+    if( $is_deloy_dir == 2  ){
+        if ( !is_dir($config_dir) ) {
+            Rex::Logger::info("($k $config_dir目录不存在","warn");
+        }
+        my $conf_desc_be;
+        my $conf_desc_be_before;
+        $conf_desc_be = run "ls $config_dir -ld |grep -v sudo |grep '^l' |awk '{print \$(NF-2),\$(NF-1),\$NF}'";
+        $conf_desc_be_before = run "ls $config_dir -ld |grep -v sudo |grep '^l' |awk '{print \$(NF-2),\$(NF-1),\$NF}'|awk '{print \$NF}'";
+        if ( $conf_desc_be_before == "" ) {
+            $conf_desc_be = "mv $config_dir --> ${config_dir}_nolinkbak_${datetime}";
+            $conf_desc_be_before = "${config_dir}_nolinkbak_${datetime}";
+        }
+        Deploy::Db::updateTimes($myAppStatus, "pre_des_before_before", "", $conf_desc_be_before);
+        Rex::Logger::info( "($k)--发布配置目录链接详情:  $conf_desc_be");
+    }
 
 };
 

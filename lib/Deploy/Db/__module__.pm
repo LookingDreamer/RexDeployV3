@@ -1087,6 +1087,31 @@ task query_local_conf_cmd=>sub {
 	return \@data;
 };
 
+desc "根据local_name/app_key查询服务器conf信息";
+task query_conf=>sub {
+	my $local_name = @_[0];
+	my @local_name_array = split(" ",$local_name);
+	my $local_name = join(" ",@local_name_array);
+    $local_name =~ s/ /','/g;
+    $local_name = "'".$local_name."'";
+	my @data = db select => {
+		fields => "*",
+		       from  => $table,
+		         where => "app_key in ($local_name) or local_name in ($local_name)",
+
+
+	};
+	unshift(@data);
+	my $count = @data;
+	if ( $count == 0 ) {
+		Rex::Logger::info("查询($local_name)服务器信息完成,返回记录数:$count","warn");
+	}else{
+		Rex::Logger::info("查询($local_name)服务器信息完成,返回记录数:$count");		
+	}
+
+	return \@data;
+};
+
 1;
 
 =pod

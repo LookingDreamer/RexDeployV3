@@ -153,9 +153,9 @@ sub upload {
   my $__ret;
 
   if ( $local_md5 && $remote_md5 && $local_md5 eq $remote_md5 ) {
-    Rex::Logger::warn(
+    Rex::Logger::info(
       "local md5 and remote md5 are the same: $local_md5 eq $remote_md5. Not uploading."
-    );
+    ,"warn");
     $__ret = { changed => 0, ret => 0 };
   }
   else {

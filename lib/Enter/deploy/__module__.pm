@@ -790,9 +790,9 @@ sub sendQQ{
 			return ;
 		}
 		if( $qq_config_obj->{"params"} eq "" ){
-			$ret = run_task "Common:Use:get",params => { url => $qq_config_obj->{"url"}."&content=$content",header=>$qq_config_obj->{"header"}};
+			$ret = run_task "Common:Use:get",params => { url => $qq_config_obj->{"url"}."&message=$content"."&content=$content",header=>$qq_config_obj->{"header"}};
 		}else{
-			$ret = run_task "Common:Use:post",params => { url => $qq_config_obj->{"url"},header=>$qq_config_obj->{"header"},param=>'{"content":"$content"}'};			
+			$ret = run_task "Common:Use:post",params => { url => $qq_config_obj->{"url"},header=>$qq_config_obj->{"header"},param=>'{"content":"$content","message":"$content"}'};			
 		}
 		
 		Rex::Logger::info("结束开始发送QQ消息, 消息内容: $content");
