@@ -764,12 +764,12 @@ task linkrestart => sub {
 "ls $pro_dir -ld |grep -v sudo |grep '^l'|awk '{print \$(NF-2),\$(NF-1),\$NF}'|awk '{print \$NF}'";
         my $conf_desc_be_before = run
 "ls $config_dir -ld |grep -v sudo |grep '^l' |awk '{print \$(NF-2),\$(NF-1),\$NF}'|awk '{print \$NF}'";
-        if ( $pro_desc_be_before == "" ) {
+        if ( $pro_desc_be_before eq "" ) {
             my $pro_desc_be =
               "mv ${pro_dir} --> ${pro_dir}_nolinkbak_$datetime ";
             my $pro_desc_be_before = "${pro_dir}_nolinkbak_$datetime";
         }
-        if ( $conf_desc_be_before == "" ) {
+        if ( $conf_desc_be_before eq "" ) {
             my $conf_desc_be =
               "mv $config_dir --> ${config_dir}_nolinkbak_${datetime}";
             my $conf_desc_be_before = "${config_dir}_nolinkbak_${datetime}";

@@ -10,6 +10,8 @@ use POSIX qw(strftime);
 my $env;
 my $softdir;
 my $configuredir;
+my $backup_dir;
+my $baseapp_dir;
 Rex::Config->register_config_handler("env", sub {
  my ($param) = @_;
  $env = $param->{key} ;
@@ -19,6 +21,8 @@ Rex::Config->register_config_handler("$env", sub {
  our $user = $param->{user} ;
      $softdir  = $param->{softdir};
      $configuredir  = $param->{configuredir};
+     $backup_dir  = $param->{backup_dir};
+     $baseapp_dir  = $param->{baseapp_dir};
  });
 
 
@@ -139,7 +143,7 @@ task sync => sub {
 
 };
 
-desc "配置文件备份和同步 rex Deploy:Configure:backup --k='server'";
+desc "配置文件备份 rex Deploy:Configure:backup --k='server'";
 task backup => sub {
     my $self = shift;
     my $k=$self->{app_key};
@@ -158,20 +162,53 @@ task backup => sub {
     Rex::Logger::info("($k) 生成随机数: $myAppStatus");    
     my %data ; 
     my $link_status = run "ls $config_dir -ld |grep '^l' |wc -l";
+    my $conf_desc_be;
+    my $conf_desc_be_before;    
     if( $is_deloy_dir == 2  ){
+        #配置目录存在就备份
         if ( !is_dir($config_dir) ) {
             Rex::Logger::info("($k $config_dir目录不存在","warn");
+        }else{
+            $conf_desc_be = run "ls $config_dir -ld |grep -v sudo |grep '^l' |awk '{print \$(NF-2),\$(NF-1),\$NF}'";
+            $conf_desc_be_before = run "ls $config_dir -ld |grep -v sudo |grep '^l' |awk '{print \$(NF-2),\$(NF-1),\$NF}'|awk '{print \$NF}'";
+            if ( ! $conf_desc_be_before ) {
+                $conf_desc_be_before = "${config_dir}_nolinkbak_${datetime}";
+                Rex::Logger::info( "($k)--目录:$config_dir 不是软链接,备份配置目录详情:  $conf_desc_be_before");
+                run "mv $config_dir $conf_desc_be_before";
+                if ( $? eq 0) {
+                    Rex::Logger::info( "($k)--备份配置目录成功:  $conf_desc_be_before");
+                }else{
+                    Rex::Logger::info( "($k)--备份配置目录失败:  $conf_desc_be_before","error");
+                    exit;
+                }
+            }else{
+                Rex::Logger::info( "($k)--目录:$config_dir 是软链接,备份配置目录详情:  $conf_desc_be_before");  
+                run "unlink  $config_dir";
+                if ( $? eq 0) {
+                    Rex::Logger::info( "($k)--取消配置目录软链接成功:  $conf_desc_be_before");
+                }else{
+                    Rex::Logger::info( "($k)--取消配置目录软链接失败:  $conf_desc_be_before","error");
+                    exit;
+                }
+            }
+            Deploy::Db::updateTimes($myAppStatus, "pre_des_before_before", "", $conf_desc_be_before);                     
         }
-        my $conf_desc_be;
-        my $conf_desc_be_before;
-        $conf_desc_be = run "ls $config_dir -ld |grep -v sudo |grep '^l' |awk '{print \$(NF-2),\$(NF-1),\$NF}'";
-        $conf_desc_be_before = run "ls $config_dir -ld |grep -v sudo |grep '^l' |awk '{print \$(NF-2),\$(NF-1),\$NF}'|awk '{print \$NF}'";
-        if ( $conf_desc_be_before == "" ) {
-            $conf_desc_be = "mv $config_dir --> ${config_dir}_nolinkbak_${datetime}";
-            $conf_desc_be_before = "${config_dir}_nolinkbak_${datetime}";
+
+    }elsif( $is_deloy_dir == 1 ){
+        if ( !is_dir($config_dir) ) {
+            Rex::Logger::info("($k $config_dir目录不存在","warn");
+        }else{
+            my $root_name = run "echo $config_dir |awk -F'/' '{print \$NF}' ";
+            my $backup = "$backup_dir/$root_name/$datetime";              
+            if ( "$configure_file_status" eq "0") {
+                
+            }
+          
         }
-        Deploy::Db::updateTimes($myAppStatus, "pre_des_before_before", "", $conf_desc_be_before);
-        Rex::Logger::info( "($k)--发布配置目录链接详情:  $conf_desc_be");
+
+    }else{
+        Rex::Logger::info( "($k)--不支持的is_deloy_dir,请确认is_deloy_dir是否配置正确","error");
+        exit;        
     }
 
 };
