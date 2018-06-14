@@ -37,11 +37,11 @@ task config => sub {
     my $w=$self->{w};
     my %reshash ;
     if( $k eq ""  ){
-	    Rex::Logger::info("关键字(--k='')不能为空");
-	    Common::Use::json($w,"","关键字(--k='')不能为空","");
+        Rex::Logger::info("关键字(--k='')不能为空");
+        Common::Use::json($w,"","关键字(--k='')不能为空","");
         $reshash{"code"} = -1; 
         $reshash{"msg"} = "--k is null"; 
-	    return \%reshash;
+        return \%reshash;
     }
     my $diff_pro = Deploy::Db::query_local_pro_cmd($k);
     my @diff_pro_array = @$diff_pro;
@@ -49,18 +49,18 @@ task config => sub {
     my $run_pro_cmd ;
     $reshash{diff_pro} = $diff_pro;
     if ( $diff_pro_count > 0 ) {
-    	Rex::Logger::info("$k 存在工程路径自定义命令执行");
-    	$run_pro_cmd = run_pro_cmd($diff_pro);
+        Rex::Logger::info("$k 存在工程路径自定义命令执行");
+        $run_pro_cmd = run_pro_cmd($diff_pro);
         $reshash{run_pro_cmd} = $run_pro_cmd;
-    	if ( $run_pro_cmd->{code} != 0 ) {
-    		Rex::Logger::info("$k 执行程序初始化命令失败","error");           
+        if ( $run_pro_cmd->{code} != 0 ) {
+            Rex::Logger::info("$k 执行程序初始化命令失败","error");           
             $reshash{"code"} = -1; 
             $reshash{"msg"} = "init pro faild".$run_pro_cmd->{msg}; 
             Common::Use::json($w,"","失败",[\%reshash ]);            
-    		return \%reshash;
-    	}
+            return \%reshash;
+        }
     }else{
-    	Rex::Logger::info("$k 不存在工程路径自定义命令执行");
+        Rex::Logger::info("$k 不存在工程路径自定义命令执行");
     }
 
     my $diff_conf = Deploy::Db::query_local_conf_cmd($k);
@@ -312,13 +312,12 @@ task backup => sub {
         #配置目录存在就备份
         if ( !is_dir($config_dir) ) {
             Rex::Logger::info("($k $config_dir目录不存在","warn");
-            run "ln -s $destDir $config_dir";
         }else{
 
             $conf_desc_be = run "ls $config_dir -ld |grep -v sudo |grep '^l' |awk '{print \$(NF-2),\$(NF-1),\$NF}'";
             $conf_desc_be_before = run "ls $config_dir -ld |grep -v sudo |grep '^l' |awk '{print \$(NF-2),\$(NF-1),\$NF}'|awk '{print \$NF}'";
             if ( ! $conf_desc_be_before ) {
-                $conf_desc_be_before = "${config_dir}_conf_nolinkbak_${datetime}";
+                $conf_desc_be_before = "${config_dir}_nolinkbak_${datetime}";
                 Rex::Logger::info( "($k)--目录:$config_dir 不是软链接,备份配置目录详情:  $conf_desc_be_before");
                 run "mv $config_dir $conf_desc_be_before";
                 if ( $? eq 0) {
@@ -327,15 +326,15 @@ task backup => sub {
                     Rex::Logger::info( "($k)--备份配置目录失败:  mv $config_dir $conf_desc_be_before","error");
                     exit;
                 }
-                run "ln -s $destDir $config_dir";
-                if ( $? eq 0) {
-                    Rex::Logger::info( "($k)--配置目录新建软链接成功: ln -s $destDir $config_dir");
-                }else{
-                    Rex::Logger::info( "($k)--配置目录新建软链接失败: ln -s $destDir $config_dir","error");
-                    exit;
-                }   
             }else{
-                my $conf_desc_be_before_bak = "${config_dir}_conf_nolinkbak_${datetime}";
+                Rex::Logger::info( "($k)--目录:$config_dir 是软链接,备份配置目录详情:  $conf_desc_be_before");  
+                run "unlink  $config_dir";
+                if ( $? eq 0) {
+                    Rex::Logger::info( "($k)--取消配置目录软链接成功: unlink  $config_dir=> $conf_desc_be_before");
+                }else{
+                    Rex::Logger::info( "($k)--取消配置目录软链接失败: unlink  $config_dir=> $conf_desc_be_before","error");
+                    exit;
+                }
                 my @config_dir_array = split("/",$config_dir);
                 if ( $conf_desc_be_before !~  /\// ) {  
                     if($config_dir !~  /\// ){
@@ -346,34 +345,22 @@ task backup => sub {
                         $conf_desc_be_before = "$config_dir_pre/$conf_desc_be_before";                          
                     }
                 
-                }                
-                Rex::Logger::info( "($k)--目录:$config_dir 是软链接,备份配置目录详情:  $conf_desc_be_before_bak");  
-                run "unlink  $config_dir && mv $conf_desc_be_before $conf_desc_be_before_bak";
-                my $ret = $?;
-                if ( $ret eq 0) {
-                    Rex::Logger::info( "($k)--取消配置目录软链接成功: unlink  $config_dir && mv $conf_desc_be_before $conf_desc_be_before_bak");
-                }else{
-                    Rex::Logger::info( "($k)--取消配置目录软链接失败: unlink  $config_dir && mv $conf_desc_be_before $conf_desc_be_before_bak","error");
-                    exit;
                 }
-                run "mv $destDir $conf_desc_be_before && ln -s $conf_desc_be_before $config_dir";
-                if ( $? eq 0) {
-                    Rex::Logger::info( "($k)--配置目录新建软链接成功: mv $destDir $conf_desc_be_before && ln -s $conf_desc_be_before $config_dir");
-                }else{
-                    Rex::Logger::info( "($k)--配置目录新建软链接失败: mv $destDir $conf_desc_be_before && ln -s $conf_desc_be_before $config_dir","error");
-                    exit;
-                }                 
-
             }
-            #Deploy::Db::updateTimes($myAppStatus, "pre_des_before_before", "only_config", $conf_desc_be_before);                     
+            Deploy::Db::updateTimes($myAppStatus, "pre_des_before_before", "only_config", $conf_desc_be_before);                     
         }
         #重建软链接
-        
-     
+        run "ln -s $destDir $config_dir";
+        if ( $? eq 0) {
+            Rex::Logger::info( "($k)--配置目录新建软链接成功: ln -s $destDir $config_dir");
+        }else{
+            Rex::Logger::info( "($k)--配置目录新建软链接失败: ln -s $destDir $config_dir","error");
+            exit;
+        }        
         my $conf_desc = run "ls $config_dir -ld |grep '^l' |awk '{print \$(NF-2),\$(NF-1),\$NF}'";
         my $conf_desc_after = run "ls $config_dir -ld |grep '^l' |awk '{print \$(NF-2),\$(NF-1),\$NF}' |awk '{print \$NF}'";
         my $size = run "du -sh  $conf_desc_after |xargs ";
-        #Deploy::Db::updateTimes( $myAppStatus, "pre_des_after_after", "only_config", "$conf_desc_after", "$size" );
+        Deploy::Db::updateTimes( $myAppStatus, "pre_des_after_after", "only_config", "$conf_desc_after", "$size" );
         Rex::Logger::info( "($k)--发布后配置软链接详情:  $conf_desc");            
 
 
@@ -398,6 +385,14 @@ task backup => sub {
                         exit;
                     }
                 }else{
+                    Rex::Logger::info( "($k)--目录:$config_dir 是软链接,备份配置目录详情:  $conf_desc_be_before");  
+                    run "unlink  $config_dir";
+                    if ( $? eq 0) {
+                        Rex::Logger::info( "($k)--取消配置目录软链接成功: unlink  $config_dir => $conf_desc_be_before");
+                    }else{
+                        Rex::Logger::info( "($k)--取消配置目录软链接失败: unlink  $config_dir => $conf_desc_be_before","error");
+                        exit;
+                    }
                     my @config_dir_array = split("/",$config_dir);
                     if ( $conf_desc_be_before !~  /\// ) {  
                         if($config_dir !~  /\// ){
@@ -408,20 +403,11 @@ task backup => sub {
                             $conf_desc_be_before = "$config_dir_pre/$conf_desc_be_before";                          
                         }
                     
-                    }                   
-                    Rex::Logger::info( "($k)--目录:$config_dir 是软链接,备份配置目录详情:  $conf_desc_be_before");  
-                    run "unlink  $config_dir";
-                    if ( $? eq 0) {
-                        Rex::Logger::info( "($k)--取消配置目录软链接成功: unlink  $config_dir => $conf_desc_be_before");
-                    }else{
-                        Rex::Logger::info( "($k)--取消配置目录软链接失败: unlink  $config_dir => $conf_desc_be_before","error");
-                        exit;
                     }
 
 
-
                 }
-                #Deploy::Db::updateTimes($myAppStatus, "pre_des_before_before", "only_config", $conf_desc_be_before);  
+                Deploy::Db::updateTimes($myAppStatus, "pre_des_before_before", "only_config", $conf_desc_be_before);  
 
                 #mv配置目录
                 run "mv $destDir $config_dir";
@@ -433,7 +419,7 @@ task backup => sub {
                 }        
                 my $conf_desc_after = $config_dir;
                 my $size = run "du -sh  $conf_desc_after |xargs ";
-                #Deploy::Db::updateTimes( $myAppStatus, "pre_des_after_after", "only_config", "$conf_desc_after", "$size" );
+                Deploy::Db::updateTimes( $myAppStatus, "pre_des_after_after", "only_config", "$conf_desc_after", "$size" );
                 Rex::Logger::info( "($k)--发布后配置目录详情:  $config_dir");            
 
 
@@ -456,7 +442,7 @@ task backup => sub {
                         Rex::Logger::info( "($k)--配置文件:$file 不存在,无需备份 ","warn");
                     }
                 }
-                #Deploy::Db::updateTimes($myAppStatus, "pre_des_before_before", "only_config", $conf_desc_be_before); 
+                Deploy::Db::updateTimes($myAppStatus, "pre_des_before_before", "only_config", $conf_desc_be_before); 
             }
           
         }
@@ -469,22 +455,22 @@ task backup => sub {
 };
 
 sub run_pro_cmd {
-	my ($diff_pro)= @_;
+    my ($diff_pro)= @_;
     my @diff_pro_array = @$diff_pro;
     my %reshash ; 
     my @data ; 
     $reshash{"code"} = 0 ;
     $reshash{"msg"} = "run cmd success" ;
     for my $pro (@diff_pro_array){
-    	my %singleData ; 
-    	my $local_name = $pro->{"local_name"};
-    	my $pro_cmd = $pro->{"local_pro_cmd"};
-    	my $run_dir = $softdir."/".$local_name ; 
+        my %singleData ; 
+        my $local_name = $pro->{"local_name"};
+        my $pro_cmd = $pro->{"local_pro_cmd"};
+        my $run_dir = $softdir."/".$local_name ; 
         Rex::Logger::info("$local_name 执行路径: $run_dir");
         Rex::Logger::info("$local_name 执行命令: \n$pro_cmd");
-    	$singleData{"local_name"} = $local_name;
-    	$singleData{"pro_cmd"} = $pro_cmd;
-    	$singleData{"run_dir"} = $run_dir;
+        $singleData{"local_name"} = $local_name;
+        $singleData{"pro_cmd"} = $pro_cmd;
+        $singleData{"run_dir"} = $run_dir;
 
         if ( ! is_dir($run_dir) ) {
             Rex::Logger::info("$local_name 执行路径: $run_dir 不存在","error");
@@ -492,34 +478,34 @@ sub run_pro_cmd {
             $reshash{"msg"} = "run cmd path is not exist: $run_dir" ;
             return \%reshash;
         }
-    	my $runres;
-    	eval {
-    		# $runres = run " cd $run_dir && $pro_cmd";
+        my $runres;
+        eval {
+            # $runres = run " cd $run_dir && $pro_cmd";
   $runres = shell_block <<EOF;
     cd $run_dir
     $pro_cmd
 EOF
 
-    		if ( $? != 0 ) {
-    			Rex::Logger::info("$local_name 执行路径: $run_dir 执行命令: $pro_cmd 执行失败: $runres","error");
-	    		$reshash{"code"} = -1 ;
-	    		$reshash{"msg"} = "run cmd faild: $runres,return code is not 0" ;
+            if ( $? != 0 ) {
+                Rex::Logger::info("$local_name 执行路径: $run_dir 执行命令: $pro_cmd 执行失败: $runres","error");
+                $reshash{"code"} = -1 ;
+                $reshash{"msg"} = "run cmd faild: $runres,return code is not 0" ;
                 $reshash{"runres"} = "$runres" ;
-	    		return \%reshash;
-    		}else{
+                return \%reshash;
+            }else{
                 $reshash{"runres"} = "$runres" ;
                 Rex::Logger::info("$local_name 执行路径: $run_dir 执行成功");
                 Rex::Logger::info("$local_name 执行返回内容: $runres");
-    		}
-    	};
-    	if ($@) {
-    		push @data,\%singleData;
-    		$reshash{"code"} = -1 ;
-    		$reshash{"msg"} = "run cmd except: $@" ;
-    		return \%reshash;
-    	}
-    	push @data,\%singleData;
-    		
+            }
+        };
+        if ($@) {
+            push @data,\%singleData;
+            $reshash{"code"} = -1 ;
+            $reshash{"msg"} = "run cmd except: $@" ;
+            return \%reshash;
+        }
+        push @data,\%singleData;
+            
     }
     $reshash{"data"} =\@data; 
     return \%reshash;
