@@ -12,6 +12,8 @@ my $softdir;
 my $configuredir;
 my $backup_dir;
 my $baseapp_dir;
+my $local_confdir;
+my $update_local_confdir;
 Rex::Config->register_config_handler("env", sub {
  my ($param) = @_;
  $env = $param->{key} ;
@@ -23,6 +25,8 @@ Rex::Config->register_config_handler("$env", sub {
      $configuredir  = $param->{configuredir};
      $backup_dir  = $param->{backup_dir};
      $baseapp_dir  = $param->{baseapp_dir};
+     $local_confdir  = $param->{local_confdir};
+     $update_local_confdir  = $param->{update_local_confdir};
  });
 
 
@@ -91,19 +95,37 @@ task sync => sub {
     my $self = shift;
     my $k=$self->{k};
     my $w=$self->{w};
+    my $source=$self->{source};
     my %reshash ;
+    my $baseconf ;
     if( $k eq ""  ){
-        Rex::Logger::info("关键字(--k='')不能为空");
+        Rex::Logger::info("关键字(--k='')不能为空","error");
         Common::Use::json($w,"","关键字(--k='')不能为空","");
         $reshash{"code"} = -1; 
         $reshash{"msg"} = "--k is null"; 
         return \%reshash;
+    }
+    if( $source  eq ""){
+        $baseconf = $configuredir;
+    }elsif($source  eq "update"){
+        $baseconf = $update_local_confdir;
+    }elsif($source  eq "remote"){
+        $baseconf = $local_confdir;
+    }elsif($source  eq "conf"){
+        $baseconf = $configuredir;
+    }else{
+        Rex::Logger::info("关键字(--source='')不正确","error");
+        Common::Use::json($w,"","关键字(--source='')不正确","");
+        $reshash{"code"} = -1; 
+        $reshash{"msg"} = "--source is wrong"; 
+        return \%reshash;        
     }
 
     my $conf = Deploy::Db::query_conf($k);
     my @conf_array = @$conf;
     my $conf_count = @conf_array;
     $reshash{conf} = $conf;
+    my $datetime = strftime("%Y%m%d_%H%M%S", localtime(time));
     if ( $conf_count > 0 ) {
         Rex::Logger::info("$k 开始执行配置文件同步");
         for my $config (@conf_array){
@@ -114,17 +136,138 @@ task sync => sub {
             my $configure_file_status = $config->{configure_file_status};
             my $configure_file_list = $config->{configure_file_list};
             my $network_ip = $config->{network_ip};
-            run_task "Deploy:Configure:backup",
-              on     => "$network_ip",
-              params => {
-                app_key    => "$app_key",
-                pro_dir    => "$pro_dir",
-                config_dir => "$config_dir",
-                is_deloy_dir          => "$is_deloy_dir",
-                configure_file_status       => "$configure_file_status",
-                configure_file_list         => "$configure_file_list",
-                network_ip         => "$network_ip",
-            };
+            my $local_name = $config->{local_name};
+            $config_dir =~ s/\/$//;
+            $baseconf =~ s/\/$//;
+
+            #同步,备份,切换
+            if( $is_deloy_dir == 2   ){
+                my $destDir = $config_dir."_".$datetime ;
+                my $source ;
+                if($source  eq "remote"){
+                    $source = $baseconf ."/".$app_key."/" ;
+                }else{
+                    $source = $baseconf ."/".$local_name."/".$app_key."/" ;
+                }
+                if( !is_dir($source ) ){
+                    Rex::Logger::info("$app_key 本地配置目录:$source 不存在","error");
+                    Common::Use::json($w,"","$app_key 本地配置目录:$source 不存在","");
+                    $reshash{"code"} = -1; 
+                    $reshash{"msg"} = "$app_key 本地配置目录:$source 不存在"; 
+                    exit;   
+                }                
+                my $upload = run_task "Common:Use:upload",
+                  on     => "$network_ip",
+                  params => {
+                    dir1    => "$source",
+                    dir2    => "$destDir",
+                };
+                my $code = $upload->{code};
+                if( $code != 0 ){
+                    Rex::Logger::info("$app_key 上传配置失败","error");
+                    Common::Use::json($w,"","$app_key 上传配置失败","");
+                    $reshash{"code"} = -1; 
+                    $reshash{"msg"} = "$app_key 上传配置失败"; 
+                    exit;
+                }
+                run_task "Deploy:Configure:backup",
+                  on     => "$network_ip",
+                  params => {
+                    app_key    => "$app_key",
+                    pro_dir    => "$pro_dir",
+                    config_dir => "$config_dir",
+                    is_deloy_dir          => "$is_deloy_dir",
+                    configure_file_status       => "$configure_file_status",
+                    configure_file_list         => "$configure_file_list",
+                    network_ip         => "$network_ip",
+                    destDir         => "$destDir",
+                };                                  
+
+            }elsif( $is_deloy_dir == 1  ){
+                if("$configure_file_status" eq "0"){
+                    my $destDir = $config_dir."_".$datetime ;
+                    my $source ;
+                    if($source  eq "remote"){
+                        $source = $baseconf ."/".$app_key."/" ;
+                    }else{
+                        $source = $baseconf ."/".$local_name."/".$app_key."/" ;
+                    }
+                    if( !is_dir($source ) ){
+                        Rex::Logger::info("$app_key 本地配置目录:$source 不存在","error");
+                        Common::Use::json($w,"","$app_key 本地配置目录:$source 不存在","");
+                        $reshash{"code"} = -1; 
+                        $reshash{"msg"} = "$app_key 本地配置目录:$source 不存在"; 
+                        exit;   
+                    }                
+                    my $upload = run_task "Common:Use:upload",
+                      on     => "$network_ip",
+                      params => {
+                        dir1    => "$source",
+                        dir2    => "$destDir",
+                    };
+                    my $code = $upload->{code};
+                    if( $code != 0 ){
+                        Rex::Logger::info("$app_key 上传配置失败","error");
+                        Common::Use::json($w,"","$app_key 上传配置失败","");
+                        $reshash{"code"} = -1; 
+                        $reshash{"msg"} = "$app_key 上传配置失败"; 
+                        exit;
+                    }
+                    run_task "Deploy:Configure:backup",
+                      on     => "$network_ip",
+                      params => {
+                        app_key    => "$app_key",
+                        pro_dir    => "$pro_dir",
+                        config_dir => "$config_dir",
+                        is_deloy_dir          => "$is_deloy_dir",
+                        configure_file_status       => "$configure_file_status",
+                        configure_file_list         => "$configure_file_list",
+                        network_ip         => "$network_ip",
+                        destDir         => "$destDir",
+                    };
+                }else{
+                    run_task "Deploy:Configure:backup",
+                      on     => "$network_ip",
+                      params => {
+                        app_key    => "$app_key",
+                        pro_dir    => "$pro_dir",
+                        config_dir => "$config_dir",
+                        is_deloy_dir          => "$is_deloy_dir",
+                        configure_file_status       => "$configure_file_status",
+                        configure_file_list         => "$configure_file_list",
+                        network_ip         => "$network_ip",
+                    };
+                    my @configureArray = split(",",$configure_file_list);
+                    my @filesArray;
+                    for my $confile (@configureArray){
+                        my $configfile = $config_dir."/".$confile; 
+                        my $source ;
+                        if($source  eq "remote"){
+                            $source = $baseconf ."/".$app_key."/" ;
+                        }else{
+                            $source = $baseconf ."/".$local_name."/".$app_key."/" ;
+                        }                       
+                        my $srcfile = $source .$confile;
+                        my $dest = $config_dir."/".$confile ;
+                        my $fileVar = "$srcfile:$dest"; 
+                        push @filesArray,$fileVar; 
+                        if( !is_file($srcfile ) ){
+                            Rex::Logger::info("$app_key 本地配置:$srcfile 不存在","error");
+                            Common::Use::json($w,"","$app_key 本地配置:$srcfile 不存在","");
+                            $reshash{"code"} = -1; 
+                            $reshash{"msg"} = "$app_key 本地配置:$srcfile 不存在"; 
+                            exit;   
+                        }                                                 
+                    }
+                    my $files = join(",",@filesArray);
+                    run_task "Common:Use:syncFiles",
+                      on     => "$network_ip",
+                      params => {
+                        files    => "$files",
+                    };  
+
+                }   
+            }
 
         }
 
@@ -152,8 +295,8 @@ task backup => sub {
     my $configure_file_status=$self->{configure_file_status};
     my $configure_file_list=$self->{configure_file_list};
     my $network_ip=$self->{network_ip};
+    my $destDir=$self->{destDir};
     my $datetime = strftime("%Y%m%d_%H%M%S", localtime(time));
-    $config_dir =~ s/\/$//;
     my $myAppStatus=Deploy::Db::getDeployStatus($k,$network_ip,"configureUser");
     if($myAppStatus eq "1" ){
         run_task "Deploy:Db:initdb";
@@ -165,10 +308,12 @@ task backup => sub {
     my $conf_desc_be;
     my $conf_desc_be_before;    
     if( $is_deloy_dir == 2  ){
+        Rex::Logger::info("($k 该配置目录和程序目录是分开部署");
         #配置目录存在就备份
         if ( !is_dir($config_dir) ) {
             Rex::Logger::info("($k $config_dir目录不存在","warn");
         }else{
+
             $conf_desc_be = run "ls $config_dir -ld |grep -v sudo |grep '^l' |awk '{print \$(NF-2),\$(NF-1),\$NF}'";
             $conf_desc_be_before = run "ls $config_dir -ld |grep -v sudo |grep '^l' |awk '{print \$(NF-2),\$(NF-1),\$NF}'|awk '{print \$NF}'";
             if ( ! $conf_desc_be_before ) {
@@ -176,32 +321,128 @@ task backup => sub {
                 Rex::Logger::info( "($k)--目录:$config_dir 不是软链接,备份配置目录详情:  $conf_desc_be_before");
                 run "mv $config_dir $conf_desc_be_before";
                 if ( $? eq 0) {
-                    Rex::Logger::info( "($k)--备份配置目录成功:  $conf_desc_be_before");
+                    Rex::Logger::info( "($k)--备份配置目录成功:  mv $config_dir $conf_desc_be_before");
                 }else{
-                    Rex::Logger::info( "($k)--备份配置目录失败:  $conf_desc_be_before","error");
+                    Rex::Logger::info( "($k)--备份配置目录失败:  mv $config_dir $conf_desc_be_before","error");
                     exit;
                 }
             }else{
                 Rex::Logger::info( "($k)--目录:$config_dir 是软链接,备份配置目录详情:  $conf_desc_be_before");  
                 run "unlink  $config_dir";
                 if ( $? eq 0) {
-                    Rex::Logger::info( "($k)--取消配置目录软链接成功:  $conf_desc_be_before");
+                    Rex::Logger::info( "($k)--取消配置目录软链接成功: unlink  $config_dir=> $conf_desc_be_before");
                 }else{
-                    Rex::Logger::info( "($k)--取消配置目录软链接失败:  $conf_desc_be_before","error");
+                    Rex::Logger::info( "($k)--取消配置目录软链接失败: unlink  $config_dir=> $conf_desc_be_before","error");
                     exit;
                 }
+                my @config_dir_array = split("/",$config_dir);
+                if ( $conf_desc_be_before !~  /\// ) {  
+                    if($config_dir !~  /\// ){
+
+                    }else{
+                        my $config_dir_pre = $config_dir;
+                        $config_dir_pre =~ s/$config_dir_array[-1]//i; 
+                        $conf_desc_be_before = "$config_dir_pre/$conf_desc_be_before";                          
+                    }
+                
+                }
             }
-            Deploy::Db::updateTimes($myAppStatus, "pre_des_before_before", "", $conf_desc_be_before);                     
+            Deploy::Db::updateTimes($myAppStatus, "pre_des_before_before", "only_config", $conf_desc_be_before);                     
         }
+        #重建软链接
+        run "ln -s $destDir $config_dir";
+        if ( $? eq 0) {
+            Rex::Logger::info( "($k)--配置目录新建软链接成功: ln -s $destDir $config_dir");
+        }else{
+            Rex::Logger::info( "($k)--配置目录新建软链接失败: ln -s $destDir $config_dir","error");
+            exit;
+        }        
+        my $conf_desc = run "ls $config_dir -ld |grep '^l' |awk '{print \$(NF-2),\$(NF-1),\$NF}'";
+        my $conf_desc_after = run "ls $config_dir -ld |grep '^l' |awk '{print \$(NF-2),\$(NF-1),\$NF}' |awk '{print \$NF}'";
+        my $size = run "du -sh  $conf_desc_after |xargs ";
+        Deploy::Db::updateTimes( $myAppStatus, "pre_des_after_after", "only_config", "$conf_desc_after", "$size" );
+        Rex::Logger::info( "($k)--发布后配置软链接详情:  $conf_desc");            
+
 
     }elsif( $is_deloy_dir == 1 ){
+        Rex::Logger::info("($k 该配置目录和程序目录是集成部署");
         if ( !is_dir($config_dir) ) {
             Rex::Logger::info("($k $config_dir目录不存在","warn");
         }else{
             my $root_name = run "echo $config_dir |awk -F'/' '{print \$NF}' ";
-            my $backup = "$backup_dir/$root_name/$datetime";              
+            my $backup = "$backup_dir/$k/conf_backup_$datetime";              
             if ( "$configure_file_status" eq "0") {
-                
+                $conf_desc_be = run "ls $config_dir -ld |grep -v sudo |grep '^l' |awk '{print \$(NF-2),\$(NF-1),\$NF}'";
+                $conf_desc_be_before = run "ls $config_dir -ld |grep -v sudo |grep '^l' |awk '{print \$(NF-2),\$(NF-1),\$NF}'|awk '{print \$NF}'";
+                if ( ! $conf_desc_be_before ) {
+                    $conf_desc_be_before = "$backup";
+                    Rex::Logger::info( "($k)--目录:$config_dir 不是软链接,备份配置目录详情:  $conf_desc_be_before");
+                    run "mv $config_dir $conf_desc_be_before";
+                    if ( $? eq 0) {
+                        Rex::Logger::info( "($k)--备份配置目录成功:  mv $config_dir $conf_desc_be_before");
+                    }else{
+                        Rex::Logger::info( "($k)--备份配置目录失败:  mv $config_dir $conf_desc_be_before","error");
+                        exit;
+                    }
+                }else{
+                    Rex::Logger::info( "($k)--目录:$config_dir 是软链接,备份配置目录详情:  $conf_desc_be_before");  
+                    run "unlink  $config_dir";
+                    if ( $? eq 0) {
+                        Rex::Logger::info( "($k)--取消配置目录软链接成功: unlink  $config_dir => $conf_desc_be_before");
+                    }else{
+                        Rex::Logger::info( "($k)--取消配置目录软链接失败: unlink  $config_dir => $conf_desc_be_before","error");
+                        exit;
+                    }
+                    my @config_dir_array = split("/",$config_dir);
+                    if ( $conf_desc_be_before !~  /\// ) {  
+                        if($config_dir !~  /\// ){
+
+                        }else{
+                            my $config_dir_pre = $config_dir;
+                            $config_dir_pre =~ s/$config_dir_array[-1]//i; 
+                            $conf_desc_be_before = "$config_dir_pre/$conf_desc_be_before";                          
+                        }
+                    
+                    }
+
+
+                }
+                Deploy::Db::updateTimes($myAppStatus, "pre_des_before_before", "only_config", $conf_desc_be_before);  
+
+                #mv配置目录
+                run "mv $destDir $config_dir";
+                if ( $? eq 0) {
+                    Rex::Logger::info( "($k)--配置目录新建目录接成功: mv $destDir $config_dir");
+                }else{
+                    Rex::Logger::info( "($k)--配置目录新建目录失败: mv $destDir $config_dir","error");
+                    exit;
+                }        
+                my $conf_desc_after = $config_dir;
+                my $size = run "du -sh  $conf_desc_after |xargs ";
+                Deploy::Db::updateTimes( $myAppStatus, "pre_des_after_after", "only_config", "$conf_desc_after", "$size" );
+                Rex::Logger::info( "($k)--发布后配置目录详情:  $config_dir");            
+
+
+            }else{
+                if(!is_dir($backup)){
+                    mkdir($backup);
+                }
+                my @configure_file_list_array = split(",",$configure_file_list);
+                for my $configure_file (@configure_file_list_array){
+                    my $file = "$config_dir/$configure_file";
+                    if(is_file($file)){
+                        run "cp --parents $file $backup "; 
+                        if ( $? eq 0) {
+                            Rex::Logger::info( "($k)--备份成功: cp --parents $file $backup ");
+                        }else{
+                            Rex::Logger::info( "($k)--备份失败: cp --parents $file $backup","error");
+                            exit;
+                        }                           
+                    }else{
+                        Rex::Logger::info( "($k)--配置文件:$file 不存在,无需备份 ","warn");
+                    }
+                }
+                Deploy::Db::updateTimes($myAppStatus, "pre_des_before_before", "only_config", $conf_desc_be_before); 
             }
           
         }
