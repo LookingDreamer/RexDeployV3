@@ -49,7 +49,7 @@ Rex::Config->register_config_handler("$env", sub {
  });
 my $maxchild = $parallelism;
 
-desc "应用下载模块: rex  Enter:route:download   --k='server1 server2 ../groupname/all' [--update='1'] [--senv='uat'] [--type='pro/conf/all'][--usetype='pro/conf/all']";
+desc "应用下载模块: rex  Enter:route:download   --k='server1 server2 ../groupname/all' [--update='1'] [--senv='uat'] [--type='pro/conf/all'][--usetype='pro/conf/all'][--rsyncdelete='1']";
 task "download",sub{
    my $self = shift;
    my $k=$self->{k};
