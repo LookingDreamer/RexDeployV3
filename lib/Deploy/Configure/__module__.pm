@@ -333,7 +333,13 @@ task backup => sub {
                 }else{
                     Rex::Logger::info( "($k)--配置目录新建软链接失败: ln -s $destDir $config_dir","error");
                     exit;
-                }   
+                }
+                my $diffContent = run "diff -rb $conf_desc_be_before $destDir "; 
+                if( $diffContent eq "" ){
+                    Rex::Logger::info( "($k)--此次更新配置没有发生变化","warn");
+                }else{
+                     Rex::Logger::info( "($k)--此次更新配置变化如下: $diffContent");
+                }  
             }else{
                 my $conf_desc_be_before_bak = "${config_dir}_conf_nolinkbak_${datetime}";
                 my @config_dir_array = split("/",$config_dir);
@@ -362,7 +368,13 @@ task backup => sub {
                 }else{
                     Rex::Logger::info( "($k)--配置目录新建软链接失败: mv $destDir $conf_desc_be_before && ln -s $conf_desc_be_before $config_dir","error");
                     exit;
-                }                 
+                }
+                my $diffContent = run "diff -rb $conf_desc_be_before_bak $conf_desc_be_before "; 
+                if( $diffContent eq "" ){
+                    Rex::Logger::info( "($k)--此次更新配置没有发生变化","warn");
+                }else{
+                     Rex::Logger::info( "($k)--此次更新配置变化如下: $diffContent");
+                }                  
 
             }
             #Deploy::Db::updateTimes($myAppStatus, "pre_des_before_before", "only_config", $conf_desc_be_before);                     
@@ -435,7 +447,12 @@ task backup => sub {
                 my $size = run "du -sh  $conf_desc_after |xargs ";
                 #Deploy::Db::updateTimes( $myAppStatus, "pre_des_after_after", "only_config", "$conf_desc_after", "$size" );
                 Rex::Logger::info( "($k)--发布后配置目录详情:  $config_dir");            
-
+                my $diffContent = run "diff -rb $conf_desc_be_before $config_dir "; 
+                if( $diffContent eq "" ){
+                    Rex::Logger::info( "($k)--此次更新配置没有发生变化","warn");
+                }else{
+                     Rex::Logger::info( "($k)--此次更新配置变化如下: $diffContent");
+                } 
 
             }else{
                 if(!is_dir($backup)){

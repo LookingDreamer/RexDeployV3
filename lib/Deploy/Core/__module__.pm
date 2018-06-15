@@ -422,6 +422,7 @@ task downloading => sub {
     my $senv            = $_[9];
     my $type            = $_[10];
     my $usetype            = $_[11];
+    my $rsyncdelete            = $_[12];
     my $datetime          = run "date '+%Y%m%d_%H%M%S'";
     my @query_prodir_key = @$query_prodir_key  ;
     my @pro_key_array;
@@ -445,6 +446,7 @@ task downloading => sub {
         senv=>$senv,
         type=>$type,
         usetype=>$usetype,
+        rsyncdelete=>$rsyncdelete,
     };
 
     my $srck = $local_name;
@@ -471,20 +473,20 @@ task downloading => sub {
    $reshash{"local_config_dir"} = $local_config_dir;
    $reshash{"remotedir"} = $remotedir;
    $reshash{"remote_confir_dir"} = $remote_confir_dir;
-
-    if ( "$usetype" eq "pro" ) {
+    Rex::Logger::info("($k)--usetype: $usetype rsyncdelete:$rsyncdelete"); 
+    if ( "$usetype" eq "pro" && "$rsyncdelete" ne "1") {
         if (  is_dir("$localdir") ) {
             Rex::Logger::info("($k)--删除原有本地程序目录: $localdir");
             rmdir("$localdir");
             $reshash{"src_localdir_is_delete"} = 1 ;
         }
-    }elsif( "$usetype" eq "conf" ){
+    }elsif( "$usetype" eq "conf"  && "$rsyncdelete" ne "1" ){
         if (  is_dir("$local_config_dir") ) {
             Rex::Logger::info("($k)--删除原有本地配置目录: $local_config_dir");
             rmdir("$local_config_dir");
             $reshash{"src_local_config_dir_is_delete"} = 1 ;
         }
-    }else{
+    }elsif( "$rsyncdelete" ne "1" ){
 
         if (  is_dir("$localdir") ) {
             Rex::Logger::info("($k)--删除原有本地程序目录: $localdir");
@@ -554,20 +556,20 @@ task downloading => sub {
             Rex::Logger::info("($senv:$srck)--开始传输 ##### $senv 环境 ###### 程序目录到本地.");
             $prohash = run_task "Common:Use:download",
               on     => "$network_ip",
-              params => { dir2 => "$localdir", dir1 => "$remotedir" };
+              params => { dir2 => "$localdir", dir1 => "$remotedir",rsyncdelete=>"$rsyncdelete" };
         }elsif($type eq "conf" ){
             Rex::Logger::info("($senv:$srck)--开始传输 ##### $senv 环境 ###### 配置目录到本地.");
             $confhash = run_task "Common:Use:download",
               on     => "$network_ip",
-              params => { dir2 => "$local_config_dir", dir1 => "$remote_confir_dir" };    
+              params => { dir2 => "$local_config_dir", dir1 => "$remote_confir_dir",rsyncdelete=>"$rsyncdelete"  };    
         }elsif($type eq "all"){
             Rex::Logger::info("($senv:$srck)--开始传输 ##### $senv 环境 ###### 程序和配置目录到本地.");
             $prohash = run_task "Common:Use:download",
                   on     => "$network_ip",
-                  params => { dir2 => "$localdir", dir1 => "$remotedir" };
+                  params => { dir2 => "$localdir", dir1 => "$remotedir" ,rsyncdelete=>"$rsyncdelete" };
             $confhash = run_task "Common:Use:download",
               on     => "$network_ip",
-              params => { dir2 => "$local_config_dir", dir1 => "$remote_confir_dir" };  
+              params => { dir2 => "$local_config_dir", dir1 => "$remote_confir_dir" ,rsyncdelete=>"$rsyncdelete" };  
         }else{
             Rex::Logger::info("($senv:$srck)--开始传输 ##### $senv 环境 ###### 程序目录到本地.");
             $prohash = run_task "Common:Use:download",
@@ -582,25 +584,25 @@ task downloading => sub {
         if ( $usetype eq "pro"  ) {
             $prohash = run_task "Common:Use:download",
                   on     => "$network_ip",
-                  params => { dir2 => "$localdir", dir1 => "$remotedir" };
+                  params => { dir2 => "$localdir", dir1 => "$remotedir" ,rsyncdelete=>"$rsyncdelete" };
         }elsif($usetype  eq "conf" ){
             $confhash = run_task "Common:Use:download",
               on     => "$network_ip",
-              params => { dir2 => "$local_config_dir", dir1 => "$remote_confir_dir" };   
+              params => { dir2 => "$local_config_dir", dir1 => "$remote_confir_dir",rsyncdelete=>"$rsyncdelete"  };   
         }elsif($usetype  eq "all"){
             $prohash = run_task "Common:Use:download",
                   on     => "$network_ip",
-                  params => { dir2 => "$localdir", dir1 => "$remotedir" };
+                  params => { dir2 => "$localdir", dir1 => "$remotedir",rsyncdelete=>"$rsyncdelete"  };
             $confhash = run_task "Common:Use:download",
               on     => "$network_ip",
-              params => { dir2 => "$local_config_dir", dir1 => "$remote_confir_dir" }; 
+              params => { dir2 => "$local_config_dir", dir1 => "$remote_confir_dir",rsyncdelete=>"$rsyncdelete"  }; 
         }else{
             $prohash = run_task "Common:Use:download",
                   on     => "$network_ip",
-                  params => { dir2 => "$localdir", dir1 => "$remotedir" };
+                  params => { dir2 => "$localdir", dir1 => "$remotedir",rsyncdelete=>"$rsyncdelete"  };
             $confhash = run_task "Common:Use:download",
               on     => "$network_ip",
-              params => { dir2 => "$local_config_dir", dir1 => "$remote_confir_dir" };  
+              params => { dir2 => "$local_config_dir", dir1 => "$remote_confir_dir",rsyncdelete=>"$rsyncdelete"  };  
         }
 
 
@@ -1136,6 +1138,22 @@ task "syncpro", sub {
     my @errData;
     my @errpro;
     my @errconf;
+
+    my $deploy = Deploy::Db::query_name_keys($k);
+    my @deploy = @$deploy;
+    my $deploylength = @deploy;
+    if ( $deploylength == 0 ) {
+        Rex::Logger::info("($k) 根据识别名称local_name查询到关键词为空,请确认是否已经录入数据","error");
+    }
+    Rex::Logger::info("($k) 根据识别名称查询到$deploylength条记录");
+    my @app_keys ;
+    my $app_keys_string;
+    for my $info (@deploy){
+    my $app_key = $info->{"app_key"}; 
+    push @app_keys,$app_key;  
+    }
+    $k = join(" ",@app_keys);
+
     push @errData,1;
     if ( "$update" eq "1") {
         $update_local_prodir =~ s/\/$//;

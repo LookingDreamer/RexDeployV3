@@ -49,7 +49,7 @@ Rex::Config->register_config_handler("$env", sub {
  });
 my $maxchild = $parallelism;
 
-desc "应用下载模块: rex  Enter:route:download   --k='server1 server2 ../groupname/all' [--update='1'] [--senv='uat'] [--type='pro/conf/all']";
+desc "应用下载模块: rex  Enter:route:download   --k='server1 server2 ../groupname/all' [--update='1'] [--senv='uat'] [--type='pro/conf/all'][--usetype='pro/conf/all']";
 task "download",sub{
    my $self = shift;
    my $k=$self->{k};
@@ -57,6 +57,7 @@ task "download",sub{
    my $type=$self->{type};
    my $update=$self->{update};
    my $usetype=$self->{usetype};
+   my $rsyncdelete=$self->{rsyncdelete};
    my $w=$self->{w};
    my $username=$user;
    my $keys=Deploy::Db::getallkey();
@@ -206,7 +207,7 @@ task "download",sub{
                $config=$envConfig ;
            }
            # my $FistSerInfo=Deploy::Core::prepare($kv,$config->{'network_ip'},$config->{'pro_init'},$config->{'pro_key'},$config->{'pro_dir'},$config->{'config_dir'});
-            my $downloadres = Deploy::Core::downloading($kv,$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config,$update,$config->{'local_name'},$query_prodir_key,$senv,$type,$usetype);               
+            my $downloadres = Deploy::Core::downloading($kv,$config->{'app_key'},$config->{'pro_dir'},$config->{'network_ip'},$config->{'config_dir'},$config,$update,$config->{'local_name'},$query_prodir_key,$senv,$type,$usetype,$rsyncdelete);               
             my $single = {"mainProcess"=>"$mainProces","data"=>$downloadres}  ;   
             $ipch->shlock;
             push @sharedown, $single;
