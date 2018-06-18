@@ -1400,6 +1400,21 @@ task "diff", sub {
     # $softdir =~ s/\/$//;
     # $configuredir =~ s/\/$//;
 
+    my $deploy = Deploy::Db::query_name_keys($k);
+    my @deploy = @$deploy;
+    my $deploylength = @deploy;
+    if ( $deploylength == 0 ) {
+        Rex::Logger::info("($k) 根据识别名称local_name查询到关键词为空,请确认是否已经录入数据","error");
+    }
+    Rex::Logger::info("($k) 根据识别名称查询到$deploylength条记录");
+    my @app_keys ;
+    my $app_keys_string;
+    for my $info (@deploy){
+    my $app_key = $info->{"app_key"}; 
+    push @app_keys,$app_key;  
+    }
+    $k = join(" ",@app_keys);    
+
     Rex::Config->register_config_handler(
         "$env",
         sub {

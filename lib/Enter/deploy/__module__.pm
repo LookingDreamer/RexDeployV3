@@ -603,7 +603,7 @@ sub checkDiff{
 			Common::Use::json($w,-1,"失败",[{msg=>"diff src and deploy file faild,dir is not exist: $allContent",code=>-1}]);
 			exit;
 		}
-		my $changeContent =$errData->{"proChange"}."====>".$errData->{"confChange"} ;
+		my $changeContent =$errData->{"proChange"}."  ".$errData->{"confChange"} ;
 		Rex::Logger::info("($k) 发布包原包差异: $changeContent");
 		sendMsg($subject,"($k) 发布包原包差异: $changeContent",$is_finish);
 	};
@@ -624,12 +624,12 @@ sub downloadSync(){
 	Rex::Logger::info("($k) senv:$senv url:$url full:$full set:$set");
 	eval {
 		if ( "$senv" ne "" ) {
-			run_task "Enter:route:download",params => { k => $k,usetype=>"conf"};
+			run_task "Enter:route:download",params => { k => $k,usetype=>"conf",rsyncdelete=>"1"};
 		}else{
 			if ( "$url" ne "" && "$full" ne "") {
-				run_task "Enter:route:download",params => { k => $k,update => 1};
+				run_task "Enter:route:download",params => { k => $k,update => 1,rsyncdelete=>"1"};
 			}else{
-				run_task "Enter:route:download",params => { k => $k};
+				run_task "Enter:route:download",params => { k => $k,rsyncdelete=>"1"};
 			}			
 		}
 		
