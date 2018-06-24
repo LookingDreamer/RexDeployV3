@@ -187,6 +187,7 @@ TO_INST_PM = lib/FastNotes.pm \
 	lib/FastNotes/Model.pm \
 	lib/FastNotes/Model/Base.pm \
 	lib/FastNotes/Model/Note.pm \
+	lib/FastNotes/Model/Token.pm \
 	lib/FastNotes/Model/User.pm \
 	qq.pl \
 	run.pl
@@ -197,6 +198,8 @@ PM_TO_BLIB = lib/FastNotes/Model.pm \
 	$(INST_LIB)/run.pl \
 	lib/FastNotes/Model/Base.pm \
 	blib/lib/FastNotes/Model/Base.pm \
+	lib/FastNotes/Model/Token.pm \
+	blib/lib/FastNotes/Model/Token.pm \
 	lib/FastNotes/Controller/Users.pm \
 	blib/lib/FastNotes/Controller/Users.pm \
 	lib/FastNotes/Controller/Rex.pm \
@@ -887,6 +890,7 @@ pm_to_blib : $(FIRST_MAKEFILE) $(TO_INST_PM)
 	  lib/FastNotes/Model.pm blib/lib/FastNotes/Model.pm \
 	  run.pl $(INST_LIB)/run.pl \
 	  lib/FastNotes/Model/Base.pm blib/lib/FastNotes/Model/Base.pm \
+	  lib/FastNotes/Model/Token.pm blib/lib/FastNotes/Model/Token.pm \
 	  lib/FastNotes/Controller/Users.pm blib/lib/FastNotes/Controller/Users.pm \
 	  lib/FastNotes/Controller/Rex.pm blib/lib/FastNotes/Controller/Rex.pm \
 	  lib/FastNotes/Model/Note.pm blib/lib/FastNotes/Model/Note.pm \

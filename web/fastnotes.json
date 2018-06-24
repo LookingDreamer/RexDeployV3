@@ -28,6 +28,11 @@
             "mustOneParams": ""
         }, 
         {
+            "action": "json", 
+            "mustParams": "r,d", 
+            "mustOneParams": ""
+        },         
+        {
             "action": "Common:Use:post", 
             "mustParams": "url,header,param", 
             "mustOneParams": ""

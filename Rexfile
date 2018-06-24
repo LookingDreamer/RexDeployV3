@@ -257,11 +257,11 @@ task "lookLog",sub{
    Common::Rexfile::batchlookLog($k,$w,$more);
 };
 
-desc "获取JSON rex json  --r='random' --d='1'";
+desc "获取JSON rex json  --random='random' --delete='1'";
 task "json",sub{
     my $self = shift;
-    my $random=$self->{r};
-    my $delete=$self->{d};
+    my $random=$self->{random};
+    my $delete=$self->{delete};
     run_task "Common:Use:getJson",params=>{random=>$random,delete=>$delete};
 };
 
