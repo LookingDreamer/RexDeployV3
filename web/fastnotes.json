@@ -18,6 +18,16 @@
             "mustOneParams": ""
         },
         {
+            "action": "Deploy:Configure:sync", 
+            "mustParams": "k", 
+            "mustOneParams": ""
+        },
+        {
+            "action": "Common:Use:syncFiles", 
+            "mustParams": "files", 
+            "mustOneParams": ""
+        },
+        {
             "action": "Common:Use:get", 
             "mustParams": "url,header", 
             "mustOneParams": ""
@@ -29,7 +39,7 @@
         }, 
         {
             "action": "json", 
-            "mustParams": "r,d", 
+            "mustParams": "random,delete", 
             "mustOneParams": ""
         },         
         {

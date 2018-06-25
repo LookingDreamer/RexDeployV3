@@ -35,6 +35,7 @@ task "route", sub {
 	my $self = shift;
 	my $user=$self->{user};
 	my $action=$self->{action};
+	my $function=$self->{function};
 	my $level=$self->{level};
 	my $sudo=$self->{sudo};
 	my $pass=$self->{pass};
@@ -44,6 +45,9 @@ task "route", sub {
 	my $w=$self->{w};
 	my $random=$self->{random};
 	my %reshash ;
+	if( $function  ne ""){
+		$action = $function;
+	}
 	$reshash{"params"} = {
 		user=>$user,
 		action=>$action,
