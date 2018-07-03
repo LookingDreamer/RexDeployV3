@@ -41,6 +41,9 @@ sub startup {
     # my $ren = $r->under('/rex');
     $ren->route                       ->via('get')   ->to('rex#index') ->name('rex_show');
     $ren->route                       ->via('post')  ->to('rex#runcmd')->name('rex_run');
+    my $up = $r->under('/upload')->to('auths#checkapi');
+    $up->route                       ->via('post')  ->to('rex#upload')->name('rex_upload');
+
 
     $r->route('/help')   ->to( cb => sub{ shift->render( template=>'help', format=>'html' ) } );
 

@@ -133,6 +133,7 @@ task "lookLog", sub {
 	my $search = $self->{search};
 	my $k = $self->{k};
 	my $more = $self->{more} ;
+	my $random = $self->{random} ;
 	my $w = $self->{w} ;
 	my $myFiles;
 	my %reshash;
@@ -145,7 +146,7 @@ task "lookLog", sub {
 		Rex::Logger::info("日志目录参数或者搜索关键词不能同时为空","error");
 		$reshash{"code"} = -1 ;
 		$reshash{"msg"} = "search and logdir args is null" ;
-		Common::Use::json($w,"","日志参数或者搜索关键词不能同时为空","");
+		Common::Use::json($w,"","日志参数或者搜索关键词不能同时为空","",$random );
 		return \%reshash; 		
 	}
 	if ( $more eq "") {
@@ -161,7 +162,7 @@ task "lookLog", sub {
 			Rex::Logger::info("服务器: [$server]-[$names] $logdir远程日志目录不存在.","error");
 			$reshash{"code"} = -1 ;
 			$reshash{"msg"} = "$logdir is not exist " ;
-			Common::Use::json($w,"","失败",[\%reshash]);			
+			Common::Use::json($w,"","失败",[\%reshash],$random);			
 			return \%reshash;
 		}
 		Rex::Logger::info("[$server]-[$names] 远程日志目录:$logdir");
@@ -200,7 +201,7 @@ task "lookLog", sub {
 			Rex::Logger::info("服务器: [$server]-[$names] $logdir远程日志目录不存在.","error");
 			$reshash{"code"} = -1 ;
 			$reshash{"msg"} = "$logdir is not exist " ;
-			Common::Use::json($w,"","失败",[\%reshash]);			
+			Common::Use::json($w,"","失败",[\%reshash],$random);			
 			return \%reshash;
 		}
 		Rex::Logger::info("[$server]-[$names] 远程日志目录:$logdir");
@@ -215,7 +216,7 @@ task "lookLog", sub {
 		$reshash{"fileres"} = \@fileArray ;		
 
 	}
-	Common::Use::json($w,"0","成功",[\%reshash]);
+	Common::Use::json($w,"0","成功",[\%reshash],$random);
 	return \%reshash;	
 
 };

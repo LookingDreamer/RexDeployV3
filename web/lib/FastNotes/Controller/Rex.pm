@@ -14,6 +14,7 @@ use YAML;
 use Mojo::JSON qw(decode_json encode_json);
 use List::MoreUtils qw(uniq);
 use Encode qw(encode_utf8);
+use POSIX qw(strftime); 
 
 my $log = Mojo::Log->new;
 
@@ -252,7 +253,6 @@ sub  parseparameters{
         $reshash{"msg"} = "action参数不能为空" ;
         return \%reshash;
     }  
-    my $action;
     $action = $paramsHash->{action};
     $log->info("action: $action");
     $log->info("转换POST参数: @paramsArray");
@@ -321,7 +321,6 @@ sub  parseparameters{
     }
     #重新组合cmd
     push @requestCmd,$paramsHash->{action} ;
-    my $precmdVar;
     for my $param (@paramsArray){
         $param =~ s/ //g; 
         if(grep { $_ eq "$param" } @precmdAllow){
@@ -417,6 +416,97 @@ sub run {
     $data{"stderr"} = $stderr;
     $data{"chdir"} = $chdir;
     return \%data;
+}
+
+
+sub upload {
+    my ($self) = @_;
+    $self->res->headers->header('Access-Control-Allow-Origin' => '*');
+    my $fileuploaded;
+    my $start = time();
+    my $downloadDir =  $self->app->defaults->{"config"}->{"downloadDir"};
+    my $download =  $downloadDir ."/".$start;
+    my $start_time = strftime("%Y/%m/%d %H:%M:%S", localtime(time));
+    my $unzip = $self->param('unzip');
+    my %result = (
+       downloadDir => "$downloadDir",
+       download  => "$download",
+       start_time => "$start_time"
+    );
+    $log->info("开始上传: download: $download ");
+    eval {
+        $fileuploaded = $self->req->upload('upload');
+    };
+    if ($@) {
+        $result{"code"} = 99;
+        $result{"msg"} = "上传异常:$@";
+        $log->error("执行异常:$@");
+    }else{
+        if( ! -d $download ){
+            system("mkdir -p $download");
+        }
+        my $filename = $fileuploaded->filename;
+        my $name = $fileuploaded->name;
+        my $size = $fileuploaded->size;
+        my $end = time();
+        my $take = $end - $start;
+        $fileuploaded->move_to($download.'/'.$filename);
+        $log->info("name: $name "."filename: $filename "."size: $size "."upload: $fileuploaded ");
+        $result{"move_to"} = $download.'/'.$filename;
+        $result{"name"} = $name;
+        $result{"filename"} = $filename;
+        $result{"size"} = $size;
+        $result{"take"} = $take; 
+        $result{"code"} = 0;
+        $result{"msg"} = "上传成功";
+        if($unzip){
+            my $fileType;
+            if ( $filename =~ m/.tar.gz$/ ) { 
+               $fileType = "tar";
+            }elsif($filename =~ m/.zip$/ ){
+               $fileType = "zip";
+            }else{
+               $fileType = "file";
+            }
+            my $unzipRes = unztar($download.'/'.$filename,$fileType,$download);
+            $result{"unzipRes"} = $unzipRes;
+
+        }
+
+    }
+    $self->render(json => \%result);
+
+};
+
+#解压文件
+sub unztar{
+   my ($file,$type,$dir) = @_;
+   my $res ; 
+   my %hash ;
+   my $cmd ;
+   if ( $type eq "tar" ) {  
+     $cmd = "tar -zxf $file -C $dir" ; 
+   }elsif ( $type eq "zip" ) {
+     $cmd  = "unzip $file -d $dir";
+   }else{
+     $hash{"code"} = -2 ; 
+     $hash{"res"} = "$file is not zip or tar file" ;         
+     return \%hash;   
+   }
+   $log->info("解压命令: $cmd");    
+   $res = run("$cmd","/tmp");
+   if ( $res->{ret} eq 0  ) {
+     $hash{"code"} = 1 ;
+   }else{      
+     $hash{"code"} = -1 ; 
+   }
+   if ( $type ne "file" ) {
+     unlink($file);
+   }
+   $hash{"res"} = $res ;
+   $hash{"cmd"} = $cmd ;
+   return \%hash;
+
 }
 
 
