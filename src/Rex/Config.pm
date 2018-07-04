@@ -61,6 +61,7 @@ our (
   $set_no_append,            $use_net_openssh_if_present,
   $use_template_ng,          $use_rex_kvm_agent,
   $autodie,                  $task_chaining_cmdline_args,
+  $configName,
 
 );
 
@@ -657,6 +658,15 @@ sub get_environment {
   return $environment || "";
 }
 
+sub set_configName {
+  my ( $class, $name ) = @_;
+  $configName = $name;
+}
+
+sub get_configName {
+  return $configName || "";
+}
+
 sub get_ssh_config_username {
   my $class = shift;
   my $param = {@_};
@@ -959,8 +969,12 @@ sub register_config_handler {
 sub read_config_file {
   my ($config_file) = @_;
   # $config_file ||= _home_dir() . "/.rex/config.yml";
-  $config_file ||=  "config/config.yml";
-  
+  my $configName = Rex::Config->get_configName;
+  if(  $configName ){
+    $config_file =  "config/config_".$configName.".yml";	
+  }else{	
+    $config_file ||=  "config/config.yml";
+  }
   if ( -f $config_file ) {
     my $yaml = eval { local ( @ARGV, $/ ) = ($config_file); <>; };
     eval { $HOME_CONFIG_YAML = Load($yaml); };

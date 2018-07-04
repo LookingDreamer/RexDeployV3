@@ -180,7 +180,7 @@ FORCE_SERVER: {
   handle_lock_file($::rexfile);
 
   Rex::Config->set_environment( $opts{"E"} ) if ( $opts{"E"} );
-
+  Rex::Config->set_configName( $opts{"n"} ) if ( $opts{"n"} );
   if ( $opts{'g'} || $opts{'G'} ) {
 
     #$::FORCE_SERVER = "\0" . $opts{'g'};
