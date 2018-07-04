@@ -17,6 +17,7 @@ my $default_download_env;
 Rex::Config->register_config_handler("env", sub {
         my ($param) = @_;        
         $localenv = $param->{key} ;
+        $localenv = Rex::Config->get_envName; if ( $envName );
 });
 Rex::Config->register_config_handler("$localenv", sub {
         my ($param) = @_;

@@ -221,6 +221,7 @@ sub reconnect{
   Rex::Config->register_config_handler("env", sub {
     my ($param) = @_;
     $env = $param->{key} ;
+    $env = Rex::Config->get_envName; if ( $envName );
   });
   Rex::Config->register_config_handler("$env", sub {
     my ($param) = @_;
@@ -260,6 +261,7 @@ Rex::Config->register_config_handler(
     sub {
         my ($param) = @_;
         $env = $param->{key};
+$env = Rex::Config->get_envName; if ( $envName );
     }
 );
 Rex::Config->register_config_handler(
@@ -276,7 +278,7 @@ Rex::Config->register_config_handler(
     $opt->{"dsn"} = "DBI:mysql:database=$dbname;host=$dbhost;port=$dbport";
     $opt->{"user"} = "$dbuser" ;
     $opt->{"password"} = "$dbpassword";
-    Rex::Logger::info("dbHost: $dbhost dbPort:$dbport dbName:$dbname");
+    # Rex::Logger::info("dbHost: $dbhost dbPort:$dbport dbName:$dbname");
     $dbh = DBI->connect(
       $opt->{"dsn"}, $opt->{"user"},
       $opt->{"password"} || "", { RaiseError => 1, AutoCommit => 1 }

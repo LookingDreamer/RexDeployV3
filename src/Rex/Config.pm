@@ -61,7 +61,7 @@ our (
   $set_no_append,            $use_net_openssh_if_present,
   $use_template_ng,          $use_rex_kvm_agent,
   $autodie,                  $task_chaining_cmdline_args,
-  $configName,
+  $configName,               $envName
 
 );
 
@@ -665,6 +665,15 @@ sub set_configName {
 
 sub get_configName {
   return $configName || "";
+}
+
+sub set_envName {
+  my ( $class, $name ) = @_;
+  $envName = $name;
+}
+
+sub get_envName {
+  return $envName || "";
 }
 
 sub get_ssh_config_username {

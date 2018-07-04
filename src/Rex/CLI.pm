@@ -181,6 +181,7 @@ FORCE_SERVER: {
 
   Rex::Config->set_environment( $opts{"E"} ) if ( $opts{"E"} );
   Rex::Config->set_configName( $opts{"n"} ) if ( $opts{"n"} );
+  Rex::Config->set_envName( $opts{"l"} ) if ( $opts{"l"} );
   if ( $opts{'g'} || $opts{'G'} ) {
 
     #$::FORCE_SERVER = "\0" . $opts{'g'};

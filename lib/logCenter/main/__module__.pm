@@ -16,6 +16,7 @@ my $max_grep_row;
 Rex::Config->register_config_handler("env", sub {
  my ($param) = @_;
  $env = $param->{key} ;
+ $env = Rex::Config->get_envName; if ( $envName );
  });
 Rex::Config->register_config_handler("$env", sub {
  my ($param) = @_;
