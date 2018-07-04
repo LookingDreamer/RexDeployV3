@@ -254,6 +254,29 @@ sub import {
     #   $opt->{"dsn"}, $opt->{"user"},
     #   $opt->{"password"} || "", $opt->{"attr"}
     # );
+my ($env,$dbname,$dbhost,$dbuser,$dbpassword,$dbport );
+Rex::Config->register_config_handler(
+    "env",
+    sub {
+        my ($param) = @_;
+        $env = $param->{key};
+    }
+);
+Rex::Config->register_config_handler(
+    "$env",
+    sub {
+        my ($param) = @_;
+        $dbname        = $param->{dbname};
+        $dbhost        = $param->{dbhost};
+        $dbuser        = $param->{dbuser};
+        $dbpassword        = $param->{dbpassword};
+        $dbport        = $param->{dbport};
+     }
+);
+    $opt->{"dsn"} = "DBI:mysql:database=$dbname;host=$dbhost;port=$dbport";
+    $opt->{"user"} = "$dbuser" ;
+    $opt->{"password"} = "$dbpassword";
+    Rex::Logger::info("dbHost: $dbhost dbPort:$dbport dbName:$dbname");
     $dbh = DBI->connect(
       $opt->{"dsn"}, $opt->{"user"},
       $opt->{"password"} || "", { RaiseError => 1, AutoCommit => 1 }
