@@ -6,8 +6,10 @@
     "pwd": "/data/RexdeployV3", 
     "uploadDir":"/data/RexdeployV3/upload/web",
     "downloadDir":"/data/RexdeployV3/download/web",
+    "rexConfig":"/data/RexdeployV3/config/config.yml",
+    "ipListsFile":"/data/RexdeployV3/config/ip_lists.ini",
     "print_stdout": 0, 
-    "precmdAllow": ["b","e","E","G","g","H","z","K","P","p","u","d","ddd","m","o","q","qw","Q","T","Tm","Tv","Ty","c","C","f","F","h","M","O","s","S","t","v"],
+    "precmdAllow": ["b","e","E","G","g","H","z","K","P","p","u","d","ddd","m","o","q","qw","Q","T","Tm","Tv","Ty","c","C","f","F","h","M","O","s","S","t","v","n","l"],
     "allow": [
         {
             "action": "Common:Use:download", 
