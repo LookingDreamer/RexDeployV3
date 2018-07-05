@@ -182,6 +182,20 @@ FORCE_SERVER: {
   Rex::Config->set_environment( $opts{"E"} ) if ( $opts{"E"} );
   Rex::Config->set_configName( $opts{"n"} ) if ( $opts{"n"} );
   Rex::Config->set_envName( $opts{"l"} ) if ( $opts{"l"} );
+  if($opts{"l"}){
+    Rex::Logger::info("当前环境变量为: ".$opts{"l"});
+  }else{
+    my $env;
+    Rex::Config->register_config_handler(
+        "env",
+        sub {
+            my ($param) = @_;
+            $env = $param->{key};
+        }
+    );
+    Rex::Logger::info("当前环境变量为: ".$env);
+
+  }
   if ( $opts{'g'} || $opts{'G'} ) {
 
     #$::FORCE_SERVER = "\0" . $opts{'g'};
@@ -510,7 +524,9 @@ sub _list_tasks {
   my $list_all_task_status;
   Rex::Config->register_config_handler("env", sub {
    my ($param) = @_;
-   $env = $param->{key} ;
+   $env = $param->{key};
+   my $envName = Rex::Config->get_envName;
+   $env = $envName if ( $envName ) ;
   });
   Rex::Config->register_config_handler("$env", sub {
    my ($param) = @_;

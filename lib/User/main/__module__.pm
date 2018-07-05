@@ -7,8 +7,9 @@ my $env;
 my $common_public_key;
 Rex::Config->register_config_handler("env", sub {
  my ($param) = @_;
- $env = $param->{key} ;
- $env = Rex::Config->get_envName; if ( $envName );
+ $env = $param->{key};
+ my $envName = Rex::Config->get_envName;
+ $env = $envName if ( $envName ) ;
  });
 
 Rex::Config->register_config_handler("$env", sub {
