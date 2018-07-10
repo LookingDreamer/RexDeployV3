@@ -38,11 +38,21 @@ sub startup {
     # $r->route('/help')   ->to( cb => sub{ shift->render( template=>'help', format=>'html' ) } );
 
     my $ren = $r->under('/rex')->to('auths#checkapi');
-    # my $ren = $r->under('/rex');
     $ren->route                       ->via('get')   ->to('rex#index') ->name('rex_show');
     $ren->route                       ->via('post')  ->to('rex#runcmd')->name('rex_run');
     my $up = $r->under('/upload')->to('auths#checkapi');
     $up->route                       ->via('post')  ->to('rex#upload')->name('rex_upload');
+
+    my $configure = $r->under('/rex/config')->to('auths#checkapi');
+    $configure->route                       ->via('post')   ->to('config#index') ->name('config_get');
+
+    my $configureadd = $r->under('/rex/config/add')->to('auths#checkapi');
+    $configureadd->route                       ->via('post')   ->to('config#add') ->name('config_add');
+
+    my $configuredelete = $r->under('/rex/config/delete')->to('auths#checkapi');
+    $configuredelete->route                       ->via('post')   ->to('config#delete') ->name('config_delete');
+
+
 
 
     $r->route('/help')   ->to( cb => sub{ shift->render( template=>'help', format=>'html' ) } );
