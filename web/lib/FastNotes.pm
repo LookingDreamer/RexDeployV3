@@ -52,7 +52,8 @@ sub startup {
     my $configuredelete = $r->under('/rex/config/delete')->to('auths#checkapi');
     $configuredelete->route                       ->via('post')   ->to('config#delete') ->name('config_delete');
 
-
+    my $groupconfigure = $r->under('/rex/groupconfig')->to('auths#checkapi');
+    $groupconfigure->route                       ->via('post')   ->to('groupconfig#index') ->name('groupconfig_get');
 
 
     $r->route('/help')   ->to( cb => sub{ shift->render( template=>'help', format=>'html' ) } );
