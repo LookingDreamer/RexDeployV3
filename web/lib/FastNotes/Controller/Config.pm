@@ -405,7 +405,7 @@ sub addYmlFile{
     $result{"is_add_code"} = 1; 
   }else{
     my @srcKeyNextArray ;
-    my $noNextCount;
+    my $noNextCount = 0 ;
     for my $linekey (keys $config->{$section}){
       push @srcKeyNextArray,$linekey;
     }

@@ -41,7 +41,7 @@ sub index {
     eval {
         if ( $action eq "add" && $section  && $codeVal ) {
           $res = write_groups_file($conf,$action,$section,\@codeValArray);
-        }elsif( $action eq "delete"  && $code && $codeVal ){
+        }elsif( $action eq "delete"  && $codeVal ){
           $res = write_groups_file($conf,$action,$code,\@codeValArray);
         }else{
           $res = groups_file($conf,$section);
