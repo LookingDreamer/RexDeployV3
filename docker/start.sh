@@ -19,4 +19,5 @@ chmod 600 /etc/rsyncd.secrets
 httpd 
 rsync --daemon
 /usr/sbin/sshd -D &
+web/script/fastnotes.pl prefork -m production -w 10 -c 100 &
 cd /usr ; /usr/bin/mysqld_safe 
