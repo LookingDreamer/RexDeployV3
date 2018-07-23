@@ -146,25 +146,25 @@ setConfig(){
     print_log "灌入数据失败."
   fi
 
-  print_log "初始化数据库配置"
-  file_list=$(echo "$DbLibconfigs" | sed  's/;/\n/')
-  for file in $file_list
-  do
-    database=$(grep 'dsn' $file  |grep '=' |awk -F'database' '{print $2}' |awk -F';'  '{print $1}' |awk -F'=' '{print $2}')
-    host=$(grep 'dsn' $file  |grep '=' |awk -F';' '{print $(NF-1)}' |awk -F'=' '{print $2}')
-    port=$(grep 'dsn' $file  |grep '=' |awk -F';' '{print $NF}' |awk -F'=' '{print $2}' |awk -F'\"' '{print $1}')
-    user=$(grep 'user' $file  |grep '='  |awk -F'\"' '{print $2}')
-    password=$(grep 'password' $file  |grep '='  |awk -F'\"' '{print $2}' )
+  # print_log "初始化数据库配置"
+  # file_list=$(echo "$DbLibconfigs" | sed  's/;/\n/')
+  # for file in $file_list
+  # do
+  #   database=$(grep 'dsn' $file  |grep '=' |awk -F'database' '{print $2}' |awk -F';'  '{print $1}' |awk -F'=' '{print $2}')
+  #   host=$(grep 'dsn' $file  |grep '=' |awk -F';' '{print $(NF-1)}' |awk -F'=' '{print $2}')
+  #   port=$(grep 'dsn' $file  |grep '=' |awk -F';' '{print $NF}' |awk -F'=' '{print $2}' |awk -F'\"' '{print $1}')
+  #   user=$(grep 'user' $file  |grep '='  |awk -F'\"' '{print $2}')
+  #   password=$(grep 'password' $file  |grep '='  |awk -F'\"' '{print $2}' )
    
-    sed -i "s/$host/$mysql_host/" $file
-    sed -i "s/$port/$mysql_port/" $file
-    sed -i "s/user     => \"$user\"/user     => \"$mysql_user\"/" $file
-    sed -i "s/password => \"$password\"/password => \"$mysql_pass\"/" $file
-    sed -i "s/dsn      => \"DBI:mysql:database=$database/dsn      => \"DBI:mysql:database=$mysql_dbname/" $file
+  #   sed -i "s/$host/$mysql_host/" $file
+  #   sed -i "s/$port/$mysql_port/" $file
+  #   sed -i "s/user     => \"$user\"/user     => \"$mysql_user\"/" $file
+  #   sed -i "s/password => \"$password\"/password => \"$mysql_pass\"/" $file
+  #   sed -i "s/dsn      => \"DBI:mysql:database=$database/dsn      => \"DBI:mysql:database=$mysql_dbname/" $file
       	
-    print_log "配置完成:$file"
-  done
-  print_log "初始化数据库配置完成"
+  #   print_log "配置完成:$file"
+  # done
+  # print_log "初始化数据库配置完成"
   
   print_log "初始化rex模块包"
   if [[ ! -d $installRexSRC ]]; then
