@@ -726,7 +726,7 @@ sub saveFile{
 
 };
 
-desc "程序包Http下载合并  rex Enter:route:downloadCombile --k='server' --url='http://download.52zzb.com/1/cm-20180515-142727.tar.gz'
+desc "程序包Http下载合并  rex Enter:route:downloadCombile --k='server' --url='http://abc.com/1/cm-20180515-142727.tar.gz'
 --downdir: 自定义下载目录
 --set: 根据配置文件合并url
 --full: 1增量更新 2全量更新
