@@ -1,8 +1,6 @@
 # Rexdeploy
 
-Rexdeploy: 一个基于名字服务自动化平台（`终端版`）
-
-[中文文档](https://book.osichina.net)
+Rexdeploy: 一个基于名字服务自动化平台（[命令行CLI版](https://book.osichina.net/an-zhuang.html) 和 [API接口版](https://book.osichina.net/api-an-zhuang.html)）
 
 ## 简单描述
 
@@ -26,30 +24,33 @@ RexDeploy是一个免客户端安装的管控平台，支持基于`名字服务�
 * 集中日志下载
 * 日志分析过滤
 * 系统用户管理
+* 应用灰度发布
+* 微信和QQ消息
 
-## 为什么是Perl?
+## CLI部分截图
 
-> 相信很多的人会问到，为什么是perl？
->
-> devops兴起的年代，在编程语言当中，居然还有人在折腾perl语言。我想很多人会有这样的疑问。所以我就为什么是perl语言，简要的交代一下。首先rexdeploy 并不是近期产生，我于12年进入现在的公司一直到现在，在进入公司后2年，也就是2014年，那时候公司的快速发展，传统的手工运维并满足不了业务的需求。所以，那时候我就开始研究自动化，恰逢其会的看到一款基于[perl语言开源自动化管理框架](http://rex.osichina.net)，于是开始对它进行调研，经过一段时间的试用，发现它特别适合我们的业务方向，只需要简单的安装配置即可配合业务做很多的事情。所以后来去学习perl语言，去进行二次开发来满足我们业务的发展方向。目前该产品已经在我们生产线上使用了3年以上的时间。在运维行业提到最多的可能还是python语言，然后才是php，最后才是perl。这3P占据了运维行业90%的天下。到如今，我们不但有perl，也会有基于python或者基于php语言的运维平台。每个语言都有它的独到之处，`对于产品来说，只有最合适的业务的语言，才是最好的语言`。
+### 基于名字服务的应用自动发布
+![演示](../assets/release2.gif)
 
-## 说明
+### 基于名字服务的应用灰度发布
+![演示](../assets/deploy-last.gif)
 
-此自动化的系统是基于原生rex进行二次开发而成,这是第三个大版本了，目前放出的这个版本是`终端版`，web版本已开发完成，预计5月份将会放出。
+### 基于名字服务的命令批量执行
+![演示](../assets/uptime.gif)
 
-此前放出过第一个版本，详情请撮：
+### 基于名字服务的批量上传和下载
+![演示](../assets/upload1.gif)
+![演示](../assets/download1.gif)
 
-[http://git.oschina.net/lookingdreamer/RexDeploy\_v1](http://git.oschina.net/lookingdreamer/RexDeploy_v1)
+### 基于名字服务的应用批量重启
+![演示](../assets/service1.gif)
 
-新版本git地址: 
+### 基于名字服务的批量日志下载
+![演示](../assets/getLog1.gif)
 
-RexDeployV3 码云地址: [https://gitee.com/lookingdreamer/RexDeployV3](https://gitee.com/lookingdreamer/RexDeployV3)  
-RexDeployV3 Github地址: [https://github.com/LookingDreamer/RexDeployV3](https://github.com/LookingDreamer/RexDeployV3)  
+### 基于名字服务的批量日志过滤
+![演示](../assets/grepLog1.gif)
 
-有任何问题欢迎提issue
+### 基于服务器批量用户管理
+![演示](../assets/user.gif)
 
-rex官方：[http://rexify.org/](http://rexify.org/)  
-rex中文: [http://rex.osichina.net](http://rex.osichina.net/)  
-rex github: [https://github.com/RexOps/Rex ](https://github.com/RexOps/Rex)
-
-由于国内有时候访问不了rex官方，本人根据[官方git](https://github.com/RexOps/rexify-website)重新拉取了一份中文官方网站部署在搬瓦工上，有需要请自行浏览。
