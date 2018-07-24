@@ -45,7 +45,7 @@ RUN yum install wget -y && mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d
 && cd /data/RexDeployV3  && /bin/bash install/initStall.sh instalib
 
 RUN wget  https://download.osichina.net/tools/cpanm -O /usr/bin/cpanm; chmod +x /usr/bin/cpanm \
-&& cpanm Archive::Zip LWP::Protocol::https JSON  DBD::SQLite  DBIx::Simple SQL::Abstract IPC::System::Options
+&& cpanm Archive::Zip LWP::Protocol::https JSON  DBD::SQLite  DBIx::Simple SQL::Abstract YAML::Tiny IPC::System::Options
 
 ADD rsyncd.conf /etc/rsyncd.conf
 ADD rsyncd.secrets /etc/rsyncd.secrets

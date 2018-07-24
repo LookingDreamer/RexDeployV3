@@ -45,7 +45,7 @@ mv html1/WEB-INF/classes/config.properties config1/
 mv html1/WEB-INF/classes/applicationContext.xml config1/
 mv html1/WEB-INF/classes/log4j.properties config1/
 mv html1/WEB-INF/classes/generatorConfig.xml config1/
-cp config1 config2 -ar
+cp config1/* config2 -ar
 rm html2/WEB-INF/classes/{config.properties,applicationContext.xml,generatorConfig.xml,log4j.properties} -f
 cp /data/RexDeployV3/docker/tomcat* /etc/init.d/
 chmod a+x /etc/init.d/tomcat*
