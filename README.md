@@ -30,27 +30,27 @@ RexDeploy是一个免客户端安装的管控平台，支持基于`名字服务�
 ## CLI部分截图
 
 ### 基于名字服务的应用自动发布
-![演示](../assets/release2.gif)
+![演示](https://book.osichina.net/assets/release2.gif)
 
 ### 基于名字服务的应用灰度发布
-![演示](../assets/deploy-last.gif)
+![演示](https://book.osichina.net/assets/deploy-last.gif)
 
 ### 基于名字服务的命令批量执行
-![演示](../assets/uptime.gif)
+![演示](https://book.osichina.net/assets/uptime.gif)
 
 ### 基于名字服务的批量上传和下载
-![演示](../assets/upload1.gif)
-![演示](../assets/download1.gif)
+![演示](https://book.osichina.net/assets/upload1.gif)
+![演示](https://book.osichina.net/assets/download1.gif)
 
 ### 基于名字服务的应用批量重启
-![演示](../assets/service1.gif)
+![演示](https://book.osichina.net/assets/service1.gif)
 
 ### 基于名字服务的批量日志下载
-![演示](../assets/getLog1.gif)
+![演示](https://book.osichina.net/assets/getLog1.gif)
 
 ### 基于名字服务的批量日志过滤
-![演示](../assets/grepLog1.gif)
+![演示](https://book.osichina.net/assets/grepLog1.gif)
 
 ### 基于服务器批量用户管理
-![演示](../assets/user.gif)
+![演示](https://book.osichina.net/assets/user.gif)
 
