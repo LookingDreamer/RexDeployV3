@@ -1,0 +1,5 @@
+% layout 'default';
+
+<center>
+<h1 class='fieldname fieldset' style='width:700px'>RexDeploy 主页</h1>
+</center>

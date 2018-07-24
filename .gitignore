@@ -1,2 +1,14 @@
+<<<<<<< HEAD
 RexDeployV3.sublime-project
 RexDeployV3.sublime-workspace
+=======
+RexDeployV3.sublime-project
+RexDeployV3.sublime-workspace
+.svn/*
+softdir/* 
+configuredir/* 
+remotecomdir/* 
+updatedir/*
+.DS_Store
+
+>>>>>>> RexDeploy_v1/master
