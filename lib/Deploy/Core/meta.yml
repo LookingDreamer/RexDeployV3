@@ -1,0 +1,9 @@
+Name: Deploy::Core
+Description: {{ 自动发布核心模块 }}
+Author: {{ HuangGaoMing <530035210e@qq.com> }}
+License: {{ MT OPEN }}
+
+# Only if you have dependencies to other Rex Modules.
+Require:
+   - Other::Rex::Module
+   - 2nd::Rex::Module
