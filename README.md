@@ -2,6 +2,8 @@
 
 Rexdeploy: 一个基于名字服务自动化平台（[命令行CLI版](https://book.osichina.net/an-zhuang.html) 和 [API接口版](https://book.osichina.net/api-an-zhuang.html)）
 
+[中文文档](https://book.osichina.net)
+
 ## 简单描述
 
 RexDeploy是一个免客户端安装的管控平台，支持基于`名字服务的自动发布`，基于`名字服务的自动重启(启动与停止)`，以及基于`名字服务的日志集中式管理`，用户管理等，同时也支持`批量执行命令`，`文件分发`（`上传与下载`）等。
